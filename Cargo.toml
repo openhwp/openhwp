@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = ["crates/openhwp_parser"]
+
+[workspace.dependencies]
+anyhow = "1.0.86"
+thiserror = "1.0.63"
+insta = "1.39.0"

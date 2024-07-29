@@ -1,0 +1,11 @@
+[package]
+name = "openhwp_parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+cfb = "0.10.0"
+flate2 = "1.0.30"
+thiserror = { workspace = true }
+insta = { workspace = true }
