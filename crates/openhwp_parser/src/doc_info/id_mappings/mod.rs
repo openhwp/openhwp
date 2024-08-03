@@ -1,14 +1,17 @@
 pub mod bin_data;
+pub mod face_name;
 
 use super::{DocInfoError, DocInfoTag, RecordIter};
 use crate::u32;
 
 pub use bin_data::*;
+pub use face_name::*;
 
 #[derive(Debug)]
 pub struct IdMappings {
     id_mapping_counts: IdMappingCounts,
     bin_data: Vec<BinData>,
+    face_names: Vec<FaceName>,
 }
 
 #[derive(Debug)]
@@ -63,10 +66,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let id_mapping_counts = IdMappingCounts::from_buf(record.payload);
 
         let bin_data = self.bin_data(&id_mapping_counts)?;
+        let face_names = self.face_names(&id_mapping_counts)?;
 
         Ok(IdMappings {
             id_mapping_counts,
             bin_data,
+            face_names,
         })
     }
 }
