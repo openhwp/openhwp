@@ -1,4 +1,4 @@
-use super::Record;
+use super::{DocInfoError, DocInfoTag, RecordIter};
 use crate::{u16, u32};
 
 #[derive(Debug)]
@@ -25,10 +25,17 @@ pub struct CaratLocation {
     pub char_index: u32,
 }
 
-impl DocumentProperties {
-    pub const fn from_record(record: &Record) -> Self {
-        let buf = &record.payload;
+impl<'doc_info> RecordIter<'doc_info> {
+    pub fn document_properties(&mut self) -> Result<DocumentProperties, DocInfoError> {
+        let record = self.expect(DocInfoTag::HWPTAG_DOCUMENT_PROPERTIES)?;
+        let document_properties = DocumentProperties::from_buf(record.payload);
 
+        Ok(document_properties)
+    }
+}
+
+impl DocumentProperties {
+    pub const fn from_buf(buf: &[u8]) -> Self {
         Self {
             section_size: u16(buf, 0),
             starting_index: StartingIndex {

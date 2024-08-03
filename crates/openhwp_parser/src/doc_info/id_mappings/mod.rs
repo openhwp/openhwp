@@ -1,8 +1,18 @@
-use super::{Record, RecordIter};
+pub mod bin_data;
+
+use super::{DocInfoError, DocInfoTag, RecordIter};
 use crate::u32;
+
+pub use bin_data::*;
 
 #[derive(Debug)]
 pub struct IdMappings {
+    id_mapping_counts: IdMappingCounts,
+    bin_data: Vec<BinData>,
+}
+
+#[derive(Debug)]
+pub struct IdMappingCounts {
     /// 바이너리 데이터
     binary_data: u32,
     /// 한글 글꼴
@@ -41,10 +51,28 @@ pub struct IdMappings {
     track_change_author: u32,
 }
 
-impl IdMappings {
-    pub fn from_record(record: &Record, records: &mut RecordIter) -> Self {
-        let buf = &record.payload;
+#[derive(Debug, Error)]
+pub enum IdMappingsError {
+    #[error("Bin data error: {0}")]
+    BinaryData(#[from] BinDataError),
+}
 
+impl<'doc_info> RecordIter<'doc_info> {
+    pub fn id_mappings(&mut self) -> Result<IdMappings, DocInfoError> {
+        let record = self.expect(DocInfoTag::HWPTAG_ID_MAPPINGS)?;
+        let id_mapping_counts = IdMappingCounts::from_buf(record.payload);
+
+        let bin_data = self.bin_data(&id_mapping_counts)?;
+
+        Ok(IdMappings {
+            id_mapping_counts,
+            bin_data,
+        })
+    }
+}
+
+impl IdMappingCounts {
+    pub fn from_buf(buf: &[u8]) -> Self {
         Self {
             binary_data: u32(buf, 0),
             hangul_font: u32(buf, 4),

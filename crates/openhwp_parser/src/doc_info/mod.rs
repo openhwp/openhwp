@@ -22,16 +22,8 @@ pub enum DocInfoError {
     InvalidTagId(u16),
     #[error("End of records: {0}")]
     EndOfRecords(&'static str),
-}
-
-macro_rules! expect {
-    ($record:ident, $tag:ident) => {
-        match $record.next() {
-            Some(record) if record.tag_id == DocInfoTag::$tag as u16 => record,
-            Some(record) => return Err(DocInfoError::InvalidTagId(record.tag_id)),
-            None => return Err(DocInfoError::EndOfRecords(stringify!($tag))),
-        }
-    };
+    #[error("Id mappings error: {0}")]
+    IdMappings(#[from] IdMappingsError),
 }
 
 impl DocInfo {
@@ -40,17 +32,11 @@ impl DocInfo {
             true => decompress(&bytes)?,
             false => bytes,
         };
-        let mut records = Record::iter(&bytes);
+        let mut stream = Record::iter(&bytes);
 
         Ok(Self {
-            document_properties: DocumentProperties::from_record(&expect!(
-                records,
-                HWPTAG_DOCUMENT_PROPERTIES
-            )),
-            id_mappings: IdMappings::from_record(
-                &expect!(records, HWPTAG_ID_MAPPINGS),
-                &mut records,
-            ),
+            document_properties: stream.document_properties()?,
+            id_mappings: stream.id_mappings()?,
         })
     }
 }
@@ -63,4 +49,14 @@ fn decompress(bytes: &[u8]) -> Result<Vec<u8>, std::io::Error> {
     DeflateDecoder::new(bytes).read_to_end(&mut buf)?;
 
     Ok(buf)
+}
+
+impl<'doc_info> RecordIter<'doc_info> {
+    pub fn expect(&mut self, tag: DocInfoTag) -> Result<Record, DocInfoError> {
+        match self.next() {
+            Some(record) if record.tag_id == tag as u16 => Ok(record),
+            Some(record) => Err(DocInfoError::InvalidTagId(record.tag_id)),
+            None => Err(DocInfoError::EndOfRecords(stringify!($tag))),
+        }
+    }
 }
