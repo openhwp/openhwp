@@ -1,14 +1,17 @@
 mod document_properties;
+mod id_mappings;
 mod record;
 mod tag;
 
 pub use document_properties::*;
+pub use id_mappings::*;
 pub use record::*;
 pub use tag::*;
 
 #[derive(Debug)]
 pub struct DocInfo {
     pub document_properties: DocumentProperties,
+    pub id_mappings: IdMappings,
 }
 
 #[derive(Debug, Error)]
@@ -44,6 +47,10 @@ impl DocInfo {
                 records,
                 HWPTAG_DOCUMENT_PROPERTIES
             )),
+            id_mappings: IdMappings::from_record(
+                &expect!(records, HWPTAG_ID_MAPPINGS),
+                &mut records,
+            ),
         })
     }
 }
