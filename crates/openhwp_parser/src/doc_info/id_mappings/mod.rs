@@ -1,5 +1,6 @@
 pub mod bin_data;
 pub mod border_fill;
+pub mod bullet;
 pub mod char_shape;
 pub mod face_name;
 pub mod numbering;
@@ -10,6 +11,7 @@ use crate::{u32, Version};
 
 pub use bin_data::*;
 pub use border_fill::*;
+pub use bullet::*;
 pub use char_shape::*;
 pub use face_name::*;
 pub use numbering::*;
@@ -24,6 +26,7 @@ pub struct IdMappings {
     char_shapes: Vec<CharShape>,
     tab_definitions: Vec<TabDefinition>,
     numberings: Vec<Numbering>,
+    bullets: Vec<Bullet>,
 }
 
 #[derive(Debug)]
@@ -77,6 +80,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         let char_shapes = self.char_shapes(&id_mapping_count, version);
         let tab_definitions = self.tab_definitions(&id_mapping_count);
         let numberings = self.numberings(&id_mapping_count, version);
+        let bullets = self.bullets(&id_mapping_count);
 
         Ok(IdMappings {
             id_mapping_count,
@@ -86,6 +90,7 @@ impl<'doc_info> RecordIter<'doc_info> {
             char_shapes,
             tab_definitions,
             numberings,
+            bullets,
         })
     }
 }

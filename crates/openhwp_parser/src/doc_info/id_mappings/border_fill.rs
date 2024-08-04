@@ -501,6 +501,23 @@ impl FillSolid {
     }
 }
 
+impl Image {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        Self {
+            bright: buf[0],
+            contrast: buf[1],
+            effect: match buf[2] {
+                0 => ImageEffect::RealPic,
+                1 => ImageEffect::GrayScale,
+                2 => ImageEffect::BlackWhite,
+                3 => ImageEffect::Pattern8x8,
+                effect => ImageEffect::Unknown(effect),
+            },
+            bin_item_id: u16(buf, 3),
+        }
+    }
+}
+
 impl FillGradation {
     pub fn from_buf(buf: &[u8]) -> Self {
         let kind = match buf[0] {
@@ -545,8 +562,10 @@ impl FillGradation {
 
 impl FillImage {
     pub const fn from_buf(buf: &[u8]) -> Self {
+        let (kind, image) = buf.split_at(1);
+
         Self {
-            kind: match buf[0] {
+            kind: match kind[0] {
                 0 => ImageFillKind::Tile,
                 1 => ImageFillKind::TileHorizontalTop,
                 2 => ImageFillKind::TileHorizontalBottom,
@@ -565,18 +584,7 @@ impl FillImage {
                 15 => ImageFillKind::None,
                 kind => ImageFillKind::Unknown(kind),
             },
-            image: Image {
-                bright: buf[1],
-                contrast: buf[2],
-                effect: match buf[3] {
-                    0 => ImageEffect::RealPic,
-                    1 => ImageEffect::GrayScale,
-                    2 => ImageEffect::BlackWhite,
-                    3 => ImageEffect::Pattern8x8,
-                    effect => ImageEffect::Unknown(effect),
-                },
-                bin_item_id: u16(buf, 4),
-            },
+            image: Image::from_buf(image),
         }
     }
 }
