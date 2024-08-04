@@ -1,4 +1,4 @@
-use super::IdMappingCounts;
+use super::IdMappingCount;
 use crate::{u16, DocInfoError, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
@@ -66,17 +66,17 @@ pub struct Panose {
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn face_names(
         &mut self,
-        id_mapping: &IdMappingCounts,
+        id_mappings: &IdMappingCount,
     ) -> Result<Vec<FaceName>, DocInfoError> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {
-                let face_name_count = id_mapping.hangul_font
-                    + id_mapping.english_font
-                    + id_mapping.chinese_font
-                    + id_mapping.japanese_font
-                    + id_mapping.etc_font
-                    + id_mapping.symbol_font
-                    + id_mapping.user_font;
+                let face_name_count = id_mappings.hangul_font
+                    + id_mappings.english_font
+                    + id_mappings.chinese_font
+                    + id_mappings.japanese_font
+                    + id_mappings.etc_font
+                    + id_mappings.symbol_font
+                    + id_mappings.user_font;
                 let mut face_names = Vec::with_capacity(face_name_count as usize);
 
                 $(
@@ -93,13 +93,13 @@ impl<'doc_info> RecordIter<'doc_info> {
         }
 
         face_name_count! {
-            hangul_font -> Hangul.take(id_mapping.hangul_font)
-            english_font -> English.take(id_mapping.english_font)
-            chinese_font -> Chinese.take(id_mapping.chinese_font)
-            japanese_font -> Japanese.take(id_mapping.japanese_font)
-            etc_font -> Etc.take(id_mapping.etc_font)
-            symbol_font -> Symbol.take(id_mapping.symbol_font)
-            user_font -> User.take(id_mapping.user_font)
+            hangul_font -> Hangul.take(id_mappings.hangul_font)
+            english_font -> English.take(id_mappings.english_font)
+            chinese_font -> Chinese.take(id_mappings.chinese_font)
+            japanese_font -> Japanese.take(id_mappings.japanese_font)
+            etc_font -> Etc.take(id_mappings.etc_font)
+            symbol_font -> Symbol.take(id_mappings.symbol_font)
+            user_font -> User.take(id_mappings.user_font)
         }
     }
 }

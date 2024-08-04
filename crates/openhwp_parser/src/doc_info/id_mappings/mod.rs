@@ -9,13 +9,13 @@ pub use face_name::*;
 
 #[derive(Debug)]
 pub struct IdMappings {
-    id_mapping_counts: IdMappingCounts,
+    id_mapping_count: IdMappingCount,
     bin_data: Vec<BinData>,
     face_names: Vec<FaceName>,
 }
 
 #[derive(Debug)]
-pub struct IdMappingCounts {
+pub struct IdMappingCount {
     /// 바이너리 데이터
     binary_data: u32,
     /// 한글 글꼴
@@ -63,20 +63,20 @@ pub enum IdMappingsError {
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn id_mappings(&mut self) -> Result<IdMappings, DocInfoError> {
         let record = self.expect(DocInfoTag::HWPTAG_ID_MAPPINGS)?;
-        let id_mapping_counts = IdMappingCounts::from_buf(record.payload);
+        let id_mapping_count = IdMappingCount::from_buf(record.payload);
 
-        let bin_data = self.bin_data(&id_mapping_counts)?;
-        let face_names = self.face_names(&id_mapping_counts)?;
+        let bin_data = self.bin_data(&id_mapping_count)?;
+        let face_names = self.face_names(&id_mapping_count)?;
 
         Ok(IdMappings {
-            id_mapping_counts,
+            id_mapping_count,
             bin_data,
             face_names,
         })
     }
 }
 
-impl IdMappingCounts {
+impl IdMappingCount {
     pub fn from_buf(buf: &[u8]) -> Self {
         Self {
             binary_data: u32(buf, 0),

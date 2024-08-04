@@ -1,4 +1,4 @@
-use super::{IdMappingCounts, IdMappingsError};
+use super::{IdMappingCount, IdMappingsError};
 use crate::{u16, u32, DocInfoError, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
@@ -70,10 +70,7 @@ pub enum BinDataError {
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn bin_data(
-        &mut self,
-        id_mappings: &IdMappingCounts,
-    ) -> Result<Vec<BinData>, DocInfoError> {
+    pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Result<Vec<BinData>, DocInfoError> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
         for record in self
             .take(id_mappings.binary_data as usize)
