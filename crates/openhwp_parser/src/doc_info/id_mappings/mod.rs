@@ -1,12 +1,14 @@
 pub mod bin_data;
 pub mod border_fill;
+pub mod char_shape;
 pub mod face_name;
 
 use super::{DocInfoError, DocInfoTag, RecordIter};
-use crate::u32;
+use crate::{u32, Version};
 
 pub use bin_data::*;
 pub use border_fill::*;
+pub use char_shape::*;
 pub use face_name::*;
 
 #[derive(Debug)]
@@ -15,6 +17,7 @@ pub struct IdMappings {
     bin_data: Vec<BinData>,
     face_names: Vec<FaceName>,
     border_fills: Vec<BorderFill>,
+    char_shapes: Vec<CharShape>,
 }
 
 #[derive(Debug)]
@@ -64,19 +67,25 @@ pub enum IdMappingsError {
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn id_mappings(&mut self) -> Result<IdMappings, DocInfoError> {
+    pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, DocInfoError> {
         let record = self.expect(DocInfoTag::HWPTAG_ID_MAPPINGS)?;
         let id_mapping_count = IdMappingCount::from_buf(record.payload);
 
         let bin_data = self.bin_data(&id_mapping_count)?;
         let face_names = self.face_names(&id_mapping_count)?;
         let border_fills = self.border_fills(&id_mapping_count)?;
+        let char_shapes = self.char_shapes(&id_mapping_count, &version)?;
+
+        for shape in &char_shapes {
+            dbg!(shape);
+        }
 
         Ok(IdMappings {
             id_mapping_count,
             bin_data,
             face_names,
             border_fills,
+            char_shapes,
         })
     }
 }

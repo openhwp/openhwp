@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub struct FileHeader {
     /// 파일 버전 정보
-    pub file_version: FileVersion,
+    pub version: Version,
     /// 파일 속성 정보
     pub properties: Properties,
     /// 라이선스 정보
@@ -12,8 +12,8 @@ pub struct FileHeader {
     pub kogl_license_support_country: KoglLicenseSupportCountry,
 }
 
-#[derive(Debug, Clone)]
-pub struct FileVersion {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Version {
     pub major: u8,
     pub minor: u8,
     pub build: u8,
@@ -99,7 +99,7 @@ pub enum FileHeaderError {
     #[error("Invalid signature. Received version: {0:?}")]
     InvalidSignature([u8; 32]),
     #[error("Only support 5.1.0.0 format. Received version: {0:?}")]
-    UnsupportedVersion(FileVersion),
+    UnsupportedVersion(Version),
     #[error("Unknown encrypted version: {0}")]
     UnknownEncryptedVersion(u8),
     #[error("Unknown Kogl license support country: {0}")]
@@ -118,7 +118,7 @@ impl FileHeader {
             Err(_) => return Err(FileHeaderError::InvalidSize(bytes.len())),
         };
 
-        let file_version = FileVersion {
+        let file_version = Version {
             major: bytes[35],
             minor: bytes[34],
             build: bytes[33],
@@ -169,7 +169,7 @@ impl FileHeader {
         };
 
         Ok(Self {
-            file_version,
+            version: file_version,
             properties,
             license,
             encrypted_version,
@@ -178,7 +178,7 @@ impl FileHeader {
     }
 }
 
-impl FileVersion {
+impl Version {
     pub const COMPATIBLE: Self = Self {
         major: 5,
         minor: 1,
@@ -186,6 +186,17 @@ impl FileVersion {
         revision: 0,
     };
 
+    #[inline]
+    pub const fn new(major: u8, minor: u8, build: u8, revision: u8) -> Self {
+        Self {
+            major,
+            minor,
+            build,
+            revision,
+        }
+    }
+
+    #[inline]
     pub const fn is_compatible(&self) -> bool {
         self.major == Self::COMPATIBLE.major && self.minor <= Self::COMPATIBLE.minor
     }

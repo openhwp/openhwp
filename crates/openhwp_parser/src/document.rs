@@ -35,7 +35,11 @@ impl HwpDocument {
         let file_header = FileHeader::from_vec(file_header)?;
 
         let doc_info = read(&mut file, "DocInfo").map_err(HwpError::CannotFindDocInfo)?;
-        let doc_info = DocInfo::from_vec(doc_info, file_header.properties.compressed)?;
+        let doc_info = DocInfo::from_vec(
+            doc_info,
+            file_header.properties.compressed,
+            &file_header.version,
+        )?;
 
         let sections = std::iter::from_fn(|| {
             let index = 0;

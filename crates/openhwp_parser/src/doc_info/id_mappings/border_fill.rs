@@ -57,7 +57,7 @@ pub enum BackSlashDiagonalShape {
 #[derive(Debug)]
 pub struct Border {
     /// 4방향 테두리선 종류
-    pub kind: BorderKind,
+    pub shape: BorderShape,
     /// 4방향 테두리선 굵기
     pub width: BorderWidth,
     /// 4방향 테두리선
@@ -66,7 +66,7 @@ pub struct Border {
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy)]
-pub enum BorderKind {
+pub enum BorderShape {
     /// 실선
     Solid = 0,
     /// 긴 점선
@@ -328,28 +328,30 @@ impl<'doc_info> RecordIter<'doc_info> {
 
 impl BorderFill {
     pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        let slash_diagonal = SlashDiagonal::from_buf(buf)?;
-        let borders = [
-            Border::from_buf(&buf[2..8])?,
-            Border::from_buf(&buf[8..14])?,
-            Border::from_buf(&buf[14..20])?,
-            Border::from_buf(&buf[20..26])?,
-        ];
-        let diagonal = Diagonal::from_buf(&buf[26..32])?;
-        let fill = Fill::from_buf(&buf[32..])?;
+        let (slash_diagonal, buf) = buf.split_at(2);
+        let (border0, buf) = buf.split_at(6);
+        let (border1, buf) = buf.split_at(6);
+        let (border2, buf) = buf.split_at(6);
+        let (border3, buf) = buf.split_at(6);
+        let (diagonal, fill) = buf.split_at(6);
 
         Ok(Self {
-            slash_diagonal,
-            borders,
-            diagonal,
-            fill,
+            slash_diagonal: SlashDiagonal::from_buf(slash_diagonal),
+            borders: [
+                Border::from_buf(border0),
+                Border::from_buf(border1),
+                Border::from_buf(border2),
+                Border::from_buf(border3),
+            ],
+            diagonal: Diagonal::from_buf(diagonal),
+            fill: Fill::from_buf(fill),
         })
     }
 }
 
 impl SlashDiagonal {
-    pub const fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        Ok(Self {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        Self {
             effect_3d: buf[0] & 0b0000_0001 != 0,
             effect_shadow: buf[0] & 0b0000_0010 != 0,
             shape: match buf[0] & 0b0001_1100 {
@@ -373,40 +375,45 @@ impl SlashDiagonal {
             line_rotated: buf[1] & 0b0000_1000 != 0,
             back_line_rotated: buf[1] & 0b0001_0000 != 0,
             center_line: buf[1] & 0b0010_0000 != 0,
-        })
+        }
     }
 }
 
 impl Border {
-    pub const fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        Ok(Self {
-            kind: match buf[0] {
-                0 => BorderKind::Solid,
-                1 => BorderKind::Dashed,
-                2 => BorderKind::Dotted,
-                3 => BorderKind::DashDot,
-                4 => BorderKind::DashDotDot,
-                5 => BorderKind::LongDash,
-                6 => BorderKind::Circle,
-                7 => BorderKind::Double,
-                8 => BorderKind::SlimThick,
-                9 => BorderKind::ThickSlim,
-                10 => BorderKind::SlimThickSlim,
-                11 => BorderKind::Wave,
-                12 => BorderKind::DoubleWave,
-                13 => BorderKind::Thick3D,
-                14 => BorderKind::Thick3DInset,
-                15 => BorderKind::Slim3D,
-                16 => BorderKind::Slim3DInset,
-                kind => BorderKind::Unknown(kind),
-            },
-            width: BorderWidth::from_buf(&[buf[1]]),
-            color: Color {
-                red: buf[2],
-                green: buf[3],
-                blue: buf[4],
-            },
-        })
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        let (kind, buf) = buf.split_at(1);
+        let (width, color) = buf.split_at(1);
+
+        Self {
+            shape: BorderShape::from_buf(kind),
+            width: BorderWidth::from_buf(width),
+            color: Color::from_buf(color),
+        }
+    }
+}
+
+impl BorderShape {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        match buf[0] & 0b0000_1111 {
+            0 => BorderShape::Solid,
+            1 => BorderShape::Dashed,
+            2 => BorderShape::Dotted,
+            3 => BorderShape::DashDot,
+            4 => BorderShape::DashDotDot,
+            5 => BorderShape::LongDash,
+            6 => BorderShape::Circle,
+            7 => BorderShape::Double,
+            8 => BorderShape::SlimThick,
+            9 => BorderShape::ThickSlim,
+            10 => BorderShape::SlimThickSlim,
+            11 => BorderShape::Wave,
+            12 => BorderShape::DoubleWave,
+            13 => BorderShape::Thick3D,
+            14 => BorderShape::Thick3DInset,
+            15 => BorderShape::Slim3D,
+            16 => BorderShape::Slim3DInset,
+            kind => BorderShape::Unknown(kind),
+        }
     }
 }
 
@@ -434,51 +441,56 @@ impl BorderWidth {
     }
 }
 
+impl Color {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        Self {
+            red: buf[0],
+            green: buf[1],
+            blue: buf[2],
+        }
+    }
+}
+
 impl Diagonal {
-    pub const fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        Ok(Self {
-            kind: match buf[0] {
-                0 => DiagonalKind::Slash,
-                1 => DiagonalKind::BackSlash,
-                2 => DiagonalKind::CrookedSlash,
-                kind => DiagonalKind::Unknown(kind),
-            },
-            width: BorderWidth::from_buf(&[buf[1]]),
-            color: Color {
-                red: buf[2],
-                green: buf[3],
-                blue: buf[4],
-            },
-        })
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        let (kind, buf) = buf.split_at(1);
+        let kind = match kind[0] {
+            0 => DiagonalKind::Slash,
+            1 => DiagonalKind::BackSlash,
+            2 => DiagonalKind::CrookedSlash,
+            kind => DiagonalKind::Unknown(kind),
+        };
+        let (width, buf) = buf.split_at(1);
+        let width = BorderWidth::from_buf(width);
+        let color = Color::from_buf(buf);
+
+        Self { kind, width, color }
     }
 }
 
 impl Fill {
-    pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        match buf[0] {
-            0 => Ok(Self::None),
-            1 => Ok(Self::Solid(FillSolid::from_buf(&buf[4..])?)),
-            2 => Ok(Self::Gradation(FillGradation::from_buf(&buf[4..])?)),
-            3 => Ok(Self::Image(FillImage::from_buf(&buf[4..])?)),
-            kind => Ok(Self::Unknown(kind)),
+    pub fn from_buf(buf: &[u8]) -> Self {
+        let (r#type, buf) = buf.split_at(4);
+
+        match r#type[0] {
+            0 => Self::None,
+            1 => Self::Solid(FillSolid::from_buf(buf)),
+            2 => Self::Gradation(FillGradation::from_buf(buf)),
+            3 => Self::Image(FillImage::from_buf(buf)),
+            kind => Self::Unknown(kind),
         }
     }
 }
 
 impl FillSolid {
-    pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        Ok(Self {
-            background_color: Color {
-                red: buf[0],
-                green: buf[1],
-                blue: buf[2],
-            },
-            pattern_color: Color {
-                red: buf[4],
-                green: buf[5],
-                blue: buf[6],
-            },
-            pattern_kind: match buf[8] {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        let (background_color, buf) = buf.split_at(4);
+        let (pattern_color, pattern_kind) = buf.split_at(4);
+
+        Self {
+            background_color: Color::from_buf(background_color),
+            pattern_color: Color::from_buf(pattern_color),
+            pattern_kind: match pattern_kind[0] {
                 0 => PatternKind::None,
                 1 => PatternKind::Horizontal,
                 2 => PatternKind::Vertical,
@@ -488,12 +500,12 @@ impl FillSolid {
                 6 => PatternKind::CrossDiagonal,
                 kind => PatternKind::Unknown(kind),
             },
-        })
+        }
     }
 }
 
 impl FillGradation {
-    pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
+    pub fn from_buf(buf: &[u8]) -> Self {
         let kind = match buf[0] {
             1 => GradationKind::Linear,
             2 => GradationKind::Radial,
@@ -519,14 +531,10 @@ impl FillGradation {
         };
         let colors = buf[..color_count as usize * 4]
             .chunks_exact(4)
-            .map(|chunk| Color {
-                red: chunk[0],
-                green: chunk[1],
-                blue: chunk[2],
-            })
+            .map(Color::from_buf)
             .collect();
 
-        Ok(Self {
+        Self {
             kind,
             angle,
             center_x,
@@ -534,13 +542,13 @@ impl FillGradation {
             blurry_degree,
             change_points,
             colors,
-        })
+        }
     }
 }
 
 impl FillImage {
-    pub const fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
-        Ok(Self {
+    pub const fn from_buf(buf: &[u8]) -> Self {
+        Self {
             kind: match buf[0] {
                 0 => ImageFillKind::Tile,
                 1 => ImageFillKind::TileHorizontalTop,
@@ -572,6 +580,6 @@ impl FillImage {
                 },
                 bin_item_id: u16(buf, 4),
             },
-        })
+        }
     }
 }

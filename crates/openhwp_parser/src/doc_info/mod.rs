@@ -8,6 +8,8 @@ pub use id_mappings::*;
 pub use record::*;
 pub use tag::*;
 
+use crate::Version;
+
 #[derive(Debug)]
 pub struct DocInfo {
     pub document_properties: DocumentProperties,
@@ -27,7 +29,11 @@ pub enum DocInfoError {
 }
 
 impl DocInfo {
-    pub fn from_vec(bytes: Vec<u8>, compressed: bool) -> Result<Self, DocInfoError> {
+    pub fn from_vec(
+        bytes: Vec<u8>,
+        compressed: bool,
+        version: &Version,
+    ) -> Result<Self, DocInfoError> {
         let bytes = match compressed {
             true => decompress(&bytes)?,
             false => bytes,
@@ -36,7 +42,7 @@ impl DocInfo {
 
         Ok(Self {
             document_properties: stream.document_properties()?,
-            id_mappings: stream.id_mappings()?,
+            id_mappings: stream.id_mappings(version)?,
         })
     }
 }

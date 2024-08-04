@@ -12,7 +12,7 @@ pub struct FaceName {
 
 #[derive(Debug, Clone, Copy)]
 pub enum FontLanguage {
-    Hangul,
+    Korean,
     English,
     Chinese,
     Japanese,
@@ -93,7 +93,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         }
 
         face_name_count! {
-            hangul_font -> Hangul.take(id_mappings.hangul_font)
+            hangul_font -> Korean.take(id_mappings.hangul_font)
             english_font -> English.take(id_mappings.english_font)
             chinese_font -> Chinese.take(id_mappings.chinese_font)
             japanese_font -> Japanese.take(id_mappings.japanese_font)
