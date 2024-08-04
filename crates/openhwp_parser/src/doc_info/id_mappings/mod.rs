@@ -2,6 +2,7 @@ pub mod bin_data;
 pub mod border_fill;
 pub mod char_shape;
 pub mod face_name;
+pub mod tab_definition;
 
 use super::{DocInfoError, DocInfoTag, RecordIter};
 use crate::{u32, Version};
@@ -10,6 +11,7 @@ pub use bin_data::*;
 pub use border_fill::*;
 pub use char_shape::*;
 pub use face_name::*;
+pub use tab_definition::*;
 
 #[derive(Debug)]
 pub struct IdMappings {
@@ -18,6 +20,7 @@ pub struct IdMappings {
     face_names: Vec<FaceName>,
     border_fills: Vec<BorderFill>,
     char_shapes: Vec<CharShape>,
+    tab_definitions: Vec<TabDefinition>,
 }
 
 #[derive(Debug)]
@@ -69,6 +72,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         let face_names = self.face_names(&id_mapping_count);
         let border_fills = self.border_fills(&id_mapping_count);
         let char_shapes = self.char_shapes(&id_mapping_count, &version);
+        let tab_definitions = self.tab_definitions(&id_mapping_count);
 
         Ok(IdMappings {
             id_mapping_count,
@@ -76,6 +80,7 @@ impl<'doc_info> RecordIter<'doc_info> {
             face_names,
             border_fills,
             char_shapes,
+            tab_definitions,
         })
     }
 }
