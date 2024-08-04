@@ -1,5 +1,5 @@
 use super::{BorderShape, Color, IdMappingCount};
-use crate::{u16, u32, DocInfoError, DocInfoTag, RecordIter, Version};
+use crate::{u16, u32, DocInfoTag, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct CharShape {
@@ -160,22 +160,22 @@ impl<'doc_info> RecordIter<'doc_info> {
         &mut self,
         id_mappings: &IdMappingCount,
         version: &Version,
-    ) -> Result<Vec<CharShape>, DocInfoError> {
+    ) -> Vec<CharShape> {
         let mut char_shapes = Vec::with_capacity(id_mappings.char_shape as usize);
 
         for record in self
             .take(id_mappings.char_shape as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_CHAR_SHAPE as u16)
         {
-            char_shapes.push(CharShape::from_buf(record.payload, version)?);
+            char_shapes.push(CharShape::from_buf(record.payload, version));
         }
 
-        Ok(char_shapes)
+        char_shapes
     }
 }
 
 impl CharShape {
-    pub fn from_buf(buf: &[u8], version: &Version) -> Result<Self, DocInfoError> {
+    pub fn from_buf(buf: &[u8], version: &Version) -> Self {
         let (font_by_language, buf) = buf.split_at(42);
         let (base_font_size, buf) = buf.split_at(4);
         let (font_shape, buf) = buf.split_at(4);
@@ -200,7 +200,7 @@ impl CharShape {
             None
         };
 
-        Ok(Self {
+        Self {
             font_by_language: FontByLanguage::from_buf(font_by_language),
             base_font_size: u32(base_font_size, 0) as i32,
             shape: FontShape::from_buf(font_shape),
@@ -212,7 +212,7 @@ impl CharShape {
             shadow_color: Color::from_buf(shadow_color),
             border_fill_id: border_fill_id.map(|buf| u16(buf, 0)),
             strike_color: strike_color.map(Color::from_buf),
-        })
+        }
     }
 }
 

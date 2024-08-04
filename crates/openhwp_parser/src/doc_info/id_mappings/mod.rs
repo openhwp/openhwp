@@ -60,25 +60,15 @@ pub struct IdMappingCount {
     track_change_author: u32,
 }
 
-#[derive(Debug, Error)]
-pub enum IdMappingsError {
-    #[error("Bin data error: {0}")]
-    BinaryData(#[from] BinDataError),
-}
-
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, DocInfoError> {
         let record = self.expect(DocInfoTag::HWPTAG_ID_MAPPINGS)?;
         let id_mapping_count = IdMappingCount::from_buf(record.payload);
 
-        let bin_data = self.bin_data(&id_mapping_count)?;
-        let face_names = self.face_names(&id_mapping_count)?;
-        let border_fills = self.border_fills(&id_mapping_count)?;
-        let char_shapes = self.char_shapes(&id_mapping_count, &version)?;
-
-        for shape in &char_shapes {
-            dbg!(shape);
-        }
+        let bin_data = self.bin_data(&id_mapping_count);
+        let face_names = self.face_names(&id_mapping_count);
+        let border_fills = self.border_fills(&id_mapping_count);
+        let char_shapes = self.char_shapes(&id_mapping_count, &version);
 
         Ok(IdMappings {
             id_mapping_count,

@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoError, DocInfoTag, RecordIter};
+use crate::{u16, u32, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
 pub struct BorderFill {
@@ -309,25 +309,22 @@ pub enum GradationKind {
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn border_fills(
-        &mut self,
-        id_mapping_counts: &IdMappingCount,
-    ) -> Result<Vec<BorderFill>, DocInfoError> {
+    pub fn border_fills(&mut self, id_mapping_counts: &IdMappingCount) -> Vec<BorderFill> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 
         for record in self
             .take(id_mapping_counts.border_fill as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BORDER_FILL as u16)
         {
-            border_fills.push(BorderFill::from_buf(record.payload)?);
+            border_fills.push(BorderFill::from_buf(record.payload));
         }
 
-        Ok(border_fills)
+        border_fills
     }
 }
 
 impl BorderFill {
-    pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
+    pub fn from_buf(buf: &[u8]) -> Self {
         let (slash_diagonal, buf) = buf.split_at(2);
         let (border0, buf) = buf.split_at(6);
         let (border1, buf) = buf.split_at(6);
@@ -335,7 +332,7 @@ impl BorderFill {
         let (border3, buf) = buf.split_at(6);
         let (diagonal, fill) = buf.split_at(6);
 
-        Ok(Self {
+        Self {
             slash_diagonal: SlashDiagonal::from_buf(slash_diagonal),
             borders: [
                 Border::from_buf(border0),
@@ -345,7 +342,7 @@ impl BorderFill {
             ],
             diagonal: Diagonal::from_buf(diagonal),
             fill: Fill::from_buf(fill),
-        })
+        }
     }
 }
 

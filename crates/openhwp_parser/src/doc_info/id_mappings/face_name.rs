@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, DocInfoError, DocInfoTag, RecordIter};
+use crate::{u16, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -64,10 +64,7 @@ pub struct Panose {
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn face_names(
-        &mut self,
-        id_mappings: &IdMappingCount,
-    ) -> Result<Vec<FaceName>, DocInfoError> {
+    pub fn face_names(&mut self, id_mappings: &IdMappingCount) -> Vec<FaceName> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {
                 let face_name_count = id_mappings.hangul_font
@@ -84,11 +81,11 @@ impl<'doc_info> RecordIter<'doc_info> {
                         .take($count as usize)
                         .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_FACE_NAME as u16)
                     {
-                        face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language)?);
+                        face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language));
                     }
                 )+
 
-                Ok(face_names)
+                face_names
             };
         }
 
@@ -105,7 +102,7 @@ impl<'doc_info> RecordIter<'doc_info> {
 }
 
 impl FaceName {
-    pub fn from_buf(buf: &[u8], language: FontLanguage) -> Result<Self, DocInfoError> {
+    pub fn from_buf(buf: &[u8], language: FontLanguage) -> Self {
         let (attribute, buf) = buf.split_at(1);
         // 대체 글꼴 존재 여부
         let has_alternative = attribute[0] & 0x80 != 0;
@@ -188,12 +185,12 @@ impl FaceName {
             None
         };
 
-        Ok(Self {
+        Self {
             language,
             name,
             alternative,
             panose,
             default,
-        })
+        }
     }
 }

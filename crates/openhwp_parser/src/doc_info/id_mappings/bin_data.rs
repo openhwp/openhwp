@@ -1,5 +1,5 @@
-use super::{IdMappingCount, IdMappingsError};
-use crate::{u16, u32, DocInfoError, DocInfoTag, RecordIter};
+use super::IdMappingCount;
+use crate::{u16, u32, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
 pub struct BinData {
@@ -31,6 +31,7 @@ pub enum BinDataKind {
     Storage {
         id: u32,
     },
+    Unknown(u16),
 }
 
 #[derive(Debug)]
@@ -49,6 +50,7 @@ pub enum Compression {
     Default,
     Yes,
     No,
+    Unknown(u16),
 }
 
 #[derive(Debug)]
@@ -57,37 +59,29 @@ pub enum State {
     Accessed,
     Failed,
     Ignored,
-}
-
-#[derive(Debug, Error)]
-pub enum BinDataError {
-    #[error("Unknown compression: {0}")]
-    UnknownCompression(u16),
-    #[error("Unknown state: {0}")]
-    UnknownState(u16),
-    #[error("Unknown bin data type: {0}")]
-    UnknownDataType(u16),
+    Unknown(u16),
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Result<Vec<BinData>, DocInfoError> {
+    pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Vec<BinData> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
+
         for record in self
             .take(id_mappings.binary_data as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BIN_DATA as u16)
         {
-            bin_data.push(BinData::from_buf(record.payload)?);
+            bin_data.push(BinData::from_buf(record.payload));
         }
 
-        Ok(bin_data)
+        bin_data
     }
 }
 
 impl BinData {
-    pub fn from_buf(buf: &[u8]) -> Result<Self, DocInfoError> {
+    pub fn from_buf(buf: &[u8]) -> Self {
         let attribute = u16(buf, 0);
 
-        Ok(Self {
+        Self {
             kind: match attribute & 0x000f {
                 0x0000 => {
                     let absolute_path_size = u16(buf, 2);
@@ -139,27 +133,21 @@ impl BinData {
                     }
                 }
                 0x00002 => BinDataKind::Storage { id: u32(buf, 4) },
-                r#type => Err(IdMappingsError::BinaryData(BinDataError::UnknownDataType(
-                    r#type,
-                )))?,
+                r#type => BinDataKind::Unknown(r#type),
             },
             compression: match attribute & 0x00f0 {
                 0x0000 => Compression::Default,
                 0x0010 => Compression::Yes,
                 0x0020 => Compression::No,
-                compression => Err(IdMappingsError::BinaryData(
-                    BinDataError::UnknownCompression(compression),
-                ))?,
+                compression => Compression::Unknown(compression),
             },
             state: match attribute & 0x0f00 {
                 0x0000 => State::NoAccessed,
                 0x0100 => State::Accessed,
                 0x0200 => State::Failed,
                 0x0300 => State::Ignored,
-                state => Err(IdMappingsError::BinaryData(BinDataError::UnknownState(
-                    state,
-                )))?,
+                state => State::Unknown(state),
             },
-        })
+        }
     }
 }

@@ -24,8 +24,6 @@ pub enum DocInfoError {
     InvalidTagId(u16),
     #[error("End of records: {0}")]
     EndOfRecords(&'static str),
-    #[error("Id mappings error: {0}")]
-    IdMappings(#[from] IdMappingsError),
 }
 
 impl DocInfo {
