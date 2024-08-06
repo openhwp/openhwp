@@ -73,20 +73,21 @@ impl<'doc_info> RecordIter<'doc_info> {
 
 impl BinData {
     pub fn from_buf(buf: &[u8]) -> Self {
-        let attribute = u16(buf, 0);
+        let (attribute, buf) = buf.split_at(2);
+        let attribute = u16(attribute, 0);
 
         Self {
             kind: match attribute & 0x000f {
                 0x0000 => {
-                    let absolute_path_size = u16(buf, 2);
-                    let absolute_path_start = 4;
-                    let absolute_path_end = absolute_path_start + (absolute_path_size * 2) as usize;
-                    let absolute_path = to_string(&buf[absolute_path_start..absolute_path_end]);
+                    let (size, buf) = buf.split_at(2);
+                    let size = u16(size, 0);
+                    let (absolute_path, buf) = buf.split_at(2 * size as usize);
+                    let absolute_path = to_string(absolute_path);
 
-                    let relative_path_start = absolute_path_end;
-                    let relative_path_size = u16(buf, relative_path_start as usize);
-                    let relative_path_end = relative_path_start + (relative_path_size * 2) as usize;
-                    let relative_path = to_string(&buf[relative_path_start..relative_path_end]);
+                    let (size, buf) = buf.split_at(2);
+                    let size = u16(size, 0);
+                    let (relative_path, _) = buf.split_at(2 * size as usize);
+                    let relative_path = to_string(relative_path);
 
                     BinDataKind::Link {
                         absolute_path,
@@ -94,10 +95,12 @@ impl BinData {
                     }
                 }
                 0x00001 => {
-                    let id = u16(buf, 2);
-                    let extension_size = u16(buf, 4);
-                    let extension =
-                        to_string(&buf[6..(6 + (extension_size * 2) as usize)]).to_lowercase();
+                    let (id, buf) = buf.split_at(2);
+                    let id = u16(id, 0);
+                    let (extension_size, buf) = buf.split_at(2);
+                    let extension_size = u16(extension_size, 0);
+                    let (extension, _) = buf.split_at(2 * extension_size as usize);
+                    let extension = to_string(extension).to_lowercase();
 
                     BinDataKind::Embedding {
                         id,

@@ -1,4 +1,4 @@
-use crate::{DocInfo, FileHeader, Section};
+use crate::{section, DocInfo, FileHeader, Section};
 use cfb::CompoundFile;
 use std::fs::File;
 
@@ -21,8 +21,12 @@ pub enum HwpError {
     CannotFindDocInfo(std::io::Error),
     #[error("Invalid doc info: {0}")]
     DocInfo(#[from] crate::DocInfoError),
+    #[error("Cannot find sections: {0}")]
+    CannotFindSections(std::io::Error),
     #[error("Cannot find section: {0}")]
     CannotFindSection(std::io::Error),
+    #[error("Malformed section: {0}")]
+    MalformedSection(std::io::Error),
     #[error("Invalid section: {0}")]
     Section(#[from] crate::SectionError),
 }
@@ -41,19 +45,18 @@ impl HwpDocument {
             &file_header.version,
         )?;
 
-        let sections = std::iter::from_fn(|| {
-            let index = 0;
-            match file.open_stream(format!("BodyText/Section{:04}", index)) {
-                Ok(mut section) => match read_to_end(&mut section) {
-                    Ok(section) => Some(Section::from_bytes(&section).map_err(HwpError::Section)),
-                    Err(error) => Some(Err(HwpError::CannotFindSection(error))),
-                },
-                Err(_) => None,
-            }
-        })
-        .take_while(|result| result.is_ok())
-        .filter_map(Result::ok)
-        .collect();
+        let storages: Vec<_> = file
+            .walk_storage("BodyText")
+            .map_err(HwpError::CannotFindSections)?
+            .collect();
+        let mut sections = vec![];
+        for section in storages {
+            let mut stream = file
+                .open_stream(section.path())
+                .map_err(HwpError::CannotFindSections)?;
+            let section = read_to_end(&mut stream).map_err(HwpError::MalformedSection)?;
+            sections.push(Section::from_buf(&section).map_err(HwpError::Section)?);
+        }
 
         Ok(Self {
             file_header,
