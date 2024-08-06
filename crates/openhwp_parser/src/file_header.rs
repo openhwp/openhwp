@@ -97,7 +97,7 @@ pub enum FileHeaderError {
     #[error("FileHeader must be 256 bytes, Received: {0}")]
     InvalidSize(usize),
     #[error("Invalid signature. Received version: {0:?}")]
-    InvalidSignature([u8; 32]),
+    InvalidSignature(Vec<u8>),
     #[error("Only support 5.1.0.0 format. Received version: {0:?}")]
     UnsupportedVersion(Version),
     #[error("Unknown encrypted version: {0}")]
@@ -110,9 +110,7 @@ impl FileHeader {
     pub fn from_vec(bytes: Vec<u8>) -> Result<Self, FileHeaderError> {
         let bytes = match <[u8; 256]>::try_from(bytes.as_slice()) {
             Ok(bytes) if !bytes.starts_with(b"HWP Document File") => {
-                return Err(FileHeaderError::InvalidSignature(
-                    bytes[0..32].try_into().unwrap(),
-                ))
+                return Err(FileHeaderError::InvalidSignature(bytes[0..32].to_vec()))
             }
             Ok(bytes) => bytes,
             Err(_) => return Err(FileHeaderError::InvalidSize(bytes.len())),

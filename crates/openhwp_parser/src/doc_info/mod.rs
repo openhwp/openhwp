@@ -28,15 +28,15 @@ pub enum DocInfoError {
 
 impl DocInfo {
     pub fn from_vec(
-        bytes: Vec<u8>,
+        buf: Vec<u8>,
         compressed: bool,
         version: &Version,
     ) -> Result<Self, DocInfoError> {
-        let bytes = match compressed {
-            true => decompress(&bytes)?,
-            false => bytes,
+        let buf = match compressed {
+            true => decompress(&buf)?,
+            false => buf,
         };
-        let mut stream = Record::iter(&bytes);
+        let mut stream = Record::iter(&buf);
 
         Ok(Self {
             document_properties: stream.document_properties()?,
@@ -45,12 +45,12 @@ impl DocInfo {
     }
 }
 
-fn decompress(bytes: &[u8]) -> Result<Vec<u8>, std::io::Error> {
+fn decompress(source: &[u8]) -> Result<Vec<u8>, std::io::Error> {
     use flate2::bufread::DeflateDecoder;
     use std::io::Read;
 
     let mut buf = vec![];
-    DeflateDecoder::new(bytes).read_to_end(&mut buf)?;
+    DeflateDecoder::new(source).read_to_end(&mut buf)?;
 
     Ok(buf)
 }

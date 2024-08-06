@@ -1,3 +1,5 @@
+use crate::u32;
+
 #[derive(Debug, Default)]
 pub struct Record<'doc_info> {
     pub tag_id: u16,
@@ -39,10 +41,10 @@ impl<'doc_info> Iterator for RecordIter<'doc_info> {
     }
 }
 
-const fn consume(bytes: &[u8]) -> (Record, &[u8]) {
+const fn consume(buf: &[u8]) -> (Record, &[u8]) {
     const OVER_SIZED: usize = 0xFFF;
 
-    let header = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+    let header = u32(buf, 0);
 
     let tag_id = (header & 0x3FF) as u16;
     let level = ((header >> 10) & 0x3FF) as u16;
@@ -50,14 +52,14 @@ const fn consume(bytes: &[u8]) -> (Record, &[u8]) {
 
     let (size, payload, bytes) = match size {
         OVER_SIZED => {
-            let size = u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]) as usize;
-            let (_, bytes) = bytes.split_at(8);
+            let size = u32(buf, 4) as usize;
+            let (_, bytes) = buf.split_at(8);
             let (payload, bytes) = bytes.split_at(size);
 
             (size, payload, bytes)
         }
         size => {
-            let (_, bytes) = bytes.split_at(4);
+            let (_, bytes) = buf.split_at(4);
             let (payload, bytes) = bytes.split_at(size);
 
             (size, payload, bytes)
