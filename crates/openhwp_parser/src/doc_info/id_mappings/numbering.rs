@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{to_string, u16, u32, DocInfoTag, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct Numbering {
@@ -120,11 +120,7 @@ impl Paragraph {
     pub fn from_buf(buf: &[u8]) -> (Self, &[u8]) {
         let header = ParagraphHeader::from_buf(buf);
         let format_size = u16(buf, 12);
-        let format: Vec<_> = buf[14..14 + 2 * format_size as usize]
-            .chunks_exact(2)
-            .map(|c| <u16>::from_le_bytes([c[0], c[1]]))
-            .collect();
-        let format = String::from_utf16_lossy(&format);
+        let format = to_string(&buf[14..14 + format_size as usize * 2]);
         let paragraph = Self {
             start_number: None,
             header,

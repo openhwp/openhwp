@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter};
+use crate::{to_string, u16, u32, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
 pub struct BinData {
@@ -11,20 +11,14 @@ pub struct BinData {
 #[derive(Debug)]
 pub enum BinDataKind {
     Link {
-        /// Type이 "LINK"일 때, 연결 파일의 절대 경로 길이 (len1)
-        absolute_path_size: u16,
         /// Type이 "LINK"일 때, 연결 파일의 절대 경로
         absolute_path: String,
-        /// Type이 "LINK"일 때, 연결 파일의 상대 경로 길이 (len2)
-        relative_path_size: u16,
         /// Type이 "LINK"일 때, 연결 파일의 상대 경로
         relative_path: String,
     },
     Embedding {
         /// Type이 "EMBEDDING"이거나 "STORAGE"일 때, BINDATASTORAGE에 저장된 바이너리 데이터의 아이디
         id: u16,
-        /// Type이 "EMBEDDING"일 때, 바이너리 데이터의 형식 이름의 길이 (len3)
-        extension_size: u16,
         /// Type이 "EMBEDDING"일 때 extension("." 제외)
         extension: Extension,
     },
@@ -87,40 +81,26 @@ impl BinData {
                     let absolute_path_size = u16(buf, 2);
                     let absolute_path_start = 4;
                     let absolute_path_end = absolute_path_start + (absolute_path_size * 2) as usize;
-                    let path = unsafe {
-                        std::mem::transmute(&buf[absolute_path_start..absolute_path_end])
-                    };
-                    let absolute_path = String::from_utf16_lossy(path).to_string();
+                    let absolute_path = to_string(&buf[absolute_path_start..absolute_path_end]);
 
                     let relative_path_start = absolute_path_end;
                     let relative_path_size = u16(buf, relative_path_start as usize);
                     let relative_path_end = relative_path_start + (relative_path_size * 2) as usize;
-                    let path = unsafe {
-                        std::mem::transmute(&buf[relative_path_start..relative_path_end])
-                    };
-                    let relative_path = String::from_utf16_lossy(path).to_string();
+                    let relative_path = to_string(&buf[relative_path_start..relative_path_end]);
 
                     BinDataKind::Link {
-                        absolute_path_size,
                         absolute_path,
-                        relative_path_size,
                         relative_path,
                     }
                 }
                 0x00001 => {
                     let id = u16(buf, 2);
                     let extension_size = u16(buf, 4);
-                    let extension: Vec<_> = buf[6..(6 + (extension_size * 2) as usize)]
-                        .chunks_exact(2)
-                        .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                        .collect();
-                    let extension = String::from_utf16_lossy(&extension)
-                        .to_string()
-                        .to_lowercase();
+                    let extension =
+                        to_string(&buf[6..(6 + (extension_size * 2) as usize)]).to_lowercase();
 
                     BinDataKind::Embedding {
                         id,
-                        extension_size,
                         extension: match extension.as_str() {
                             "jpg" => Extension::Jpg,
                             "bmp" => Extension::Bmp,

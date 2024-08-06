@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, DocInfoTag, RecordIter};
+use crate::{to_string, u16, DocInfoTag, RecordIter};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -115,12 +115,9 @@ impl FaceName {
             let (name_size, buf) = buf.split_at(2);
             let name_size = 2 * u16(name_size, 0) as usize;
             let (name, buf) = buf.split_at(name_size);
-            let name: Vec<_> = name
-                .chunks_exact(2)
-                .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                .collect();
+            let name = to_string(name);
 
-            (String::from_utf16_lossy(&name).to_string(), buf)
+            (name, buf)
         };
         let (alternative, buf) = if has_alternative {
             let (kind, buf) = {
@@ -138,12 +135,9 @@ impl FaceName {
                 let (name_size, buf) = buf.split_at(2);
                 let name_size = 2 * u16(name_size, 0) as usize;
                 let (name, buf) = buf.split_at(name_size);
-                let name: Vec<_> = name
-                    .chunks_exact(2)
-                    .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                    .collect();
+                let name = to_string(name);
 
-                (String::from_utf16_lossy(&name).to_string(), buf)
+                (name, buf)
             };
             let alternative = AlternativeFaceName { kind, name };
 
@@ -174,11 +168,7 @@ impl FaceName {
             let (default_size, buf) = buf.split_at(2);
             let default_size = 2 * u16(default_size, 0) as usize;
             let (default, _) = buf.split_at(default_size);
-            let default: Vec<_> = default
-                .chunks_exact(2)
-                .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                .collect();
-            let default = String::from_utf16_lossy(&default).to_string();
+            let default = to_string(default);
 
             Some(default)
         } else {
