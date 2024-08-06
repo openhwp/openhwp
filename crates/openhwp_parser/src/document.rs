@@ -43,15 +43,23 @@ impl HwpDocument {
             &file_header.version,
         )?;
 
-        let storages: Vec<_> = file
-            .walk_storage("BodyText")
-            .map_err(HwpError::CannotFindSections)?
+        let mut index = 0;
+        let sections =
+            std::iter::from_fn(
+                || match read(&mut file, format!("BodyText/Section{:04}", index)) {
+                    Ok(section) => {
+                        index += 1;
+                        match Section::from_vec(section) {
+                            Ok(section) => Some(Ok(section)),
+                            Err(error) => Some(Err(HwpError::Section(error))),
+                        }
+                    }
+                    Err(error) => Some(Err(HwpError::CannotFindSection(error))),
+                },
+            )
+            .take_while(|result| result.is_ok())
+            .filter_map(Result::ok)
             .collect();
-        let mut sections = vec![];
-        for section in storages {
-            let section = read(&mut file, section.path()).map_err(HwpError::CannotFindSection)?;
-            sections.push(Section::from_vec(section)?);
-        }
 
         Ok(Self {
             file_header,

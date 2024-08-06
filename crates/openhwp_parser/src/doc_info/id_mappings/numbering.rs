@@ -22,7 +22,7 @@ pub struct Paragraph {
 
 #[derive(Debug)]
 pub struct ParagraphHeader {
-    pub alignment: Alignment,
+    pub alignment: ParagraphHeaderAlignment,
     pub use_instance_width: bool,
     pub auth_indent: bool,
     pub text_offset_kind: TextOffsetKind,
@@ -33,7 +33,7 @@ pub struct ParagraphHeader {
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy)]
-pub enum Alignment {
+pub enum ParagraphHeaderAlignment {
     Left,
     Center,
     Right,
@@ -135,10 +135,10 @@ impl ParagraphHeader {
     pub fn from_buf(buf: &[u8]) -> Self {
         let attribute = u32(buf, 0);
         let alignment = match attribute & 0b0000_0011 {
-            0 => Alignment::Left,
-            1 => Alignment::Center,
-            2 => Alignment::Right,
-            alignment => Alignment::Unknown(alignment as u8),
+            0 => ParagraphHeaderAlignment::Left,
+            1 => ParagraphHeaderAlignment::Center,
+            2 => ParagraphHeaderAlignment::Right,
+            alignment => ParagraphHeaderAlignment::Unknown(alignment as u8),
         };
         let use_instance_width = attribute & 0b0000_0100 != 0;
         let auth_indent = attribute & 0b0000_1000 != 0;

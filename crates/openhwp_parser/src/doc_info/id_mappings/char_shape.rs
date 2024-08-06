@@ -316,7 +316,7 @@ impl FontShape {
                 kind => SymbolKind::Unknown(kind),
             },
             use_font_space: buf[3] & 0b0000_0010 != 0,
-            strike_shape: BorderShape::from_buf(&[(buf[3] & 0b0011_1100) >> 2]),
+            strike_shape: BorderShape::from_buf(&[(buf[3] >> 2) & 0b0000_11111]),
             use_kerning: buf[3] & 0b0100_0000 != 0,
         }
     }
