@@ -5,6 +5,7 @@ pub mod char_shape;
 pub mod face_name;
 pub mod numbering;
 pub mod paragraph_shape;
+pub mod style;
 pub mod tab_definition;
 
 use super::{DocInfoError, DocInfoTag, RecordIter};
@@ -17,6 +18,7 @@ pub use char_shape::*;
 pub use face_name::*;
 pub use numbering::*;
 pub use paragraph_shape::*;
+pub use style::*;
 pub use tab_definition::*;
 
 #[derive(Debug)]
@@ -30,6 +32,7 @@ pub struct IdMappings {
     pub numberings: Vec<Numbering>,
     pub bullets: Vec<Bullet>,
     pub paragraph_shapes: Vec<ParagraphShape>,
+    pub styles: Vec<Style>,
 }
 
 #[derive(Debug)]
@@ -85,6 +88,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         let numberings = self.numberings(&id_mapping_count, version);
         let bullets = self.bullets(&id_mapping_count);
         let paragraph_shapes = self.paragraph_shapes(&id_mapping_count, version);
+        let styles = self.styles(&id_mapping_count);
 
         Ok(IdMappings {
             id_mapping_count,
@@ -96,6 +100,7 @@ impl<'doc_info> RecordIter<'doc_info> {
             numberings,
             bullets,
             paragraph_shapes,
+            styles,
         })
     }
 }
