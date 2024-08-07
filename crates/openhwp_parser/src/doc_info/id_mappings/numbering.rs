@@ -119,15 +119,15 @@ impl Numbering {
 impl Paragraph {
     pub fn from_buf(buf: &[u8]) -> (Self, &[u8]) {
         let header = ParagraphHeader::from_buf(buf);
-        let format_size = u16(buf, 12);
-        let format = to_string(&buf[14..14 + format_size as usize * 2]);
+        let size = u16(buf, 12);
+        let format = to_string(&buf[14..14 + size as usize * 2]);
         let paragraph = Self {
             start_number: None,
             header,
             format,
         };
 
-        (paragraph, &buf[14 + 2 * format_size as usize..])
+        (paragraph, &buf[14 + 2 * size as usize..])
     }
 }
 

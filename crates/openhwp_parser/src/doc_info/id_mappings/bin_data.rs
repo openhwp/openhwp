@@ -97,9 +97,9 @@ impl BinData {
                 0x00001 => {
                     let (id, buf) = buf.split_at(2);
                     let id = u16(id, 0);
-                    let (extension_size, buf) = buf.split_at(2);
-                    let extension_size = u16(extension_size, 0);
-                    let (extension, _) = buf.split_at(2 * extension_size as usize);
+                    let (size, buf) = buf.split_at(2);
+                    let size = u16(size, 0);
+                    let (extension, _) = buf.split_at(2 * size as usize);
                     let extension = to_string(extension).to_lowercase();
 
                     BinDataKind::Embedding {

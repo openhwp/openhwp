@@ -112,9 +112,9 @@ impl FaceName {
         let has_default = attribute[0] & 0x20 != 0;
 
         let (name, buf) = {
-            let (name_size, buf) = buf.split_at(2);
-            let name_size = 2 * u16(name_size, 0) as usize;
-            let (name, buf) = buf.split_at(name_size);
+            let (size, buf) = buf.split_at(2);
+            let size = 2 * u16(size, 0) as usize;
+            let (name, buf) = buf.split_at(size);
             let name = to_string(name);
 
             (name, buf)
@@ -132,9 +132,9 @@ impl FaceName {
                 (kind, buf)
             };
             let (name, buf) = {
-                let (name_size, buf) = buf.split_at(2);
-                let name_size = 2 * u16(name_size, 0) as usize;
-                let (name, buf) = buf.split_at(name_size);
+                let (size, buf) = buf.split_at(2);
+                let size = 2 * u16(size, 0) as usize;
+                let (name, buf) = buf.split_at(size);
                 let name = to_string(name);
 
                 (name, buf)
@@ -165,9 +165,9 @@ impl FaceName {
             (None, buf)
         };
         let default = if has_default {
-            let (default_size, buf) = buf.split_at(2);
-            let default_size = 2 * u16(default_size, 0) as usize;
-            let (default, _) = buf.split_at(default_size);
+            let (size, buf) = buf.split_at(2);
+            let size = 2 * u16(size, 0) as usize;
+            let (default, _) = buf.split_at(size);
             let default = to_string(default);
 
             Some(default)
