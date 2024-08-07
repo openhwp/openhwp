@@ -21,55 +21,55 @@ pub use tab_definition::*;
 
 #[derive(Debug)]
 pub struct IdMappings {
-    id_mapping_count: IdMappingCount,
-    bin_data: Vec<BinData>,
-    face_names: Vec<FaceName>,
-    border_fills: Vec<BorderFill>,
-    char_shapes: Vec<CharShape>,
-    tab_definitions: Vec<TabDefinition>,
-    numberings: Vec<Numbering>,
-    bullets: Vec<Bullet>,
-    paragraph_shapes: Vec<ParagraphShape>,
+    pub id_mapping_count: IdMappingCount,
+    pub bin_data: Vec<BinData>,
+    pub face_names: Vec<FaceName>,
+    pub border_fills: Vec<BorderFill>,
+    pub char_shapes: Vec<CharShape>,
+    pub tab_definitions: Vec<TabDefinition>,
+    pub numberings: Vec<Numbering>,
+    pub bullets: Vec<Bullet>,
+    pub paragraph_shapes: Vec<ParagraphShape>,
 }
 
 #[derive(Debug)]
 pub struct IdMappingCount {
     /// 바이너리 데이터
-    binary_data: u32,
+    pub binary_data: u32,
     /// 한글 글꼴
-    hangul_font: u32,
+    pub hangul_font: u32,
     /// 영어 글꼴
-    english_font: u32,
+    pub english_font: u32,
     /// 한자 글꼴
-    chinese_font: u32,
+    pub chinese_font: u32,
     /// 일어 글꼴
-    japanese_font: u32,
+    pub japanese_font: u32,
     /// 기타 글꼴
-    etc_font: u32,
+    pub etc_font: u32,
     /// 기호 글꼴
-    symbol_font: u32,
+    pub symbol_font: u32,
     /// 사용자 글꼴
-    user_font: u32,
+    pub user_font: u32,
     /// 테두리/배경
-    border_fill: u32,
+    pub border_fill: u32,
     /// 글자 모양
-    char_shape: u32,
+    pub char_shape: u32,
     /// 탭 정의
-    tab_def: u32,
+    pub tab_def: u32,
     /// 문단 번호
-    numbering: u32,
+    pub numbering: u32,
     /// 글머리표
-    bullet: u32,
+    pub bullet: u32,
     /// 문단 모양
-    paragraph_shape: u32,
+    pub paragraph_shape: u32,
     /// 스타일
-    style: u32,
+    pub style: u32,
     /// 메모 모양 (5.0.2.1 이상)
-    memo_shape: u32,
+    pub memo_shape: u32,
     /// 변경추적 (5.0.3.2 이상)
-    track_change: u32,
+    pub track_change: u32,
     /// 변경추적 사용자 (5.0.3.2 이상)
-    track_change_author: u32,
+    pub track_change_author: u32,
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
