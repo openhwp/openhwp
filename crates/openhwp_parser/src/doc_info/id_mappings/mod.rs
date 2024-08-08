@@ -2,6 +2,7 @@ pub mod bin_data;
 pub mod border_fill;
 pub mod bullet;
 pub mod char_shape;
+pub mod distribute_doc_data;
 pub mod doc_data;
 pub mod face_name;
 pub mod numbering;
@@ -16,6 +17,7 @@ pub use bin_data::*;
 pub use border_fill::*;
 pub use bullet::*;
 pub use char_shape::*;
+pub use distribute_doc_data::*;
 pub use doc_data::*;
 pub use face_name::*;
 pub use numbering::*;
@@ -36,6 +38,7 @@ pub struct IdMappings {
     pub paragraph_shapes: Vec<ParagraphShape>,
     pub styles: Vec<Style>,
     pub doc_data: Vec<DocData>,
+    pub distribute_doc_data: Vec<DistributeDocData>,
 }
 
 #[derive(Debug)]
@@ -93,6 +96,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         let paragraph_shapes = self.paragraph_shapes(&id_mapping_count, version);
         let styles = self.styles(&id_mapping_count);
         let doc_data = self.doc_data();
+        let distribute_doc_data = self.distribute_doc_data();
 
         Ok(IdMappings {
             id_mapping_count,
@@ -106,6 +110,7 @@ impl<'doc_info> RecordIter<'doc_info> {
             paragraph_shapes,
             styles,
             doc_data,
+            distribute_doc_data,
         })
     }
 }
