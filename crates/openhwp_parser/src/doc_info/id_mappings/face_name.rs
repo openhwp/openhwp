@@ -78,10 +78,12 @@ impl<'doc_info> RecordIter<'doc_info> {
 
                 $(
                     for record in self
+                        .clone()
                         .take($count as usize)
                         .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_FACE_NAME as u16)
                     {
                         face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language));
+                        self.next();
                     }
                 )+
 

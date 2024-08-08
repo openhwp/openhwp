@@ -8,9 +8,12 @@ impl<'doc_info> RecordIter<'doc_info> {
     pub fn doc_data(&mut self) -> Vec<DocData> {
         let mut doc_data = vec![];
 
-        for record in self.take_while(|record| record.tag_id != DocInfoTag::HWPTAG_DOC_DATA as u16)
+        for record in self
+            .clone()
+            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_DOC_DATA as u16)
         {
             doc_data.push(DocData::from_buf(record.payload));
+            self.next();
         }
 
         doc_data

@@ -164,10 +164,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut char_shapes = Vec::with_capacity(id_mappings.char_shape as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.char_shape as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_CHAR_SHAPE as u16)
         {
             char_shapes.push(CharShape::from_buf(record.payload, version));
+            self.next();
         }
 
         char_shapes

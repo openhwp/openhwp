@@ -8,10 +8,12 @@ impl<'doc_info> RecordIter<'doc_info> {
     pub fn distribute_doc_data(&mut self) -> Vec<DistributeDocData> {
         let mut distribute_doc_data = vec![];
 
-        for record in
-            self.take_while(|record| record.tag_id != DocInfoTag::HWPTAG_DISTRIBUTE_DOC_DATA as u16)
+        for record in self
+            .clone()
+            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_DISTRIBUTE_DOC_DATA as u16)
         {
             distribute_doc_data.push(DistributeDocData::from_buf(record.payload));
+            self.next();
         }
 
         distribute_doc_data

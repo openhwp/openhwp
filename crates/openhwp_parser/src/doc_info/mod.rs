@@ -20,10 +20,8 @@ pub struct DocInfo {
 pub enum DocInfoError {
     #[error("Decompression error: {0}")]
     Decompression(#[from] std::io::Error),
-    #[error("Invalid tag id: {0}")]
-    InvalidTagId(u16),
-    #[error("End of records: {0}")]
-    EndOfRecords(&'static str),
+    #[error("Invalid tag id: {0:?}")]
+    InvalidTagId(DocInfoTag),
 }
 
 impl DocInfo {
@@ -59,8 +57,7 @@ impl<'doc_info> RecordIter<'doc_info> {
     pub fn expect(&mut self, tag: DocInfoTag) -> Result<Record, DocInfoError> {
         match self.next() {
             Some(record) if record.tag_id == tag as u16 => Ok(record),
-            Some(record) => Err(DocInfoError::InvalidTagId(record.tag_id)),
-            None => Err(DocInfoError::EndOfRecords(stringify!($tag))),
+            _ => Err(DocInfoError::InvalidTagId(tag)),
         }
     }
 }

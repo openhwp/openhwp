@@ -27,10 +27,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut styles = Vec::with_capacity(id_mappings.style as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.style as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_STYLE as u16)
         {
             styles.push(Style::from_buf(record.payload));
+            self.next();
         }
 
         styles

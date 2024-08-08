@@ -157,10 +157,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut paragraph_shapes = Vec::with_capacity(id_mappings.paragraph_shape as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.paragraph_shape as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_PARA_SHAPE as u16)
         {
             paragraph_shapes.push(ParagraphShape::from_buf(record.payload, version));
+            self.next();
         }
 
         paragraph_shapes

@@ -55,10 +55,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut numberings = Vec::with_capacity(id_mappings.numbering as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.numbering as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_NUMBERING as u16)
         {
             numberings.push(Numbering::from_buf(record.payload, version));
+            self.next();
         }
 
         numberings

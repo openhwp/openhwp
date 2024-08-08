@@ -8,6 +8,7 @@ pub struct Record<'doc_info> {
     pub payload: &'doc_info [u8],
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct RecordIter<'doc_info> {
     buf: &'doc_info [u8],
 }

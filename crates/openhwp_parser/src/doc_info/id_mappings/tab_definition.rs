@@ -30,10 +30,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut tab_defs = Vec::with_capacity(id_mappings.tab_def as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.tab_def as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_TAB_DEF as u16)
         {
             tab_defs.push(TabDefinition::from_buf(record.payload));
+            self.next();
         }
 
         tab_defs

@@ -61,10 +61,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
 
         for record in self
+            .clone()
             .take(id_mappings.binary_data as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BIN_DATA as u16)
         {
             bin_data.push(BinData::from_buf(record.payload));
+            self.next();
         }
 
         bin_data

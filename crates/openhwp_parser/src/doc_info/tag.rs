@@ -2,7 +2,7 @@ const HWPTAG_BEGIN: u16 = 0x010;
 
 #[allow(non_camel_case_types)]
 #[repr(u16)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DocInfoTag {
     HWPTAG_DOCUMENT_PROPERTIES = HWPTAG_BEGIN,
 

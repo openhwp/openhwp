@@ -15,10 +15,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut bullets = vec![];
 
         for record in self
+            .clone()
             .take(id_mappings.bullet as usize)
             .filter(|record| record.tag_id == DocInfoTag::HWPTAG_BULLET as u16)
         {
             bullets.push(Bullet::from_buf(record.payload));
+            self.next();
         }
 
         bullets

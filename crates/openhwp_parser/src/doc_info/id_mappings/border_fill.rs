@@ -313,10 +313,12 @@ impl<'doc_info> RecordIter<'doc_info> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 
         for record in self
+            .clone()
             .take(id_mapping_counts.border_fill as usize)
             .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BORDER_FILL as u16)
         {
             border_fills.push(BorderFill::from_buf(record.payload));
+            self.next();
         }
 
         border_fills
