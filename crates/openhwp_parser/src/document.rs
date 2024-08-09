@@ -1,6 +1,6 @@
 use crate::{DocInfo, FileHeader, Section};
 use cfb::CompoundFile;
-use std::fs::File;
+use std::{fs::File, path::Path};
 
 #[derive(Debug)]
 pub struct HwpDocument {
@@ -21,6 +21,8 @@ pub enum HwpError {
     CannotFindDocInfo(std::io::Error),
     #[error("Invalid doc info: {0}")]
     DocInfo(#[from] crate::DocInfoError),
+    #[error("Cannot find sections: {0}")]
+    CannotFindSections(std::io::Error),
     #[error("Cannot find section: {0}")]
     CannotFindSection(std::io::Error),
     #[error("Invalid section: {0}")]
@@ -35,21 +37,29 @@ impl HwpDocument {
         let file_header = FileHeader::from_vec(file_header)?;
 
         let doc_info = read(&mut file, "DocInfo").map_err(HwpError::CannotFindDocInfo)?;
-        let doc_info = DocInfo::from_vec(doc_info, file_header.properties.compressed)?;
+        let doc_info = DocInfo::from_vec(
+            doc_info,
+            file_header.properties.compressed,
+            &file_header.version,
+        )?;
 
-        let sections = std::iter::from_fn(|| {
-            let index = 0;
-            match file.open_stream(format!("BodyText/Section{:04}", index)) {
-                Ok(mut section) => match read_to_end(&mut section) {
-                    Ok(section) => Some(Section::from_bytes(&section).map_err(HwpError::Section)),
+        let mut index = 0;
+        let sections =
+            std::iter::from_fn(
+                || match read(&mut file, format!("BodyText/Section{:04}", index)) {
+                    Ok(section) => {
+                        index += 1;
+                        match Section::from_vec(section) {
+                            Ok(section) => Some(Ok(section)),
+                            Err(error) => Some(Err(HwpError::Section(error))),
+                        }
+                    }
                     Err(error) => Some(Err(HwpError::CannotFindSection(error))),
                 },
-                Err(_) => None,
-            }
-        })
-        .take_while(|result| result.is_ok())
-        .filter_map(Result::ok)
-        .collect();
+            )
+            .take_while(|result| result.is_ok())
+            .filter_map(Result::ok)
+            .collect();
 
         Ok(Self {
             file_header,
@@ -59,17 +69,17 @@ impl HwpDocument {
     }
 }
 
-fn read(file: &mut CompoundFile<File>, name: &str) -> Result<Vec<u8>, std::io::Error> {
-    let mut stream = file.open_stream(name)?;
+fn read<P: AsRef<Path>>(file: &mut CompoundFile<File>, path: P) -> Result<Vec<u8>, std::io::Error> {
+    #[inline(never)]
+    fn read_to_end(file: &mut CompoundFile<File>, path: &Path) -> Result<Vec<u8>, std::io::Error> {
+        use std::io::Read;
 
-    read_to_end(&mut stream)
-}
+        let mut stream = file.open_stream(path)?;
+        let mut buf = vec![];
+        stream.read_to_end(&mut buf)?;
 
-fn read_to_end(stream: &mut cfb::Stream<File>) -> Result<Vec<u8>, std::io::Error> {
-    use std::io::Read;
+        Ok(buf)
+    }
 
-    let mut buf = vec![];
-    stream.read_to_end(&mut buf)?;
-
-    Ok(buf)
+    read_to_end(file, path.as_ref())
 }

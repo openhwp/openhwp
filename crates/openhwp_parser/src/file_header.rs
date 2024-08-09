@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub struct FileHeader {
     /// 파일 버전 정보
-    pub file_version: FileVersion,
+    pub version: Version,
     /// 파일 속성 정보
     pub properties: Properties,
     /// 라이선스 정보
@@ -12,8 +12,8 @@ pub struct FileHeader {
     pub kogl_license_support_country: KoglLicenseSupportCountry,
 }
 
-#[derive(Debug, Clone)]
-pub struct FileVersion {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Version {
     pub major: u8,
     pub minor: u8,
     pub build: u8,
@@ -97,9 +97,9 @@ pub enum FileHeaderError {
     #[error("FileHeader must be 256 bytes, Received: {0}")]
     InvalidSize(usize),
     #[error("Invalid signature. Received version: {0:?}")]
-    InvalidSignature([u8; 32]),
+    InvalidSignature(Vec<u8>),
     #[error("Only support 5.1.0.0 format. Received version: {0:?}")]
-    UnsupportedVersion(FileVersion),
+    UnsupportedVersion(Version),
     #[error("Unknown encrypted version: {0}")]
     UnknownEncryptedVersion(u8),
     #[error("Unknown Kogl license support country: {0}")]
@@ -107,53 +107,51 @@ pub enum FileHeaderError {
 }
 
 impl FileHeader {
-    pub fn from_vec(bytes: Vec<u8>) -> Result<Self, FileHeaderError> {
-        let bytes = match <[u8; 256]>::try_from(bytes.as_slice()) {
-            Ok(bytes) if !bytes.starts_with(b"HWP Document File") => {
-                return Err(FileHeaderError::InvalidSignature(
-                    bytes[0..32].try_into().unwrap(),
-                ))
+    pub fn from_vec(buf: Vec<u8>) -> Result<Self, FileHeaderError> {
+        let buf = match <[u8; 256]>::try_from(buf.as_slice()) {
+            Ok(buf) if !buf.starts_with(b"HWP Document File") => {
+                return Err(FileHeaderError::InvalidSignature(buf[0..32].to_vec()))
             }
-            Ok(bytes) => bytes,
-            Err(_) => return Err(FileHeaderError::InvalidSize(bytes.len())),
+            Ok(buf) => buf,
+            Err(_) => return Err(FileHeaderError::InvalidSize(buf.len())),
         };
 
-        let file_version = FileVersion {
-            major: bytes[35],
-            minor: bytes[34],
-            build: bytes[33],
-            revision: bytes[32],
+        let version = Version {
+            major: buf[35],
+            minor: buf[34],
+            build: buf[33],
+            revision: buf[32],
         };
-        if !file_version.is_compatible() {
-            return Err(FileHeaderError::UnsupportedVersion(file_version));
+        if !version.is_compatible() {
+            return Err(FileHeaderError::UnsupportedVersion(version));
         };
 
         let properties = Properties {
-            compressed: bytes[36] & 0x01 != 0,
-            encrypted: bytes[36] & 0x02 != 0,
-            distribution: bytes[36] & 0x04 != 0,
-            script: bytes[36] & 0x08 != 0,
-            drm: bytes[36] & 0x10 != 0,
-            has_xml_template_storage: bytes[36] & 0x20 != 0,
-            vcs: bytes[36] & 0x40 != 0,
-            has_electronic_signature_information: bytes[36] & 0x80 != 0,
-            certificate_encryption: bytes[37] & 0x01 != 0,
-            prepare_signature: bytes[37] & 0x02 != 0,
-            certificate_drm: bytes[37] & 0x04 != 0,
-            ccl: bytes[37] & 0x08 != 0,
-            mobile: bytes[37] & 0x010 != 0,
-            is_privacy_security_document: bytes[37] & 0x020 != 0,
-            track_changes: bytes[37] & 0x040 != 0,
-            kogl: bytes[37] & 0x080 != 0,
-            has_video_control: bytes[38] & 0x01 != 0,
-            has_order_field_control: bytes[38] & 0x02 != 0,
+            compressed: buf[36] & 0b0000_0001 != 0,
+            encrypted: buf[36] & 0b0000_0010 != 0,
+            distribution: buf[36] & 0b0000_0100 != 0,
+            script: buf[36] & 0b0000_1000 != 0,
+            drm: buf[36] & 0b0001_0000 != 0,
+            has_xml_template_storage: buf[36] & 0b0010_0000 != 0,
+            vcs: buf[36] & 0b0100_0000 != 0,
+            has_electronic_signature_information: buf[36] & 0b1000_0000 != 0,
+            certificate_encryption: buf[37] & 0b0000_0001 != 0,
+            prepare_signature: buf[37] & 0b0000_0010 != 0,
+            certificate_drm: buf[37] & 0b0000_0100 != 0,
+            ccl: buf[37] & 0b0000_1000 != 0,
+            mobile: buf[37] & 0b0001_0000 != 0,
+            is_privacy_security_document: buf[37] & 0b0010_0000 != 0,
+            track_changes: buf[37] & 0b0100_0000 != 0,
+            kogl: buf[37] & 0b1000_0000 != 0,
+            has_video_control: buf[38] & 0b0000_0001 != 0,
+            has_order_field_control: buf[38] & 0b0000_0010 != 0,
         };
         let license = License {
-            ccl: bytes[40] & 0x01 != 0,
-            copy_limit: bytes[40] & 0x02 != 0,
-            copy_same: bytes[40] & 0x04 != 0,
+            ccl: buf[40] & 0b0000_0001 != 0,
+            copy_limit: buf[40] & 0b0000_0010 != 0,
+            copy_same: buf[40] & 0b0000_01000 != 0,
         };
-        let encrypted_version = match bytes[44] {
+        let encrypted_version = match buf[44] {
             0 => EncryptedVersion::None,
             1 => EncryptedVersion::LessThan2_5,
             2 => EncryptedVersion::Enhanced3_0,
@@ -161,7 +159,7 @@ impl FileHeader {
             4 => EncryptedVersion::GreaterThan7_0,
             byte => return Err(FileHeaderError::UnknownEncryptedVersion(byte)),
         };
-        let kogl_license_support_country = match bytes[48] {
+        let kogl_license_support_country = match buf[48] {
             0 => KoglLicenseSupportCountry::NONE,
             6 => KoglLicenseSupportCountry::KOR,
             15 => KoglLicenseSupportCountry::US,
@@ -169,7 +167,7 @@ impl FileHeader {
         };
 
         Ok(Self {
-            file_version,
+            version,
             properties,
             license,
             encrypted_version,
@@ -178,7 +176,7 @@ impl FileHeader {
     }
 }
 
-impl FileVersion {
+impl Version {
     pub const COMPATIBLE: Self = Self {
         major: 5,
         minor: 1,
@@ -186,6 +184,17 @@ impl FileVersion {
         revision: 0,
     };
 
+    #[inline]
+    pub const fn new(major: u8, minor: u8, build: u8, revision: u8) -> Self {
+        Self {
+            major,
+            minor,
+            build,
+            revision,
+        }
+    }
+
+    #[inline]
     pub const fn is_compatible(&self) -> bool {
         self.major == Self::COMPATIBLE.major && self.minor <= Self::COMPATIBLE.minor
     }

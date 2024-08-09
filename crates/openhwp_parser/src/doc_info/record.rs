@@ -1,71 +1,77 @@
+use crate::u32;
+
 #[derive(Debug, Default)]
 pub struct Record<'doc_info> {
     pub tag_id: u16,
+    pub level: u16,
     pub size: usize,
     pub payload: &'doc_info [u8],
-    pub children: Vec<Record<'doc_info>>,
 }
 
-#[derive(Debug, Error)]
-pub enum RecordError {
-    #[error("Decompression error: {0}")]
-    Decompression(#[from] std::io::Error),
-    #[error("Invalid doc info")]
-    InvalidDocInfo,
-    #[error("Invalid record level: {0}")]
-    InvalidRecordLevel(u16),
+#[derive(Debug, Clone, Copy)]
+pub struct RecordIter<'doc_info> {
+    buf: &'doc_info [u8],
 }
 
-pub fn inflate<'doc_info>(
-    mut bytes: &'doc_info [u8],
-) -> Result<Vec<Record<'doc_info>>, RecordError> {
-    let mut root = Record::default();
-    while !bytes.is_empty() {
-        let record;
-        let level;
-        (record, level, bytes) = consume(bytes);
-
-        let mut parent = &mut root;
-        for _ in 0..level {
-            match parent.children.last_mut() {
-                Some(record) => parent = record,
-                None => return Err(RecordError::InvalidRecordLevel(level)),
-            };
-        }
-        parent.children.push(record);
+impl<'doc_info> Record<'doc_info> {
+    #[inline]
+    pub const fn iter(buf: &[u8]) -> RecordIter {
+        RecordIter::new(buf)
     }
-
-    Ok(root.children)
 }
 
-fn consume(bytes: &[u8]) -> (Record, u16, &[u8]) {
+impl<'doc_info> RecordIter<'doc_info> {
+    #[inline]
+    pub const fn new(buf: &'doc_info [u8]) -> Self {
+        Self { buf }
+    }
+}
+
+impl<'doc_info> Iterator for RecordIter<'doc_info> {
+    type Item = Record<'doc_info>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.buf.is_empty() {
+            return None;
+        }
+
+        let (record, buf) = consume(self.buf);
+        self.buf = buf;
+
+        Some(record)
+    }
+}
+
+const fn consume(buf: &[u8]) -> (Record, &[u8]) {
     const OVER_SIZED: usize = 0xFFF;
 
-    let header = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+    let header = u32(buf, 0);
 
-    let tag_id = (header & 0x3FF) as u16;
-    let level = ((header >> 10) & 0x3FF) as u16;
-    let size = ((header >> 20) & 0xFFF) as usize;
+    let tag_id = (header & 0b0000_0000_0000_0000_0000_0011_1111_1111) as u16;
+    let level = ((header & 0b0000_0000_0000_1111_1111_1100_0000_0000) >> 10) as u16;
+    let size = ((header & 0b1111_1111_1111_0000_0000_0000_0000_0000) >> 20) as usize;
 
-    let (size, payload, bytes) = match size {
+    let (size, payload, buf) = match size {
         OVER_SIZED => {
-            let size = u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]) as usize;
-            let (payload, bytes) = bytes[8..].split_at(size);
+            let size = u32(buf, 4) as usize;
+            let (_, buf) = buf.split_at(8);
+            let (payload, buf) = buf.split_at(size);
 
-            (size, payload, bytes)
+            (size, payload, buf)
         }
         size => {
-            let (payload, bytes) = bytes[4..].split_at(size);
+            let (_, buf) = buf.split_at(4);
+            let (payload, buf) = buf.split_at(size);
 
-            (size, payload, bytes)
+            (size, payload, buf)
         }
     };
     let record = Record {
         tag_id,
+        level,
         size,
         payload,
-        children: vec![],
     };
 
-    (record, level, bytes)
+    (record, buf)
 }

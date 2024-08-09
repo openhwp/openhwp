@@ -10,7 +10,7 @@ pub enum SectionError {
 }
 
 impl Section {
-    pub fn from_bytes(_bytes: &[u8]) -> Result<Self, SectionError> {
+    pub fn from_vec(_buf: Vec<u8>) -> Result<Self, SectionError> {
         std::todo!();
     }
 }
