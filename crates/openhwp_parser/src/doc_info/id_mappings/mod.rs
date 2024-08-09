@@ -5,6 +5,7 @@ pub mod char_shape;
 pub mod distribute_doc_data;
 pub mod doc_data;
 pub mod face_name;
+pub mod forbidden_char;
 pub mod numbering;
 pub mod paragraph_shape;
 pub mod style;
@@ -20,6 +21,7 @@ pub use char_shape::*;
 pub use distribute_doc_data::*;
 pub use doc_data::*;
 pub use face_name::*;
+pub use forbidden_char::*;
 pub use numbering::*;
 pub use paragraph_shape::*;
 pub use style::*;
@@ -39,6 +41,7 @@ pub struct IdMappings {
     pub styles: Vec<Style>,
     pub doc_data: Vec<DocData>,
     pub distribute_doc_data: Vec<DistributeDocData>,
+    pub forbidden_chars: Vec<ForbiddenChar>,
 }
 
 #[derive(Debug)]
@@ -97,6 +100,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         let styles = self.styles(&id_mapping_count);
         let doc_data = self.doc_data();
         let distribute_doc_data = self.distribute_doc_data();
+        let forbidden_chars = self.forbidden_chars();
 
         Ok(IdMappings {
             id_mapping_count,
@@ -111,6 +115,7 @@ impl<'doc_info> RecordIter<'doc_info> {
             styles,
             doc_data,
             distribute_doc_data,
+            forbidden_chars,
         })
     }
 }
