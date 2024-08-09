@@ -1,8 +1,10 @@
+mod compatible_document;
 mod document_properties;
 mod id_mappings;
 mod record;
 mod tag;
 
+pub use compatible_document::*;
 pub use document_properties::*;
 pub use id_mappings::*;
 pub use record::*;
@@ -14,6 +16,7 @@ use crate::Version;
 pub struct DocInfo {
     pub document_properties: DocumentProperties,
     pub id_mappings: IdMappings,
+    pub compatible_document: CompatibleDocument,
 }
 
 #[derive(Debug, Error)]
@@ -39,6 +42,7 @@ impl DocInfo {
         Ok(Self {
             document_properties: stream.document_properties()?,
             id_mappings: stream.id_mappings(version)?,
+            compatible_document: stream.compatible_document(),
         })
     }
 }
