@@ -71,7 +71,7 @@
 | <i id='datatype-COLORREF'>COLORREF</i>       | 4 Bytes |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
 | <i id='datatype-BYTE-stream'>BYTE stream</i> |         |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
 
-<i id='table-1-text'>표 1 자료형</i>
+<i id='table-1-label'>표 1 자료형</i>
 
 [WCHAR](#datatype-WCHAR)는 한/글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 한/글의 내부 코드는 한글, 영문, 한자를 비롯해 모든 문자가 2 바이트의 일정한 길이를 가진다.
 
@@ -103,7 +103,7 @@
 | XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           | 가변 |             |             |
 | 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    | 가변 |      v      |      v      |
 
-<i id='table-2-text'>표 2 전체 구조</i>
+<i id='table-2-label'>표 2 전체 구조</i>
 
 압축된 문서 파일의 경우 문서 파일을 읽는 쪽에서는 '파일 인식 정보' 항목의 '압축' 플래그를 살펴보고, 압축된 파일이면 압축을 풀어서 처리해야 한다. 이후의 설명에서는 압축이 풀린 상태의 파일을 기준으로 한다. '문서정보'와 '본문' '문서 이력 관리'에 사용되는 '레코드 구조'는 이후 '데이터 레코드'란에서 구조 설명과 사용되는 레코드들에 대한 상세한 설명을 한다.
 
@@ -285,4 +285,40 @@ FileHeader 스트림에 저장되는 데이터는 다음과 같다.
   </tbody>
 </table>
 
-<i id='table-3-text'>표 3 파일 인식 정보</i>
+<i id='table-3-label'>표 3 파일 인식 정보</i>
+
+##### 3.2.2. 문서 정보
+
+본문에 사용 중인 글꼴, 글자 속성, 문단 속성, 탭, 스타일 등에 문서 내 공통으로 사용되는 세부 정보를 담고 있다.
+
+DocInfo 스트림에 저장되는 데이터는 다음과 같다.
+
+<i id='table-4'></i>
+
+| Tag ID                      |       길이 | 레벨 | 설명                           |
+| --------------------------- | ---------: | ---: | ------------------------------ |
+| HWPTAG_DOCUMENT_PROPERTIES  |   30 Bytes |    0 | 문서 속성(표 14 참조)          |
+| HWPTAG_ID_MAPPINGS          |   32 Bytes |    0 | 아이디 매핑 헤더(표 15 참조)   |
+| HWPTAG_BIN_DATA             |       가변 |    1 | 바이너리 데이터(표 17 참조)    |
+| HWPTAG_FACE_NAME            |       가변 |    1 | 글꼴(표 19 참조)               |
+| HWPTAG_BORDER_FILL          |       가변 |    1 | 테두리/배경(표 23 참조)        |
+| HWPTAG_CHAR_SHAPE           |   72 Bytes |    1 | 글자 모양(표 33 참조)          |
+| HWPTAG_TAB_DEF              |   14 Bytes |    1 | 탭 정의(표 36 참조)            |
+| HWPTAG_NUMBERING            |       가변 |    1 | 문단 번호(표 38 참조)          |
+| HWPTAG_BULLET               |   10 Bytes |    1 | 글머리표(표 42 참조)           |
+| HWPTAG_PARA_SHAPE           |   54 Bytes |    1 | 문단 모양(표 43 참조)          |
+| HWPTAG_STYLE                |       가변 |    1 | 스타일(표 47 참조)             |
+| HWPTAG_MEMO_SHAPE           |   22 Bytes |    1 | 메모 모양                      |
+| HWPTAG_TRACK_CHANGE_AUTHOR  |       가변 |    1 | 변경 추적 작성자               |
+| HWPTAG_TRACK_CHANGE         |       가변 |    1 | 변경 추적 내용 및 모양         |
+| HWPTAG_DOC_DATA             |       가변 |    0 | 문서 임의의 데이터(표 49 참조) |
+| HWPTAG_FORBIDDEN_CHAR       |       가변 |    0 | 금칙처리 문자                  |
+| HWPTAG_COMPATIBLE_DOCUMENT  |    4 Bytes |    0 | 호환 문서(표 54 참조)          |
+| HWPTAG_LAYOUT_COMPATIBILITY |   20 Bytes |    1 | 레이아웃 호환성(표 56 참조)    |
+| HWPTAG_DISTRIBUTE_DOC_DATA  |  256 Bytes |    0 | 배포용 문서                    |
+| HWPTAG_TRACKCHANGE          | 1032 Bytes |    1 | 변경 추적 정보                 |
+| 전체 길이                   |       가변 |      |                                |
+
+<i id='table-4-label'>표 2 문서 정보</i>
+
+각각의 세부 정보는 <'문서 정보'의 데이터 레코드>란에서 추가로 다룬다.
