@@ -502,3 +502,31 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 </table>
 
 본 문서에 부가 설명 없이 '컨트롤' 또는 '제어 문자'이라고 하면 바로 이 확장 컨트롤을 지칭하는 것이다.
+
+#### 3.2.4. 문서 요약
+
+`\005HwpSummaryInfomation` 스트림에는 한/글 메뉴의 "파일-문서 정보-문서 요약"에서 입력한 내용이 저장된다.
+
+> Summary Information에 대한 자세한 설명은 MSDN을 참고
+> The Summary Information Property Set
+> The DocumentSummaryInformation and UserDefined Property Set
+
+<i id='table-7'></i>
+
+| Name                        | Property ID string | Property ID | VT type           |
+| --------------------------- | ------------------ | ----------- | ----------------- |
+| Title                       | PIDSI_TITLE        | 0x00000002  | VT_LPSTR          |
+| Subject                     | PIDSI_SUBJECT      | 0x00000003  | VT_LPSTR          |
+| Author                      | PIDSI_AUTHOR       | 0x00000004  | VT_LPSTR          |
+| Keywords                    | PIDSI_KEYWORDS     | 0x00000005  | VT_LPSTR          |
+| Comments                    | PIDSI_COMMENTS     | 0x00000006  | VT_LPSTR          |
+| Last Saved By               | PIDSI_LASTAUTHOR   | 0x00000008  | VT_LPSTR          |
+| Revision Number             | PIDSI_REVNUMBER    | 0x00000009  | VT_LPSTR          |
+| Last Printed                | PIDSI_LASTPRINTED  | 0x0000000B  | VT_FILETIME (UTC) |
+| Create Time/Date( (\*))     | PIDSI_CREATE_DTM   | 0x0000000C  | VT_FILETIME (UTC) |
+| Last saved Time/Date( (\*)) | PIDSI_LASTSAVE_DTM | 0x0000000D  | VT_FILETIME (UTC) |
+| Number of Pages             | PIDSI_PAGECOUNT    | 0x0000000E  | VT_I4             |
+| Date String(User define)    | HWPPIDSI_DATE_STR  | 0x00000014  | VT_LPSTR          |
+| Para Count(User define)     | HWPPIDSI_PARACOUNT | 0x00000015  | VT_I4             |
+
+<i id='table-7-label'>표 7 문서 요약</i>
