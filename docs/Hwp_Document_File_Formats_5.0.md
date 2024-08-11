@@ -1,6 +1,6 @@
 > 본 제품은 한글과컴퓨터의 한/글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.
 
-본 문서는 HWP 5.0 형식과 관련한 작업을 진행할 이후의 다른 분에게 도움이 주고자 하는 의도로 한컴의 [HWP 5.0 형식 PDF](https://cdn.hancom.com/link/docs/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.pdf)를 Markdown 형식으로 옮겼으나, 아래와 같은 이유 등으로 원본 PDF와 다른 부분을 다소 포함하고 있습니다.
+본 문서는 HWP 5.0 형식과 관련한 작업을 진행할 이후의 다른 분에게 도움이 주고자 하는 의도로 한컴의 [HWP 5.0 형식 PDF](https://cdn.hancom.com/link/docs/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.pdf)를 Markdown 형식으로 옮겼으며, 아래와 같은 이유 등으로 원본 PDF와 다른 부분을 다소 포함하고 있습니다.
 
 - PDF 형식 대비 Markdown 형식의 표현 한계
 - 실제 HWP 파일이 원본 PDF 서술 내용과 다른 부분
@@ -42,3 +42,37 @@
 한/글 문서 파일 형식 5.0의 구조는 윈도우즈의 복합 파일(Compound File)에 기초를 두며, 문자 코드는 ISO-10646 표준을 기반으로 한다. 대부분의 문자 정보는 유니코드(UTF-16LE) 형식으로 전달되고, 저장된다.
 
 > Compound File에 대한 접근 방법은 OLE관련 자료 또는 MSDN을 참고 StgOpenStorage(), IStorage::Open(), ...
+
+### 2. 자료형 설명
+
+앞으로 계속되는 설명에서 한/글의 문서 파일에 저장되는 정보는 아래 표에 설명하는 자료형을 이용해 표현한다.
+
+자료형에서 한 바이트는 8 비트로 표현되며, 두 바이트 이상의 길이를 가지는 자료형은 최하위 바이트가 가장 먼저 저장되고, 최상위 바이트가 가장 나중에 저장되는 리틀 엔디언(Little-endian) 형태이다.
+
+파일에 저장되는 자료가 배열(array)일 때는 '자료형 array[개수]'와 같이 표현한다. 예를 들어 10개의 원소를 갖는 word 배열이면 'word array[10]'과 같이 표현한다
+
+<i id='table-1'></i>
+
+| 자료형                                       | 길이 | 부호 | 설명                                                                                        |
+| -------------------------------------------- | ---- | ---- | ------------------------------------------------------------------------------------------- |
+| <i id='datatype-BYTE'>BYTE</i>               | 1    |      | 부호 없는 한 바이트(0~255)                                                                  |
+| <i id='datatype-WORD'>WORD</i>               | 2    |      | 16비트 컴파일러에서 'unsigned int'에 해당                                                   |
+| <i id='datatype-DWORD'>DWORD</i>             | 4    |      | 16비트 컴파일러에서 'unsigned long'에 해당                                                  |
+| <i id='datatype-WCHAR'>WCHAR</i>             | 2    |      | 한/글의 기본 코드로 유니코드 기반 문자                                                      |
+| <i id='datatype-HWPUNIT'>HWPUNIT</i>         | 4    |      | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-SHWPUNIT'>SHWPUNIT</i>       | 4    | v    | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-UINT8'>UINT8</i>             | 1    |      | 'unsigned \_\_int8' 에 해당                                                                 |
+| <i id='datatype-UINT16'>UINT16</i>           | 2    |      | 'unsigned \_\_int16' 에 해당                                                                |
+| <i id='datatype-UINT32'>UINT32</i>(=UINT)    | 4    |      | 'unsigned \_\_int32' 에 해당                                                                |
+| <i id='datatype-INT8'>INT8</i>               | 1    | v    | 'signed \_\_int8' 에 해당                                                                   |
+| <i id='datatype-INT16'>INT16</i>             | 2    | v    | 'signed \_\_int16' 에 해당                                                                  |
+| <i id='datatype-INT32'>INT32</i>             | 4    | v    | 'signed \_\_int32' 에 해당                                                                  |
+| <i id='datatype-HWPUNIT16'>HWPUNIT16</i>     | 2    | v    | INT16 과 같다.                                                                              |
+| <i id='datatype-COLORREF'>COLORREF</i>       | 4    |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
+| <i id='datatype-BYTE-stream'>BYTE stream</i> |      |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
+
+<i id='table-1-text'>표 1 자료형</i>
+
+[WCHAR](#datatype-WCHAR)는 한/글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 한/글의 내부 코드는 한글, 영문, 한자를 비롯해 모든 문자가 2 바이트의 일정한 길이를 가진다.
+
+[HWPUNIT](#datatype-HWPUNIT)과 [SHWPUNIT](#datatype-SHWPUNIT)는 문자의 크기, 그림의 크기, 용지 여백 등, 문서를 구성하는 요소들의 크기를 표현하기 위한 자료형이다. 문서 출력 장치의 해상도는 가변적이기 때문에, 크기 정보를 점(도트)의 수로 표현할 수는 없다. 따라서 일정한 단위를 기준으로 해야 하는데, 한/글에서는 1/7200인치를 기본 단위로 사용한다. 예를 들어 [가로 2 인치 x 세로 1 인치]짜리 그림의 크기를 [HWPUNIT](#datatype-HWPUNIT) 형으로 표현하면 각각 14400 x 7200이 된다.
