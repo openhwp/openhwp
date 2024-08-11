@@ -530,3 +530,27 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 | Para Count(User define)     | HWPPIDSI_PARACOUNT | 0x00000015  | VT_I4             |
 
 <i id='table-7-label'>표 7 문서 요약</i>
+
+#### 3.2.5. 바이너리 데이터
+
+BinData 스토리지에는 그림이나 OLE 개체와 같이 문서에 첨부된 바이너리 데이터가 각각의 스트림으로 저장된다.
+
+#### 3.2.6. 미리보기 텍스트
+
+PrvText 스트림에는 미리보기 텍스트가 유니코드 문자열로 저장된다.
+
+#### 3.2.7. 미리보기 이미지
+
+PrvImage 스트림에는 미리보기 이미지가 BMP 또는 GIF 형식으로 저장된다.
+
+#### 3.2.8. 문서 옵션
+
+DocOptions 스토리지에는 연결 문서, 배포용 문서, 공인인증서 DRM, 전자 서명 관련 정보가 각각의 스트림으로 저장된다.
+
+\_LinkDoc 스트림에는 연결된 문서의 경로가 저장된다.
+
+DrmLicense 스트림에는 DRM Packaging의 Verision 정의가 저장된다. DrmRootSect 스트림에는 암호화 알고리즘이 저장된다.
+
+CertDrmHeader 스트림에는 DRM Packaging의 Verision 정의가 저장된다. CertDrmInfo 스트림에는 공인인증서 DRM 정보가 저장된다. DigitalSignature 스트림에는 전자 서명 정보가 저장된다.
+
+PublicKeyInfo 스트림에는 공개 키 정보가 저장된다.
