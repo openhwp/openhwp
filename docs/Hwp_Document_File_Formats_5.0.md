@@ -54,21 +54,21 @@
 <i id='table-1'></i>
 
 | 자료형                                       | 길이 | 부호 | 설명                                                                                        |
-| -------------------------------------------- | ---- | ---- | ------------------------------------------------------------------------------------------- |
-| <i id='datatype-BYTE'>BYTE</i>               | 1    |      | 부호 없는 한 바이트(0~255)                                                                  |
-| <i id='datatype-WORD'>WORD</i>               | 2    |      | 16비트 컴파일러에서 'unsigned int'에 해당                                                   |
-| <i id='datatype-DWORD'>DWORD</i>             | 4    |      | 16비트 컴파일러에서 'unsigned long'에 해당                                                  |
-| <i id='datatype-WCHAR'>WCHAR</i>             | 2    |      | 한/글의 기본 코드로 유니코드 기반 문자                                                      |
-| <i id='datatype-HWPUNIT'>HWPUNIT</i>         | 4    |      | 1/7200인치로 표현된 한/글 내부 단위                                                         |
-| <i id='datatype-SHWPUNIT'>SHWPUNIT</i>       | 4    | v    | 1/7200인치로 표현된 한/글 내부 단위                                                         |
-| <i id='datatype-UINT8'>UINT8</i>             | 1    |      | 'unsigned \_\_int8' 에 해당                                                                 |
-| <i id='datatype-UINT16'>UINT16</i>           | 2    |      | 'unsigned \_\_int16' 에 해당                                                                |
-| <i id='datatype-UINT32'>UINT32</i>(=UINT)    | 4    |      | 'unsigned \_\_int32' 에 해당                                                                |
-| <i id='datatype-INT8'>INT8</i>               | 1    | v    | 'signed \_\_int8' 에 해당                                                                   |
-| <i id='datatype-INT16'>INT16</i>             | 2    | v    | 'signed \_\_int16' 에 해당                                                                  |
-| <i id='datatype-INT32'>INT32</i>             | 4    | v    | 'signed \_\_int32' 에 해당                                                                  |
-| <i id='datatype-HWPUNIT16'>HWPUNIT16</i>     | 2    | v    | INT16 과 같다.                                                                              |
-| <i id='datatype-COLORREF'>COLORREF</i>       | 4    |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
+| -------------------------------------------- | ---: | :--: | ------------------------------------------------------------------------------------------- |
+| <i id='datatype-BYTE'>BYTE</i>               |    1 |      | 부호 없는 한 바이트(0~255)                                                                  |
+| <i id='datatype-WORD'>WORD</i>               |    2 |      | 16비트 컴파일러에서 'unsigned int'에 해당                                                   |
+| <i id='datatype-DWORD'>DWORD</i>             |    4 |      | 16비트 컴파일러에서 'unsigned long'에 해당                                                  |
+| <i id='datatype-WCHAR'>WCHAR</i>             |    2 |      | 한/글의 기본 코드로 유니코드 기반 문자                                                      |
+| <i id='datatype-HWPUNIT'>HWPUNIT</i>         |    4 |      | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-SHWPUNIT'>SHWPUNIT</i>       |    4 |  v   | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-UINT8'>UINT8</i>             |    1 |      | 'unsigned \_\_int8' 에 해당                                                                 |
+| <i id='datatype-UINT16'>UINT16</i>           |    2 |      | 'unsigned \_\_int16' 에 해당                                                                |
+| <i id='datatype-UINT32'>UINT32</i>(=UINT)    |    4 |      | 'unsigned \_\_int32' 에 해당                                                                |
+| <i id='datatype-INT8'>INT8</i>               |    1 |  v   | 'signed \_\_int8' 에 해당                                                                   |
+| <i id='datatype-INT16'>INT16</i>             |    2 |  v   | 'signed \_\_int16' 에 해당                                                                  |
+| <i id='datatype-INT32'>INT32</i>             |    4 |  v   | 'signed \_\_int32' 에 해당                                                                  |
+| <i id='datatype-HWPUNIT16'>HWPUNIT16</i>     |    2 |  v   | INT16 과 같다.                                                                              |
+| <i id='datatype-COLORREF'>COLORREF</i>       |    4 |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
 | <i id='datatype-BYTE-stream'>BYTE stream</i> |      |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
 
 <i id='table-1-text'>표 1 자료형</i>
@@ -90,18 +90,18 @@
 📁 Storage 📖 Stream
 
 | 설명            | 구별 이름                                                            | 길이(바이트) | 레코드 구조 | 압축/암호화 |
-| --------------- | -------------------------------------------------------------------- | ------------ | ----------- | ----------- |
-| 파일 인식 정보  | 📖 FileHeader                                                        | 고정         |             |             |
-| 문서 정보       | 📖 DocInfo                                                           | 고정         | v           | v           |
-| 본문            | 📁 BodyText<br>↳ 📖 Section0<br>↳ 📖 Section1<br>↳ 📖 ...            | 가변         | v           | v           |
-| 문서 요약       | 📖 \005HwpSummaryInformation                                         | 고정         |             |             |
-| 바이너리 데이터 | 📁 BinData<br>↳ 📖 BinaryData0<br>↳ 📖 BinaryData1<br>↳ 📖 ...       | 가변         |             | v           |
-| 미리보기 텍스트 | 📖 PrvText                                                           | 고정         |             |             |
-| 미리보기 이미지 | 📖 PrvImage                                                          | 가변         |             |             |
-| 문서 옵션       | 📁 DocOptions<br>↳ 📖 \_LinkDoc<br>↳ 📖 DrmLicense<br>↳ 📖 ...       | 가변         |             |             |
-| 스크립트        | 📁 Scripts<br>↳ 📖 DefaultJScript<br>↳ 📖 JScriptVersion<br>↳ 📖 ... | 가변         |             |             |
-| XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           | 가변         |             |             |
-| 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    | 가변         | v           | v           |
+| --------------- | -------------------------------------------------------------------- | :----------: | :---------: | :---------: |
+| 파일 인식 정보  | 📖 FileHeader                                                        |     고정     |             |             |
+| 문서 정보       | 📖 DocInfo                                                           |     고정     |      v      |      v      |
+| 본문            | 📁 BodyText<br>↳ 📖 Section0<br>↳ 📖 Section1<br>↳ 📖 ...            |     가변     |      v      |      v      |
+| 문서 요약       | 📖 \005HwpSummaryInformation                                         |     고정     |             |             |
+| 바이너리 데이터 | 📁 BinData<br>↳ 📖 BinaryData0<br>↳ 📖 BinaryData1<br>↳ 📖 ...       |     가변     |             |      v      |
+| 미리보기 텍스트 | 📖 PrvText                                                           |     고정     |             |             |
+| 미리보기 이미지 | 📖 PrvImage                                                          |     가변     |             |             |
+| 문서 옵션       | 📁 DocOptions<br>↳ 📖 \_LinkDoc<br>↳ 📖 DrmLicense<br>↳ 📖 ...       |     가변     |             |             |
+| 스크립트        | 📁 Scripts<br>↳ 📖 DefaultJScript<br>↳ 📖 JScriptVersion<br>↳ 📖 ... |     가변     |             |             |
+| XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           |     가변     |             |             |
+| 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    |     가변     |      v      |      v      |
 
 <i id='table-2-text'>표 2 전체 구조</i>
 
