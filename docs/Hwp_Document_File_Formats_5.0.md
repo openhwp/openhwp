@@ -53,23 +53,23 @@
 
 <i id='table-1'></i>
 
-| 자료형                                       | 길이 | 부호 | 설명                                                                                        |
-| -------------------------------------------- | ---: | :--: | ------------------------------------------------------------------------------------------- |
-| <i id='datatype-BYTE'>BYTE</i>               |    1 |      | 부호 없는 한 바이트(0~255)                                                                  |
-| <i id='datatype-WORD'>WORD</i>               |    2 |      | 16비트 컴파일러에서 'unsigned int'에 해당                                                   |
-| <i id='datatype-DWORD'>DWORD</i>             |    4 |      | 16비트 컴파일러에서 'unsigned long'에 해당                                                  |
-| <i id='datatype-WCHAR'>WCHAR</i>             |    2 |      | 한/글의 기본 코드로 유니코드 기반 문자                                                      |
-| <i id='datatype-HWPUNIT'>HWPUNIT</i>         |    4 |      | 1/7200인치로 표현된 한/글 내부 단위                                                         |
-| <i id='datatype-SHWPUNIT'>SHWPUNIT</i>       |    4 |  v   | 1/7200인치로 표현된 한/글 내부 단위                                                         |
-| <i id='datatype-UINT8'>UINT8</i>             |    1 |      | 'unsigned \_\_int8' 에 해당                                                                 |
-| <i id='datatype-UINT16'>UINT16</i>           |    2 |      | 'unsigned \_\_int16' 에 해당                                                                |
-| <i id='datatype-UINT32'>UINT32</i>(=UINT)    |    4 |      | 'unsigned \_\_int32' 에 해당                                                                |
-| <i id='datatype-INT8'>INT8</i>               |    1 |  v   | 'signed \_\_int8' 에 해당                                                                   |
-| <i id='datatype-INT16'>INT16</i>             |    2 |  v   | 'signed \_\_int16' 에 해당                                                                  |
-| <i id='datatype-INT32'>INT32</i>             |    4 |  v   | 'signed \_\_int32' 에 해당                                                                  |
-| <i id='datatype-HWPUNIT16'>HWPUNIT16</i>     |    2 |  v   | INT16 과 같다.                                                                              |
-| <i id='datatype-COLORREF'>COLORREF</i>       |    4 |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
-| <i id='datatype-BYTE-stream'>BYTE stream</i> |      |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
+| 자료형                                       |    길이 | 부호 | 설명                                                                                        |
+| -------------------------------------------- | ------: | :--: | ------------------------------------------------------------------------------------------- |
+| <i id='datatype-BYTE'>BYTE</i>               | 1 Bytes |      | 부호 없는 한 바이트(0~255)                                                                  |
+| <i id='datatype-WORD'>WORD</i>               | 2 Bytes |      | 16비트 컴파일러에서 'unsigned int'에 해당                                                   |
+| <i id='datatype-DWORD'>DWORD</i>             | 4 Bytes |      | 16비트 컴파일러에서 'unsigned long'에 해당                                                  |
+| <i id='datatype-WCHAR'>WCHAR</i>             | 2 Bytes |      | 한/글의 기본 코드로 유니코드 기반 문자                                                      |
+| <i id='datatype-HWPUNIT'>HWPUNIT</i>         | 4 Bytes |      | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-SHWPUNIT'>SHWPUNIT</i>       | 4 Bytes |  v   | 1/7200인치로 표현된 한/글 내부 단위                                                         |
+| <i id='datatype-UINT8'>UINT8</i>             | 1 Bytes |      | 'unsigned \_\_int8' 에 해당                                                                 |
+| <i id='datatype-UINT16'>UINT16</i>           | 2 Bytes |      | 'unsigned \_\_int16' 에 해당                                                                |
+| <i id='datatype-UINT32'>UINT32</i>(=UINT)    | 4 Bytes |      | 'unsigned \_\_int32' 에 해당                                                                |
+| <i id='datatype-INT8'>INT8</i>               | 1 Bytes |  v   | 'signed \_\_int8' 에 해당                                                                   |
+| <i id='datatype-INT16'>INT16</i>             | 2 Bytes |  v   | 'signed \_\_int16' 에 해당                                                                  |
+| <i id='datatype-INT32'>INT32</i>             | 4 Bytes |  v   | 'signed \_\_int32' 에 해당                                                                  |
+| <i id='datatype-HWPUNIT16'>HWPUNIT16</i>     | 2 Bytes |  v   | INT16 과 같다.                                                                              |
+| <i id='datatype-COLORREF'>COLORREF</i>       | 4 Bytes |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
+| <i id='datatype-BYTE-stream'>BYTE stream</i> |         |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
 
 <i id='table-1-text'>표 1 자료형</i>
 
@@ -79,7 +79,7 @@
 
 ### 3. 한/글 파일 구조
 
-#### 3. 한/글 파일 구조 요약
+#### 3.1. 한/글 파일 구조 요약
 
 한/글의 문서 파일은 개괄적으로 다음 표와 같은 구조를 가진다. 복합 파일(Compound File) 구조를 가지기 때문에, 내부적으로 스토리지(Storage)와 스트림(Stream)을 구별하기 위한 이름을 가진다.
 
@@ -89,20 +89,199 @@
 
 📁 Storage 📖 Stream
 
-| 설명            | 구별 이름                                                            | 길이(바이트) | 레코드 구조 | 압축/암호화 |
-| --------------- | -------------------------------------------------------------------- | :----------: | :---------: | :---------: |
-| 파일 인식 정보  | 📖 FileHeader                                                        |     고정     |             |             |
-| 문서 정보       | 📖 DocInfo                                                           |     고정     |      v      |      v      |
-| 본문            | 📁 BodyText<br>↳ 📖 Section0<br>↳ 📖 Section1<br>↳ 📖 ...            |     가변     |      v      |      v      |
-| 문서 요약       | 📖 \005HwpSummaryInformation                                         |     고정     |             |             |
-| 바이너리 데이터 | 📁 BinData<br>↳ 📖 BinaryData0<br>↳ 📖 BinaryData1<br>↳ 📖 ...       |     가변     |             |      v      |
-| 미리보기 텍스트 | 📖 PrvText                                                           |     고정     |             |             |
-| 미리보기 이미지 | 📖 PrvImage                                                          |     가변     |             |             |
-| 문서 옵션       | 📁 DocOptions<br>↳ 📖 \_LinkDoc<br>↳ 📖 DrmLicense<br>↳ 📖 ...       |     가변     |             |             |
-| 스크립트        | 📁 Scripts<br>↳ 📖 DefaultJScript<br>↳ 📖 JScriptVersion<br>↳ 📖 ... |     가변     |             |             |
-| XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           |     가변     |             |             |
-| 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    |     가변     |      v      |      v      |
+| 설명            | 구별 이름                                                            | 길이 | 레코드 구조 | 압축/암호화 |
+| --------------- | -------------------------------------------------------------------- | :--: | :---------: | :---------: |
+| 파일 인식 정보  | 📖 FileHeader                                                        | 고정 |             |             |
+| 문서 정보       | 📖 DocInfo                                                           | 고정 |      v      |      v      |
+| 본문            | 📁 BodyText<br>↳ 📖 Section0<br>↳ 📖 Section1<br>↳ 📖 ...            | 가변 |      v      |      v      |
+| 문서 요약       | 📖 \005HwpSummaryInformation                                         | 고정 |             |             |
+| 바이너리 데이터 | 📁 BinData<br>↳ 📖 BinaryData0<br>↳ 📖 BinaryData1<br>↳ 📖 ...       | 가변 |             |      v      |
+| 미리보기 텍스트 | 📖 PrvText                                                           | 고정 |             |             |
+| 미리보기 이미지 | 📖 PrvImage                                                          | 가변 |             |             |
+| 문서 옵션       | 📁 DocOptions<br>↳ 📖 \_LinkDoc<br>↳ 📖 DrmLicense<br>↳ 📖 ...       | 가변 |             |             |
+| 스크립트        | 📁 Scripts<br>↳ 📖 DefaultJScript<br>↳ 📖 JScriptVersion<br>↳ 📖 ... | 가변 |             |             |
+| XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           | 가변 |             |             |
+| 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    | 가변 |      v      |      v      |
 
 <i id='table-2-text'>표 2 전체 구조</i>
 
 압축된 문서 파일의 경우 문서 파일을 읽는 쪽에서는 '파일 인식 정보' 항목의 '압축' 플래그를 살펴보고, 압축된 파일이면 압축을 풀어서 처리해야 한다. 이후의 설명에서는 압축이 풀린 상태의 파일을 기준으로 한다. '문서정보'와 '본문' '문서 이력 관리'에 사용되는 '레코드 구조'는 이후 '데이터 레코드'란에서 구조 설명과 사용되는 레코드들에 대한 상세한 설명을 한다.
+
+#### 3.2. 스토리지 별 저장 정보
+
+##### 3.2.1. 파일 인식 정보
+
+한/글의 문서 파일이라는 것을 나타내기 위해 '파일 인식 정보'가 저장된다.
+
+FileHeader 스트림에 저장되는 데이터는 다음과 같다.
+
+<i id='table-3'></i>
+
+<table>
+  <thead>
+    <tr>
+      <th>자료형</th>
+      <th>길이</th>
+      <th colspan="2">설명</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BYTE array[32]</td>
+      <td>32 Bytes</td>
+      <td colspan="2">signature. 문서 파일은 "HWP Document File"</td>
+    </tr>
+    <tr>
+      <td>DWORD</td>
+      <td>4 Bytes</td>
+      <td colspan="2">
+        파일 버전. 0xMMnnPPrr의 형태(예 5.0.3.0)
+        <br>- MM: 문서 형식의 구조가 완전히 바뀌는 것을 나타냄. 숫자가 다르면 구 버전과 호환 불가능.
+        <br>- PP: 구조는 동일, Record가 추가되었거나, 하위 버전에서 호환되지 않는 정보가 추가된 것을 나타냄. 숫자가 달라도 구 버전과 호환 가능.
+        <br>- rr: Record에 정보들이 추가된 것을 나타냄. 숫자가 달라도 구 버전과 호환 가능.
+      </td>
+    </tr>
+    <tr>
+      <td rowspan="21">DWORD</td>
+      <td rowspan="21">4 Bytes</td>
+      <td colspan="2">
+        속성
+      </td>
+    </tr>
+    <tr>
+      <th>범위</th>
+      <th>설명</th>
+    </tr>
+    <tr>
+      <td>bit 0</td>
+      <td>압축 여부</td>
+    </tr>
+    <tr>
+      <td>bit 1</td>
+      <td>암호 설정 여부</td>
+    </tr>
+    <tr>
+      <td>bit 2</td>
+      <td>배포용 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 3</td>
+      <td>스크립트 저장 여부</td>
+    </tr>
+    <tr>
+      <td>bit 4</td>
+      <td>DRM 보안 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 5</td>
+      <td>XMLTemplate 스토리지 존재 여부</td>
+    </tr>
+    <tr>
+      <td>bit 6</td>
+      <td>문서 이력 관리 존재 여부</td>
+    </tr>
+    <tr>
+      <td>bit 7</td>
+      <td>전자 서명 정보 존재 여부</td>
+    </tr>
+    <tr>
+      <td>bit 8</td>
+      <td>공인 인증서 암호화 여부</td>
+    </tr>
+    <tr>
+      <td>bit 9</td>
+      <td>전자 서명 예비 저장 여부</td>
+    </tr>
+    <tr>
+      <td>bit 10</td>
+      <td>공인 인증서 DRM 보안 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 11</td>
+      <td>CCL 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 12</td>
+      <td>모바일 최적화 여부</td>
+    </tr>
+    <tr>
+      <td>bit 13</td>
+      <td>개인 정보 보안 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 14</td>
+      <td>변경 추적 문서 여부</td>
+    </tr>
+    <tr>
+      <td>bit 15</td>
+      <td>공공누리(KOGL) 저작권 문서</td>
+    </tr>
+    <tr>
+      <td>bit 16</td>
+      <td>비디오 컨트롤 포함 여부</td>
+    </tr>
+    <tr>
+      <td>bit 17</td>
+      <td>차례 필드 컨트롤 포함 여부</td>
+    </tr>
+    <tr>
+      <td>bit 18 ~ 31</td>
+      <td>예약</td>
+    </tr>
+    <tr>
+      <td rowspan="6">DWORD</td>
+      <td rowspan="6">4 Bytes</td>
+      <td colspan="2">
+        속성
+      </td>
+    </tr>
+    <tr>
+      <th>범위</th>
+      <th>설명</th>
+    </tr>
+    <tr>
+      <td>bit 0</td>
+      <td>CCL, 공공누리 라이선스 정보</td>
+    </tr>
+    <tr>
+      <td>bit 1</td>
+      <td>복제 제한 여부</td>
+    </tr>
+    <tr>
+      <td>bit 2</td>
+      <td>동일 조건 하에 복제 허가 여부 (복제 제한인 경우 무시)</td>
+    </tr>
+    <tr>
+      <td>bit 3~31</td>
+      <td>예약</td>
+    </tr>
+    <tr>
+      <td>DWORD</td>
+      <td>4 Bytes</td>
+      <td colspan="2">
+        EncryptVersion
+        <br>- 0 : None
+        <br>- 1 : (한/글 2.5 버전 이하)
+        <br>- 2 : (한/글 3.0 버전 Enhanced)
+        <br>- 3 : (한/글 3.0 버전 Old)
+        <br>- 4 : (한/글 7.0 버전 이후)
+      </td>
+    </tr>
+    <tr>
+      <td>BYTE</td>
+      <td>1 Bytes</td>
+      <td colspan="2">
+        공공누리(KOGL) 라이선스 지원 국가
+        <br>- 6 : KOR
+        <br>- 15 : US
+      </td>
+    </tr>
+    <tr>
+      <td>BYTE array[207]</td>
+      <td>207 Bytes</td>
+      <td colspan="2">예약</td>
+    </tr>
+  </tbody>
+</table>
+
+<i id='table-3-text'>표 3 파일 인식 정보</i>
