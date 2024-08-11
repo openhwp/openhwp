@@ -31,7 +31,7 @@
 
 ### 1. 개요
 
-한/글의 문서 파일은 사용자가 따로 지정하지 않는 한 .hwp를 기본 확장자로 가진다. 문서 파일에 저장되는 내용은, 실제 사용자가 입력한 문서의 내용과 문자 장식 정보뿐만 아니라 문서를 편집할 당시의 글꼴에 대한 정보, 조판에 영향을 주는 설정 사항(용지 종류, 여백 정보 등)도 포함된다.
+한/글의 문서 파일은 사용자가 따로 지정하지 않는 한 .HWP를 기본 확장자로 가진다. 문서 파일에 저장되는 내용은, 실제 사용자가 입력한 문서의 내용과 문자 장식 정보뿐만 아니라 문서를 편집할 당시의 글꼴에 대한 정보, 조판에 영향을 주는 설정 사항(용지 종류, 여백 정보 등)도 포함된다.
 
 한/글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 한/글 제품군(한/글 워디안, 한/글 2002, 한/글 2005, 한/글 2007, 한/글 2010, 한/글 2014, 한/글 2018 등)에서 생성되며, 문서 버전에 따라 큰 골격은 유지되나, 추가적인 정보들에 의해 약간의 차이가 있다.
 
@@ -319,6 +319,57 @@ DocInfo 스트림에 저장되는 데이터는 다음과 같다.
 | HWPTAG_TRACKCHANGE          | 1032 Bytes |    1 | 변경 추적 정보                 |
 | 전체 길이                   |       가변 |      |                                |
 
-<i id='table-4-label'>표 2 문서 정보</i>
+<i id='table-4-label'>표 4 문서 정보</i>
 
 각각의 세부 정보는 <'문서 정보'의 데이터 레코드>란에서 추가로 다룬다.
+
+#### 3.2.3. 본문
+
+문서의 본문에 해당되는 문단, 표, 그리기 개체 등의 내용이 저장된다.
+
+BodyText 스토리지는 본문의 구역에 따라 `Section%d` 스트림(%d는 구역의 번호)으로 구분된다. 구역 의 개수는 문서 정보의 문서 속성에 저장된다.
+
+각 구역의 첫 문단에는 구역 정의 레코드가 저장되고, 각 단 설정의 첫 문단에는 단 정의 레코드가 저장된다.
+
+각 구역의 가장 끝 위치에는 확장 바탕쪽(마지막 쪽, 임의 쪽) 관련 정보가 저장되고, 마지막 구역의 가장 끝 위치에는 메모 관련 정보가 저장된다.
+
+Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며, 다음과 같은 문단 정보들이 반복 된다.
+
+<i id='table-5'></i>
+
+| Tag ID                           |     길이 | 레벨 | 설명                         |
+| -------------------------------- | -------: | ---: | ---------------------------- |
+| HWPTAG_PARA_HEADER               | 22 Bytes |    0 | 문단 헤더(표 58 참조)        |
+| HWPTAG_PARA_TEXT                 |     가변 |    1 | 문단의 텍스트(표 60 참조)    |
+| HWPTAG_PARA_CHAR_SHAPE           |     가변 |    1 | 문단의 글자 모양(표 61 참조) |
+| HWPTAG_PARA_LINE_SEG             |     가변 |    1 | 문단의 레이아웃              |
+| HWPTAG_PARA_RANGE_TAG            |     가변 |    1 | 문단의 영역 태그(표 63 참조) |
+| HWPTAG_CTRL_HEADER               |  4 Bytes |    1 | 컨트롤 헤더(표 64 참조)      |
+| HWPTAG_LIST_HEADER               |  6 Bytes |    2 | 문단 리스트 헤더(표 65 참조) |
+| HWPTAG_PAGE_DEF                  | 40 Bytes |    2 | 용지 설정                    |
+| HWPTAG_FOOTNOTE_SHAPE            | 30 Bytes |    2 | 각주/미주 모양               |
+| HWPTAG_PAGE_BORDER_FILL          | 14 Bytes |    2 | 쪽 테두리/배경               |
+| HWPTAG_SHAPE_COMPONENT           |  4 Bytes |    2 | 개체                         |
+| HWPTAG_TABLE                     |     가변 |    2 | 표 개체                      |
+| HWPTAG_SHAPE_COMPONENT_LINE      | 20 Bytes |    3 | 직선 개체                    |
+| HWPTAG_SHAPE_COMPONENT_RECTANGLE |  9 Bytes |    3 | 사각형 개체                  |
+| HWPTAG_SHAPE_COMPONENT_ELLIPSE   | 60 Bytes |    3 | 타원 개체                    |
+| HWPTAG_SHAPE_COMPONENT_ARC       | 25 Bytes |    3 | 호 개체                      |
+| HWPTAG_SHAPE_COMPONENT_POLYGON   |     가변 |    3 | 다각형 개체                  |
+| HWPTAG_SHAPE_COMPONENT_CURVE     |     가변 |    3 | 곡선 개체                    |
+| HWPTAG_SHAPE_COMPONENT_OLE       | 26 Bytes |    3 | OLE 개체                     |
+| HWPTAG_SHAPE_COMPONENT_PICTURE   |     가변 |    3 | 그림 개체                    |
+| HWPTAG_CTRL_DATA                 |     가변 |    2 | 컨트롤 임의의 데이터         |
+| HWPTAG_EQEDIT                    |     가변 |    2 | 수식 개체                    |
+| HWPTAG_SHAPE_COMPONENT_TEXTART   |     가변 |    3 | 글맵시                       |
+| HWPTAG_FORM_OBJECT               |     가변 |    2 | 양식 개체                    |
+| HWPTAG_MEMO_SHAPE                | 22 Bytes |    1 | 메모 모양                    |
+| HWPTAG_MEMO_LIST                 |  4 Bytes |    1 | 메모 리스트 헤더             |
+| HWPTAG_CHART_DATA                |  2 Bytes |    2 | 차트 데이터                  |
+| HWPTAG_VIDEO_DATA                |     가변 |    3 | 비디오 데이터                |
+| HWPTAG_SHAPE_COMPONENT_UNKNOWN   | 36 Bytes |    3 | Unknown                      |
+| 전체 길이                        |     가변 |      |                              |
+
+<i id='table-5-label'>표 5 본문</i>
+
+문단에 컨트롤이 포함되는 경우 컨트롤 헤더 이후로 문단 리스트 헤더와 같은 컨트롤의 레코드 데이터가 저장된다.
