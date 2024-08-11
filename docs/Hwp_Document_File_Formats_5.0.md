@@ -589,3 +589,43 @@ DefaultJScript 스트림에는 Script 헤더, 소스, Pre 소스, Post 소스가
 | 전체 길이                         | 20 + (2×[len1](#table9-len1)) + (2×[len2](#table9-len2)) + (2×[len3](#table9-len3)) + (2×[len4](#table9-len4)) Bytes |                                                        |
 
 <i id='table9-label'>표 9 스크립트</i>
+
+#### 3.2.10. XML 템플릿
+
+XMLTemplate 스토리지에는 XML Template 정보를 저장한다.
+
+\_SchemaName 스트림에는 Schema 이름 문자열이 저장된다.
+
+<i id='table10'></i>
+
+| 자료형                             | 길이(바이트)                  | 설명                                             |
+| ---------------------------------- | ----------------------------- | ------------------------------------------------ |
+| DWORD                              | 4                             | Schema 이름 길이 (<i id='table10-len1'>len1</i>) |
+| WCHAR array[[len1](#table10-len1)] | 2×[len1](#table10-len1)       | Schema 이름                                      |
+| 전체 길이                          | 4 + (2×[len1](#table10-len1)) |                                                  |
+
+<i id='table10-label'>표 10 Schema 이름 정보</i>
+
+Schema 스트림에는 Schema 문자열이 저장된다.
+
+<i id='table11'></i>
+
+| 자료형                             | 길이(바이트)                  | 설명                                        |
+| ---------------------------------- | ----------------------------- | ------------------------------------------- |
+| DWORD                              | 4                             | Schema 길이 (<i id='table11-len1'>len1</i>) |
+| WCHAR array[[len1](#table11-len1)] | 2×[len1](#table11-len1)       | Schema                                      |
+| 전체 길이                          | 4 + (2×[len1](#table11-len1)) |                                             |
+
+<i id='table11-label'>표 11 Schema 길이 정보</i>
+
+Instance 스트림에는 Instance 문자열이 저장된다.
+
+<i id='table12'></i>
+
+| 자료형                             | 길이(바이트)                  | 설명                                          |
+| ---------------------------------- | ----------------------------- | --------------------------------------------- |
+| DWORD                              | 4                             | Instance 길이 (<i id='table12-len1'>len1</i>) |
+| WCHAR array[[len1](#table12-len1)] | 2×[len1](#table12-len1)       | Instance                                      |
+| 전체 길이                          | 4 + (2×[len1](#table12-len1)) |                                               |
+
+<i id='table12-label'>표 12 Instance 정보</i>
