@@ -51,7 +51,7 @@
 
 파일에 저장되는 자료가 배열(array)일 때는 '자료형 array[개수]'와 같이 표현한다. 예를 들어 10개의 원소를 갖는 word 배열이면 'word array[10]'과 같이 표현한다
 
-<i id='table-1'></i>
+<i id='table1'></i>
 
 | 자료형                                       |    길이 | 부호 | 설명                                                                                        |
 | -------------------------------------------- | ------: | :--: | ------------------------------------------------------------------------------------------- |
@@ -71,7 +71,7 @@
 | <i id='datatype-COLORREF'>COLORREF</i>       | 4 Bytes |      | RGB값(0x00bbggrr)을 십진수로 표시<br>(rr : red 1 byte, gg : green 1 byte, bb : blue 1 byte) |
 | <i id='datatype-BYTE-stream'>BYTE stream</i> |         |      | 일련의 BYTE로 구성됨.<br>본문 내에서 다른 구조를 참조할 경우에 사용됨.                      |
 
-<i id='table-1-label'>표 1 자료형</i>
+<i id='table1-label'>표 1 자료형</i>
 
 [WCHAR](#datatype-WCHAR)는 한/글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 한/글의 내부 코드는 한글, 영문, 한자를 비롯해 모든 문자가 2 바이트의 일정한 길이를 가진다.
 
@@ -85,7 +85,7 @@
 
 하나의 스트림에는 일반적인 바이너리나 레코드 구조로 데이터가 저장되고, 스트림에 따라서 압축/암호화되기도 한다.
 
-<i id='table-2'></i>
+<i id='table2'></i>
 
 📁 Storage 📖 Stream
 
@@ -103,7 +103,7 @@
 | XML 템플릿      | 📁 XMLTemplate<br>↳ 📖 Schema<br>↳ 📖 Instance<br>↳ 📖 ...           | 가변 |             |             |
 | 문서 이력 관리  | 📁 DocHistory<br>↳ 📖 VersionLog0<br>↳ 📖 VersionLog1<br>↳ 📖 ...    | 가변 |      v      |      v      |
 
-<i id='table-2-label'>표 2 전체 구조</i>
+<i id='table2-label'>표 2 전체 구조</i>
 
 압축된 문서 파일의 경우 문서 파일을 읽는 쪽에서는 '파일 인식 정보' 항목의 '압축' 플래그를 살펴보고, 압축된 파일이면 압축을 풀어서 처리해야 한다. 이후의 설명에서는 압축이 풀린 상태의 파일을 기준으로 한다. '문서정보'와 '본문' '문서 이력 관리'에 사용되는 '레코드 구조'는 이후 '데이터 레코드'란에서 구조 설명과 사용되는 레코드들에 대한 상세한 설명을 한다.
 
@@ -115,7 +115,7 @@
 
 FileHeader 스트림에 저장되는 데이터는 다음과 같다.
 
-<i id='table-3'></i>
+<i id='table3'></i>
 
 <table>
   <thead>
@@ -285,7 +285,7 @@ FileHeader 스트림에 저장되는 데이터는 다음과 같다.
   </tbody>
 </table>
 
-<i id='table-3-label'>표 3 파일 인식 정보</i>
+<i id='table3-label'>표 3 파일 인식 정보</i>
 
 ##### 3.2.2. 문서 정보
 
@@ -293,7 +293,7 @@ FileHeader 스트림에 저장되는 데이터는 다음과 같다.
 
 DocInfo 스트림에 저장되는 데이터는 다음과 같다.
 
-<i id='table-4'></i>
+<i id='table4'></i>
 
 | Tag ID                      |       길이 | 레벨 | 설명                           |
 | --------------------------- | ---------: | ---: | ------------------------------ |
@@ -319,7 +319,7 @@ DocInfo 스트림에 저장되는 데이터는 다음과 같다.
 | HWPTAG_TRACKCHANGE          | 1032 Bytes |    1 | 변경 추적 정보                 |
 | 전체 길이                   |       가변 |      |                                |
 
-<i id='table-4-label'>표 4 문서 정보</i>
+<i id='table4-label'>표 4 문서 정보</i>
 
 각각의 세부 정보는 <'문서 정보'의 데이터 레코드>란에서 추가로 다룬다.
 
@@ -335,7 +335,7 @@ BodyText 스토리지는 본문의 구역에 따라 `Section%d` 스트림(%d는 
 
 Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며, 다음과 같은 문단 정보들이 반복 된다.
 
-<i id='table-5'></i>
+<i id='table5'></i>
 
 | Tag ID                           |     길이 | 레벨 | 설명                         |
 | -------------------------------- | -------: | ---: | ---------------------------- |
@@ -370,7 +370,7 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 | HWPTAG_SHAPE_COMPONENT_UNKNOWN   | 36 Bytes |    3 | Unknown                      |
 | 전체 길이                        |     가변 |      |                              |
 
-<i id='table-5-label'>표 5 본문</i>
+<i id='table5-label'>표 5 본문</i>
 
 문단에 컨트롤이 포함되는 경우 컨트롤 헤더 이후로 문단 리스트 헤더와 같은 컨트롤의 레코드 데이터가 저장된다.
 
@@ -386,7 +386,7 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 - 인라인 컨트롤 [inline] = 별도의 오브젝트 포인터를 가리키지 않는 단순한 인라인 컨트롤 / size = 8
 - 확장 컨트롤 [extended] = 별도의 오브젝트가 데이터를 표현하는 확장 컨트롤 / size = 8
 
-<i id='table-6'></i>
+<i id='table6'></i>
 
 |  코드 | 컨트롤 형식 | 설명                                                                                                                                                                         |
 | ----: | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -416,7 +416,7 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 |    30 | char        | 묶음 빈칸                                                                                                                                                                    |
 |    31 | char        | 고정폭 빈칸                                                                                                                                                                  |
 
-<i id='table-6-label'>표 6 제어 문자</i>
+<i id='table6-label'>표 6 제어 문자</i>
 
 문서 파일에서 문단 내용을 읽다가 제어 문자를 발견하면, 문서를 읽는 쪽에서는 제어 문자 종류에 따라 읽어 들이거나 건너 뛰어 다음 데이터의 시작 위치까지 파일 포인터를 옮기기 위한 적절한 처리를 수행해야 한다. 제어 문자 가운데는 또 다른 문단 리스트를 포함하는 경우도 있기 때문에, 제어 문자를 일반 문자처럼 처리하면 문서 파일을 정상적으로 읽을 수 없다.
 
@@ -511,7 +511,7 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 > The Summary Information Property Set
 > The DocumentSummaryInformation and UserDefined Property Set
 
-<i id='table-7'></i>
+<i id='table7'></i>
 
 | Name                        | Property ID string | Property ID | VT type           |
 | --------------------------- | ------------------ | ----------- | ----------------- |
@@ -529,7 +529,7 @@ Section 스트림에 저장되는 데이터는 문단들(문단 리스트)이며
 | Date String(User define)    | HWPPIDSI_DATE_STR  | 0x00000014  | VT_LPSTR          |
 | Para Count(User define)     | HWPPIDSI_PARACOUNT | 0x00000015  | VT_I4             |
 
-<i id='table-7-label'>표 7 문서 요약</i>
+<i id='table7-label'>표 7 문서 요약</i>
 
 #### 3.2.5. 바이너리 데이터
 
@@ -554,3 +554,38 @@ DrmLicense 스트림에는 DRM Packaging의 Verision 정의가 저장된다. Drm
 CertDrmHeader 스트림에는 DRM Packaging의 Verision 정의가 저장된다. CertDrmInfo 스트림에는 공인인증서 DRM 정보가 저장된다. DigitalSignature 스트림에는 전자 서명 정보가 저장된다.
 
 PublicKeyInfo 스트림에는 공개 키 정보가 저장된다.
+
+#### 3.2.9. 스크립트
+
+Scripts 스토리지에는 Script 코드를 저장한다.
+
+JScriptVersion 스트림에는 Script Version이 저장된다.
+
+<i id='table8'></i>
+
+| 자료형    |    길이 | 설명               |
+| --------- | ------: | ------------------ |
+| DWORD     | 4 Bytes | 스크립트 버전 HIGH |
+| DWORD     | 4 Bytes | 스크립트 버전 LOW  |
+| 전체 길이 | 8 Bytes |                    |
+
+<i id='table8-label'>표 8 스크립트 버전</i>
+
+DefaultJScript 스트림에는 Script 헤더, 소스, Pre 소스, Post 소스가 저장된다.
+
+<i id='table9'></i>
+
+| 자료형                            |                                                                                                                 길이 | 설명                                                   |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------: | ------------------------------------------------------ |
+| DWORD                             |                                                                                                              4 Bytes | 스크립트 헤더 길이 (<i id='table9-len1'>len1</i>)      |
+| WCHAR array[[len1](#table9-len1)] |                                                                                         2×[len1](#table9-len1) Bytes | 스크립트 헤더                                          |
+| DWORD                             |                                                                                                              4 Bytes | 스크립트 소스 길이 (<i id='table9-len2'>len2</i>)      |
+| WCHAR array[[len2](#table9-len2)] |                                                                                         2×[len2](#table9-len2) Bytes | 스크립트 소스                                          |
+| DWORD                             |                                                                                                              4 Bytes | 스크립트 Pre 소스 길이 (<i id='table9-len3'>len3</i>)  |
+| WCHAR array[[len3](#table9-len3)] |                                                                                         2×[len3](#table9-len3) Bytes | 스크립트 Pre 소스                                      |
+| DWORD                             |                                                                                                              4 Bytes | 스크립트 Post 소스 길이 (<i id='table9-len4'>len4</i>) |
+| WCHAR array[[len4](#table9-len4)] |                                                                                         2×[len4](#table9-len4) Bytes | 스크립트 Post 소스                                     |
+| DWORD                             |                                                                                                              4 Bytes | 스크립트 end flag (-1)                                 |
+| 전체 길이                         | 20 + (2×[len1](#table9-len1)) + (2×[len2](#table9-len2)) + (2×[len3](#table9-len3)) + (2×[len4](#table9-len4)) Bytes |                                                        |
+
+<i id='table9-label'>표 9 스크립트</i>
