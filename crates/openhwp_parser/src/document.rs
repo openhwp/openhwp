@@ -1,27 +1,15 @@
-use crate::{DocInfo, FileHeader, Section};
-use std::{fs::File, path::Path};
-
-pub trait HwpRead {
-    fn header(&mut self) -> Result<Vec<u8>, HwpError>;
-
-    fn doc_info(&mut self) -> Result<Vec<u8>, HwpError>;
-
-    fn sections(&mut self) -> impl Iterator<Item = Result<Vec<u8>, HwpError>>;
-}
+use crate::{Body, DocInfo, FileHeader, HwpRead, HwpReader};
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct HwpDocument {
     pub file_header: FileHeader,
     pub doc_info: DocInfo,
-    pub sections: Vec<Section>,
-}
-
-pub struct HwpReader {
-    file: cfb::CompoundFile<File>,
+    pub body: Body,
 }
 
 #[derive(Debug, Error)]
-pub enum HwpError {
+pub enum HwpDocumentError {
     #[error("Cannot open file: {0}")]
     CannotOpenFile(anyhow::Error),
     #[error("Cannot find file header: {0}")]
@@ -34,81 +22,26 @@ pub enum HwpError {
     FileHeader(#[from] crate::FileHeaderError),
     #[error("Invalid doc info: {0}")]
     DocInfo(#[from] crate::DocInfoError),
-    #[error("Invalid section: {0}")]
-    Section(#[from] crate::SectionError),
+    #[error("Invalid body: {0}")]
+    Body(#[from] crate::BodyError),
 }
 
 impl HwpDocument {
-    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, HwpError> {
-        Self::from_reader(HwpReader::from_path(path.as_ref())?)
+    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self, HwpDocumentError> {
+        let mut reader = HwpReader::from_path(path.as_ref())?;
+
+        Self::from_reader(&mut reader)
     }
 
-    pub fn from_reader<R: HwpRead>(mut reader: R) -> Result<Self, HwpError> {
-        let file_header = FileHeader::from_vec(reader.header()?)?;
-        let doc_info = DocInfo::from_vec(
-            reader.doc_info()?,
-            file_header.properties.compressed,
-            &file_header.version,
-        )?;
-
-        let mut sections = vec![];
-        for section in reader.sections() {
-            sections.push(Section::from_vec(section?)?);
-        }
+    pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
+        let file_header = FileHeader::from_reader(reader)?;
+        let doc_info = DocInfo::from_reader(reader, &file_header)?;
+        let body = Body::from_reader(reader)?;
 
         Ok(Self {
             file_header,
             doc_info,
-            sections,
-        })
-    }
-}
-
-impl HwpReader {
-    pub fn from_path(path: &Path) -> Result<Self, HwpError> {
-        Ok(Self {
-            file: cfb::open(path).map_err(|error| HwpError::CannotOpenFile(error.into()))?,
-        })
-    }
-
-    fn read(file: &mut cfb::CompoundFile<File>, path: &str) -> Result<Vec<u8>, std::io::Error> {
-        use std::io::Read;
-
-        let mut stream = file.open_stream(path)?;
-        let mut buf = vec![];
-        stream.read_to_end(&mut buf)?;
-
-        Ok(buf)
-    }
-}
-
-impl HwpRead for HwpReader {
-    fn header(&mut self) -> Result<Vec<u8>, HwpError> {
-        Self::read(&mut self.file, "/FileHeader")
-            .map_err(|error| HwpError::CannotFindFileHeader(error.into()))
-    }
-
-    fn doc_info(&mut self) -> Result<Vec<u8>, HwpError> {
-        Self::read(&mut self.file, "/DocInfo")
-            .map_err(|error| HwpError::CannotFindDocInfo(error.into()))
-    }
-
-    fn sections(&mut self) -> impl Iterator<Item = Result<Vec<u8>, HwpError>> {
-        let mut index = 0;
-
-        std::iter::from_fn(move || {
-            let path = format!("/BodyText/Section{:04}", index);
-            if !self.file.exists(&path) {
-                return None;
-            }
-
-            match Self::read(&mut self.file, &path) {
-                Ok(section) => {
-                    index += 1;
-                    Some(Ok(section))
-                }
-                Err(error) => Some(Err(HwpError::CannotFindSection(error.into()))),
-            }
+            body,
         })
     }
 }

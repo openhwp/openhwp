@@ -1,3 +1,5 @@
+use crate::{HwpDocumentError, HwpRead};
+
 #[derive(Debug)]
 pub struct FileHeader {
     /// 파일 버전 정보
@@ -107,6 +109,10 @@ pub enum FileHeaderError {
 }
 
 impl FileHeader {
+    pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
+        Ok(Self::from_vec(reader.header()?)?)
+    }
+
     pub fn from_vec(buf: Vec<u8>) -> Result<Self, FileHeaderError> {
         let buf = match <[u8; 256]>::try_from(buf.as_slice()) {
             Ok(buf) if !buf.starts_with(b"HWP Document File") => {

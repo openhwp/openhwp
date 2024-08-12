@@ -1,16 +1,14 @@
 mod compatible_document;
 mod document_properties;
 mod id_mappings;
-mod record;
 mod tag;
 
 pub use compatible_document::*;
 pub use document_properties::*;
 pub use id_mappings::*;
-pub use record::*;
 pub use tag::*;
 
-use crate::Version;
+use crate::{FileHeader, HwpDocumentError, HwpRead, Record, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct DocInfo {
@@ -28,6 +26,17 @@ pub enum DocInfoError {
 }
 
 impl DocInfo {
+    pub fn from_reader<R: HwpRead>(
+        reader: &mut R,
+        file_header: &FileHeader,
+    ) -> Result<Self, HwpDocumentError> {
+        Ok(Self::from_vec(
+            reader.doc_info()?,
+            file_header.properties.compressed,
+            &file_header.version,
+        )?)
+    }
+
     pub fn from_vec(
         buf: Vec<u8>,
         compressed: bool,

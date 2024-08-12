@@ -14,6 +14,6 @@ fn new() {
     let reader = HwpReader::from_path(path);
     assert!(reader.is_ok());
 
-    let reader = reader.unwrap();
-    assert!(HwpDocument::from_reader(reader).is_ok());
+    let mut reader = reader.unwrap();
+    assert!(HwpDocument::from_reader(&mut reader).is_ok());
 }
