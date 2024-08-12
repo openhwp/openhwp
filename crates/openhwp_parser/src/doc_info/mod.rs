@@ -6,7 +6,7 @@ pub use compatible_document::*;
 pub use document_properties::*;
 pub use id_mappings::*;
 
-use crate::{decompress, Compressed};
+use crate::decompress;
 use crate::{DocInfoTag, FileHeader, HwpDocumentError, HwpRead, Record, RecordIter, Version};
 
 #[derive(Debug)]
@@ -22,10 +22,8 @@ impl DocInfo {
         file_header: &FileHeader,
     ) -> Result<Self, HwpDocumentError> {
         let buf = reader.doc_info()?;
-        let buf = match file_header.properties.compressed {
-            Compressed::Yes => decompress(&buf)?,
-            Compressed::No => buf,
-        };
+        let buf = decompress!(buf, file_header.properties.compressed);
+
         Ok(Self::from_vec(buf, &file_header.version)?)
     }
 

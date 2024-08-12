@@ -12,6 +12,8 @@ pub struct HwpDocument {
 pub enum HwpDocumentError {
     #[error("Decompression error: {0}")]
     Decompression(#[from] std::io::Error),
+    #[error("End of record")]
+    EndOfRecord,
     #[error("Invalid tag id: {0:?}")]
     InvalidTagId(u16),
     #[error("Cannot open file: {0}")]

@@ -32,6 +32,11 @@ impl<'doc_info> RecordIter<'doc_info> {
             _ => Err(HwpDocumentError::InvalidTagId(tag)),
         }
     }
+
+    #[inline]
+    pub const fn remaining(&self) -> &[u8] {
+        self.buf
+    }
 }
 
 impl<'doc_info> Iterator for RecordIter<'doc_info> {

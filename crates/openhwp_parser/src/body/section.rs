@@ -1,8 +1,9 @@
-use crate::Record;
+use super::Paragraph;
+use crate::{decode, decompress, Compressed, HwpDocumentError, Record};
 
 #[derive(Debug)]
 pub struct Section {
-    //
+    pub paragraphs: Vec<Paragraph>,
 }
 
 #[derive(Debug, Error)]
@@ -12,9 +13,31 @@ pub enum SectionError {
 }
 
 impl Section {
-    pub fn from_vec(buf: Vec<u8>) -> Result<Self, SectionError> {
-        let mut stream = Record::iter(&buf);
+    #[inline]
+    pub fn from_non_distributed(
+        buf: Vec<u8>,
+        compressed: Compressed,
+    ) -> Result<Self, HwpDocumentError> {
+        let buf = decompress!(buf, compressed);
 
-        Ok(Self {})
+        Ok(Self::from_buf(&buf)?)
+    }
+
+    pub fn from_distributed(
+        buf: Vec<u8>,
+        compressed: Compressed,
+    ) -> Result<Self, HwpDocumentError> {
+        let decoded = decode(buf)?;
+        let buf = decompress!(decoded, compressed);
+
+        Ok(Self::from_buf(&buf)?)
+    }
+
+    pub fn from_buf(buf: &[u8]) -> Result<Self, SectionError> {
+        let mut stream = Record::iter(buf);
+
+        Ok(Self {
+            paragraphs: stream.paragraphs(),
+        })
     }
 }
