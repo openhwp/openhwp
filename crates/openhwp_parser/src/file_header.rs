@@ -25,7 +25,7 @@ pub struct Version {
 #[derive(Debug, Clone)]
 pub struct Properties {
     /// 압축 여부
-    pub compressed: bool,
+    pub compressed: Compressed,
     /// 암호 설정 여부
     pub encrypted: bool,
     /// 배포용 문서 여부
@@ -87,11 +87,17 @@ pub enum EncryptedVersion {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum KoglLicenseSupportCountry {
     NONE = 0,
     KOR = 6,
     US = 15,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Compressed {
+    No,
+    Yes,
 }
 
 #[derive(Debug, Error)]
@@ -133,7 +139,10 @@ impl FileHeader {
         };
 
         let properties = Properties {
-            compressed: buf[36] & 0b0000_0001 != 0,
+            compressed: match buf[36] & 0b0000_0001 != 0 {
+                true => Compressed::Yes,
+                false => Compressed::No,
+            },
             encrypted: buf[36] & 0b0000_0010 != 0,
             distribution: buf[36] & 0b0000_0100 != 0,
             script: buf[36] & 0b0000_1000 != 0,
