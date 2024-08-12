@@ -38,7 +38,7 @@ pub enum AlternativeFaceNameKind {
     Unexpected(u8),
 }
 
-/// https://en.wikipedia.org/wiki/PANOSE
+/// <https://en.wikipedia.org/wiki/PANOSE>
 #[derive(Debug)]
 pub struct Panose {
     /// 글꼴 계열

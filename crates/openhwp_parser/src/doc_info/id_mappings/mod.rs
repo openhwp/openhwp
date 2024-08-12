@@ -12,9 +12,6 @@ pub mod paragraph_shape;
 pub mod style;
 pub mod tab_definition;
 
-use super::{DocInfoError, RecordIter};
-use crate::Version;
-
 pub use bin_data::*;
 pub use border_fill::*;
 pub use bullet::*;
@@ -28,6 +25,9 @@ pub use numbering::*;
 pub use paragraph_shape::*;
 pub use style::*;
 pub use tab_definition::*;
+
+use super::RecordIter;
+use crate::{HwpDocumentError, Version};
 
 #[derive(Debug)]
 pub struct IdMappings {
@@ -47,7 +47,7 @@ pub struct IdMappings {
 }
 
 impl<'doc_info> RecordIter<'doc_info> {
-    pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, DocInfoError> {
+    pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, HwpDocumentError> {
         let id_mapping_count = self.id_mapping_count()?;
 
         let bin_data = self.bin_data(&id_mapping_count);

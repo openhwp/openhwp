@@ -14,6 +14,7 @@ pub mod document;
 pub mod file_header;
 pub mod reader;
 pub mod record;
+pub mod tag;
 
 use bytes::*;
 
@@ -23,6 +24,7 @@ pub use document::*;
 pub use file_header::*;
 pub use reader::*;
 pub use record::*;
+pub use tag::*;
 
 #[inline]
 pub fn from_path(path: &str) -> Result<HwpDocument, HwpDocumentError> {

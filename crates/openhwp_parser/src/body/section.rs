@@ -1,3 +1,5 @@
+use crate::Record;
+
 #[derive(Debug)]
 pub struct Section {
     //
@@ -10,7 +12,9 @@ pub enum SectionError {
 }
 
 impl Section {
-    pub fn from_vec(_buf: Vec<u8>) -> Result<Self, SectionError> {
-        std::todo!();
+    pub fn from_vec(buf: Vec<u8>) -> Result<Self, SectionError> {
+        let mut stream = Record::iter(&buf);
+
+        Ok(Self {})
     }
 }

@@ -1,4 +1,4 @@
-use crate::u32;
+use crate::{u32, HwpDocumentError};
 
 #[derive(Debug, Default)]
 pub struct Record<'doc_info> {
@@ -24,6 +24,13 @@ impl<'doc_info> RecordIter<'doc_info> {
     #[inline]
     pub const fn new(buf: &'doc_info [u8]) -> Self {
         Self { buf }
+    }
+
+    pub fn expect(&mut self, tag: u16) -> Result<Record, HwpDocumentError> {
+        match self.next() {
+            Some(record) if record.tag_id == tag => Ok(record),
+            _ => Err(HwpDocumentError::InvalidTagId(tag)),
+        }
     }
 }
 

@@ -2,26 +2,36 @@ pub mod section;
 
 pub use section::*;
 
-use crate::{HwpDocumentError, HwpRead};
+use crate::{decompress, FileHeader, HwpDocumentError, HwpRead};
 
 #[derive(Debug)]
 pub struct Body {
     pub sections: Vec<Section>,
 }
 
-#[derive(Debug, Error)]
-pub enum BodyError {
-    #[error("Invalid body")]
-    InvalidBody,
-    #[error("Invalid section: {0}")]
-    Section(#[from] SectionError),
-}
-
 impl Body {
-    pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
+    pub fn from_reader<R: HwpRead>(
+        reader: &mut R,
+        file_header: &FileHeader,
+    ) -> Result<Self, HwpDocumentError> {
+        Ok(Self::from_iter(
+            reader.sections(),
+            file_header.properties.compressed,
+        )?)
+    }
+
+    pub fn from_iter<I: Iterator<Item = Result<Vec<u8>, HwpDocumentError>>>(
+        iter: I,
+        compressed: bool,
+    ) -> Result<Self, HwpDocumentError> {
         let mut sections = vec![];
-        for section in reader.sections() {
-            sections.push(Section::from_vec(section?).map_err(BodyError::Section)?);
+        for section in iter {
+            let buf = section?;
+            let buf = match compressed {
+                true => decompress(&buf)?,
+                false => buf,
+            };
+            sections.push(Section::from_vec(buf)?);
         }
 
         Ok(Self { sections })

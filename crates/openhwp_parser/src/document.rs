@@ -10,6 +10,10 @@ pub struct HwpDocument {
 
 #[derive(Debug, Error)]
 pub enum HwpDocumentError {
+    #[error("Decompression error: {0}")]
+    Decompression(#[from] std::io::Error),
+    #[error("Invalid tag id: {0:?}")]
+    InvalidTagId(u16),
     #[error("Cannot open file: {0}")]
     CannotOpenFile(anyhow::Error),
     #[error("Cannot find file header: {0}")]
@@ -20,10 +24,8 @@ pub enum HwpDocumentError {
     CannotFindSection(anyhow::Error),
     #[error("Invalid file header: {0}")]
     FileHeader(#[from] crate::FileHeaderError),
-    #[error("Invalid doc info: {0}")]
-    DocInfo(#[from] crate::DocInfoError),
-    #[error("Invalid body: {0}")]
-    Body(#[from] crate::BodyError),
+    #[error("Invalid section: {0}")]
+    Section(#[from] crate::SectionError),
 }
 
 impl HwpDocument {
@@ -36,7 +38,7 @@ impl HwpDocument {
     pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
         let file_header = FileHeader::from_reader(reader)?;
         let doc_info = DocInfo::from_reader(reader, &file_header)?;
-        let body = Body::from_reader(reader)?;
+        let body = Body::from_reader(reader, &file_header)?;
 
         Ok(Self {
             file_header,

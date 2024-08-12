@@ -19,3 +19,13 @@ pub fn to_string(buf: &[u8]) -> String {
 
     String::from_utf16_lossy(&buf).to_string()
 }
+
+pub fn decompress(source: &[u8]) -> Result<Vec<u8>, std::io::Error> {
+    use flate2::bufread::DeflateDecoder;
+    use std::io::Read;
+
+    let mut buf = vec![];
+    DeflateDecoder::new(source).read_to_end(&mut buf)?;
+
+    Ok(buf)
+}

@@ -14,7 +14,7 @@ pub struct CompatibleDocument {
 
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn compatible_document(&mut self) -> CompatibleDocument {
-        match self.expect(DocInfoTag::HWPTAG_COMPATIBLE_DOCUMENT) {
+        match self.expect(DocInfoTag::HWPTAG_COMPATIBLE_DOCUMENT as u16) {
             Ok(_) => CompatibleDocument {
                 layout_compatibility: self.layout_compatibility(),
                 track_changes: self.track_changes(),
