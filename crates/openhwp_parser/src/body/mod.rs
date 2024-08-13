@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 pub mod paragraph;
 pub mod section;
 

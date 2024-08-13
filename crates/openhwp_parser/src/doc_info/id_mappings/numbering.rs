@@ -9,12 +9,12 @@ pub struct Numbering {
 
 #[derive(Debug)]
 pub enum ParagraphVec {
-    NonExtends([Paragraph; 7]),
-    Extends([Paragraph; 10]),
+    NonExtends([ParagraphItem; 7]),
+    Extends([ParagraphItem; 10]),
 }
 
 #[derive(Debug)]
-pub struct Paragraph {
+pub struct ParagraphItem {
     pub start_number: Option<u32>,
     pub format: String,
     pub header: ParagraphHeader,
@@ -69,13 +69,13 @@ impl<'doc_info> RecordIter<'doc_info> {
 
 impl Numbering {
     pub fn from_buf(buf: &[u8], version: &Version) -> Numbering {
-        let (mut paragraph0, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph1, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph2, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph3, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph4, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph5, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph6, buf) = Paragraph::from_buf(buf);
+        let (mut paragraph0, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph1, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph2, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph3, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph4, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph5, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph6, buf) = ParagraphItem::from_buf(buf);
         let (start_number, buf) = buf.split_at(2);
         let start_number = u16(start_number, 0);
         let buf = if version >= &Version::new(5, 0, 2, 5) {
@@ -92,9 +92,9 @@ impl Numbering {
             buf
         };
         let paragraphs = if !buf.is_empty() {
-            let (mut paragraph7, buf) = Paragraph::from_buf(buf);
-            let (mut paragraph8, buf) = Paragraph::from_buf(buf);
-            let (mut paragraph9, buf) = Paragraph::from_buf(buf);
+            let (mut paragraph7, buf) = ParagraphItem::from_buf(buf);
+            let (mut paragraph8, buf) = ParagraphItem::from_buf(buf);
+            let (mut paragraph9, buf) = ParagraphItem::from_buf(buf);
             if version >= &Version::new(5, 1, 0, 0) {
                 paragraph7.start_number = Some(u32(buf, 0));
                 paragraph8.start_number = Some(u32(buf, 4));
@@ -118,7 +118,7 @@ impl Numbering {
     }
 }
 
-impl Paragraph {
+impl ParagraphItem {
     pub fn from_buf(buf: &[u8]) -> (Self, &[u8]) {
         let header = ParagraphHeader::from_buf(buf);
         let size = u16(buf, 12);
