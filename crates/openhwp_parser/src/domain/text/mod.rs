@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use crate::u16;
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
