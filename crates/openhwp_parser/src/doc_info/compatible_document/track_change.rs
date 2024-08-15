@@ -5,7 +5,7 @@ pub struct TrackChange {
     //
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn track_changes(&mut self) -> Option<TrackChange> {
         None
     }

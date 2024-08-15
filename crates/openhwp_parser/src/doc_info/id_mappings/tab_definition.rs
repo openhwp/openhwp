@@ -25,7 +25,7 @@ pub enum TabKind {
     Unknown(u8),
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn tab_definitions(&mut self, id_mappings: &IdMappingCount) -> Vec<TabDefinition> {
         let mut tab_defs = Vec::with_capacity(id_mappings.tab_def as usize);
 

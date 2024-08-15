@@ -46,7 +46,7 @@ pub enum TextOffsetKind {
     Value,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn numberings(
         &mut self,
         id_mappings: &IdMappingCount,

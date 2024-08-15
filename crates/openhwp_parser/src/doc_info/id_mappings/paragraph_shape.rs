@@ -148,7 +148,7 @@ pub struct Attribute5_0_2_5 {
     pub line_spacing: i32,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn paragraph_shapes(
         &mut self,
         id_mappings: &IdMappingCount,

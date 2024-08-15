@@ -40,7 +40,7 @@ pub struct IdMappingCount {
     pub track_change_author: u32,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn id_mapping_count(&mut self) -> Result<IdMappingCount, HwpDocumentError> {
         let record = self.expect(HwpTag::HWPTAG_ID_MAPPINGS)?;
 

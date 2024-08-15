@@ -308,7 +308,7 @@ pub enum GradationKind {
     Unknown(u8),
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn border_fills(&mut self, id_mapping_counts: &IdMappingCount) -> Vec<BorderFill> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 

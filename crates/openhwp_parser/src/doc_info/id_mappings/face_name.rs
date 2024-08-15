@@ -63,7 +63,7 @@ pub struct Panose {
     pub x_height: u8,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn face_names(&mut self, id_mappings: &IdMappingCount) -> Vec<FaceName> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {

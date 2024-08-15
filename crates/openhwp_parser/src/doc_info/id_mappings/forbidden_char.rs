@@ -4,7 +4,7 @@ use crate::{HwpTag, RecordIter};
 #[derive(Debug)]
 pub struct ForbiddenChar;
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn forbidden_chars(&mut self) -> Vec<ForbiddenChar> {
         let mut forbidden_chars = vec![];
 

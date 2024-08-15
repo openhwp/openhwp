@@ -5,7 +5,7 @@ pub struct ParagraphText {
     pub text: HwpText,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn paragraph_text(&mut self, size: usize) -> Result<ParagraphText, HwpDocumentError> {
         let record = self.expect(HwpTag::HWPTAG_PARA_TEXT)?;
         let text = HwpText::from_buf(record.payload, size);

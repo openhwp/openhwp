@@ -12,7 +12,7 @@ pub struct CompatibleDocument {
     pub track_changes: Option<TrackChange>,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn compatible_document(&mut self) -> CompatibleDocument {
         match self.expect(HwpTag::HWPTAG_COMPATIBLE_DOCUMENT) {
             Ok(_) => CompatibleDocument {

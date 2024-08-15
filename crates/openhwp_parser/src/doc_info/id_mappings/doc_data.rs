@@ -4,7 +4,7 @@ use crate::{HwpTag, RecordIter};
 #[derive(Debug)]
 pub struct DocData;
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn doc_data(&mut self) -> Vec<DocData> {
         let mut doc_data = vec![];
 

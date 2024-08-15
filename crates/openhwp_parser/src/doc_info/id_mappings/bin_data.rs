@@ -56,7 +56,7 @@ pub enum State {
     Unknown(u16),
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Vec<BinData> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
 

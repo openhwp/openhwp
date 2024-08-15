@@ -155,7 +155,7 @@ pub enum SymbolKind {
     Unknown(u8),
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn char_shapes(
         &mut self,
         id_mappings: &IdMappingCount,

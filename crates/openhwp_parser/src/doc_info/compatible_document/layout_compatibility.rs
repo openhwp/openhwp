@@ -5,7 +5,7 @@ pub struct LayoutCompatibility {
     //
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn layout_compatibility(&mut self) -> Option<LayoutCompatibility> {
         None
     }

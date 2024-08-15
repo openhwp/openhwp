@@ -24,7 +24,7 @@ pub struct CaratLocation {
     pub char_index: u32,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn document_properties(&mut self) -> Result<DocumentProperties, HwpDocumentError> {
         let record = self.expect(HwpTag::HWPTAG_DOCUMENT_PROPERTIES)?;
         let document_properties = DocumentProperties::from_buf(record.payload);

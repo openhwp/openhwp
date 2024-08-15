@@ -22,7 +22,7 @@ pub enum StyleKind {
 #[derive(Debug, Clone, Copy)]
 pub struct LanguageId(pub u16);
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn styles(&mut self, id_mappings: &IdMappingCount) -> Vec<Style> {
         let mut styles = Vec::with_capacity(id_mappings.style as usize);
 

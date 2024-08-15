@@ -46,7 +46,7 @@ pub struct IdMappings {
     pub forbidden_chars: Vec<ForbiddenChar>,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, HwpDocumentError> {
         let id_mapping_count = self.id_mapping_count()?;
 

@@ -10,7 +10,7 @@ pub struct Bullet {
     pub checked_char: char,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     pub fn bullets(&mut self, id_mappings: &IdMappingCount) -> Vec<Bullet> {
         let mut bullets = vec![];
 

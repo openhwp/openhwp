@@ -1,28 +1,28 @@
 use crate::{u32, HwpDocumentError, HwpTag};
 
 #[derive(Debug)]
-pub struct Record<'doc_info> {
+pub struct Record<'hwp> {
     pub tag: HwpTag,
     pub level: u16,
     pub size: usize,
-    pub payload: &'doc_info [u8],
+    pub payload: &'hwp [u8],
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct RecordIter<'doc_info> {
-    buf: &'doc_info [u8],
+pub struct RecordIter<'hwp> {
+    buf: &'hwp [u8],
 }
 
-impl<'doc_info> Record<'doc_info> {
+impl<'hwp> Record<'hwp> {
     #[inline]
     pub const fn iter(buf: &[u8]) -> RecordIter {
         RecordIter::new(buf)
     }
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     #[inline]
-    pub const fn new(buf: &'doc_info [u8]) -> Self {
+    pub const fn new(buf: &'hwp [u8]) -> Self {
         Self { buf }
     }
 
@@ -44,8 +44,8 @@ impl<'doc_info> RecordIter<'doc_info> {
     }
 }
 
-impl<'doc_info> Iterator for RecordIter<'doc_info> {
-    type Item = Record<'doc_info>;
+impl<'hwp> Iterator for RecordIter<'hwp> {
+    type Item = Record<'hwp>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.buf.is_empty() {
