@@ -1,10 +1,10 @@
-use crate::{HwpTag, RecordIter};
+use crate::{DocInfoIter, HwpTag};
 
 /// TODO: HWPTAG_FORBIDDEN_CHAR 분석 필요
 #[derive(Debug)]
 pub struct ForbiddenChar;
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn forbidden_chars(&mut self) -> Vec<ForbiddenChar> {
         let mut forbidden_chars = vec![];
 

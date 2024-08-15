@@ -1,5 +1,5 @@
 use super::{BorderShape, Color, IdMappingCount};
-use crate::{u16, u32, HwpTag, RecordIter, Version};
+use crate::{u16, u32, DocInfoIter, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct CharShape {
@@ -155,12 +155,8 @@ pub enum SymbolKind {
     Unknown(u8),
 }
 
-impl<'hwp> RecordIter<'hwp> {
-    pub fn char_shapes(
-        &mut self,
-        id_mappings: &IdMappingCount,
-        version: &Version,
-    ) -> Vec<CharShape> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn char_shapes(&mut self, id_mappings: &IdMappingCount) -> Vec<CharShape> {
         let mut char_shapes = Vec::with_capacity(id_mappings.char_shape as usize);
 
         for record in self
@@ -168,7 +164,7 @@ impl<'hwp> RecordIter<'hwp> {
             .take(id_mappings.char_shape as usize)
             .take_while(|record| record.tag == HwpTag::HWPTAG_CHAR_SHAPE)
         {
-            char_shapes.push(CharShape::from_buf(record.payload, version));
+            char_shapes.push(CharShape::from_buf(record.payload, self.version()));
             self.next();
         }
 

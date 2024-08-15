@@ -1,5 +1,5 @@
 use super::{BorderShape, IdMappingCount};
-use crate::{u32, HwpTag, RecordIter};
+use crate::{u32, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct TabDefinition {
@@ -25,7 +25,7 @@ pub enum TabKind {
     Unknown(u8),
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn tab_definitions(&mut self, id_mappings: &IdMappingCount) -> Vec<TabDefinition> {
         let mut tab_defs = Vec::with_capacity(id_mappings.tab_def as usize);
 

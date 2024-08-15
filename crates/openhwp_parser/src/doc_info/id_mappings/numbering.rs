@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, HwpTag, RecordIter, Version};
+use crate::{to_string, u16, u32, DocInfoIter, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct Numbering {
@@ -46,12 +46,8 @@ pub enum TextOffsetKind {
     Value,
 }
 
-impl<'hwp> RecordIter<'hwp> {
-    pub fn numberings(
-        &mut self,
-        id_mappings: &IdMappingCount,
-        version: &Version,
-    ) -> Vec<Numbering> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn numberings(&mut self, id_mappings: &IdMappingCount) -> Vec<Numbering> {
         let mut numberings = Vec::with_capacity(id_mappings.numbering as usize);
 
         for record in self
@@ -59,7 +55,7 @@ impl<'hwp> RecordIter<'hwp> {
             .take(id_mappings.numbering as usize)
             .take_while(|record| record.tag == HwpTag::HWPTAG_NUMBERING)
         {
-            numberings.push(Numbering::from_buf(record.payload, version));
+            numberings.push(Numbering::from_buf(record.payload, self.version()));
             self.next();
         }
 

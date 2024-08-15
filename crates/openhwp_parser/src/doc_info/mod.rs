@@ -1,12 +1,14 @@
 mod compatible_document;
 mod document_properties;
 mod id_mappings;
+mod stream;
 
 pub use compatible_document::*;
 pub use document_properties::*;
 pub use id_mappings::*;
+pub use stream::*;
 
-use crate::{decompress, FileHeader, HwpDocumentError, HwpRead, Record, RecordIter, Version};
+use crate::{decompress, FileHeader, HwpDocumentError, HwpRead, Version};
 
 #[derive(Debug)]
 pub struct DocInfo {
@@ -27,11 +29,11 @@ impl DocInfo {
     }
 
     pub fn from_vec(buf: Vec<u8>, version: &Version) -> Result<Self, HwpDocumentError> {
-        let mut stream = Record::iter(&buf);
+        let mut stream = DocInfoIter::new(&buf, version);
 
         Ok(Self {
             document_properties: stream.document_properties()?,
-            id_mappings: stream.id_mappings(version)?,
+            id_mappings: stream.id_mappings()?,
             compatible_document: stream.compatible_document(),
         })
     }

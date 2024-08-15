@@ -26,8 +26,7 @@ pub use paragraph_shape::*;
 pub use style::*;
 pub use tab_definition::*;
 
-use super::RecordIter;
-use crate::{HwpDocumentError, Version};
+use crate::{DocInfoIter, HwpDocumentError};
 
 #[derive(Debug)]
 pub struct IdMappings {
@@ -46,18 +45,18 @@ pub struct IdMappings {
     pub forbidden_chars: Vec<ForbiddenChar>,
 }
 
-impl<'hwp> RecordIter<'hwp> {
-    pub fn id_mappings(&mut self, version: &Version) -> Result<IdMappings, HwpDocumentError> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn id_mappings(&mut self) -> Result<IdMappings, HwpDocumentError> {
         let id_mapping_count = self.id_mapping_count()?;
 
         let bin_data = self.bin_data(&id_mapping_count);
         let face_names = self.face_names(&id_mapping_count);
         let border_fills = self.border_fills(&id_mapping_count);
-        let char_shapes = self.char_shapes(&id_mapping_count, version);
+        let char_shapes = self.char_shapes(&id_mapping_count);
         let tab_definitions = self.tab_definitions(&id_mapping_count);
-        let numberings = self.numberings(&id_mapping_count, version);
+        let numberings = self.numberings(&id_mapping_count);
         let bullets = self.bullets(&id_mapping_count);
-        let paragraph_shapes = self.paragraph_shapes(&id_mapping_count, version);
+        let paragraph_shapes = self.paragraph_shapes(&id_mapping_count);
         let styles = self.styles(&id_mapping_count);
         let doc_data = self.doc_data();
         let distribute_doc_data = self.distribute_doc_data();

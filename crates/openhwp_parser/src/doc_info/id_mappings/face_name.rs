@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, HwpTag, RecordIter};
+use crate::{to_string, u16, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -63,7 +63,7 @@ pub struct Panose {
     pub x_height: u8,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn face_names(&mut self, id_mappings: &IdMappingCount) -> Vec<FaceName> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {

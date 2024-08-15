@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, HwpTag, RecordIter, Version};
+use crate::{u16, u32, DocInfoIter, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct ParagraphShape {
@@ -148,12 +148,8 @@ pub struct Attribute5_0_2_5 {
     pub line_spacing: i32,
 }
 
-impl<'hwp> RecordIter<'hwp> {
-    pub fn paragraph_shapes(
-        &mut self,
-        id_mappings: &IdMappingCount,
-        version: &Version,
-    ) -> Vec<ParagraphShape> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn paragraph_shapes(&mut self, id_mappings: &IdMappingCount) -> Vec<ParagraphShape> {
         let mut paragraph_shapes = Vec::with_capacity(id_mappings.paragraph_shape as usize);
 
         for record in self
@@ -161,7 +157,7 @@ impl<'hwp> RecordIter<'hwp> {
             .take(id_mappings.paragraph_shape as usize)
             .take_while(|record| record.tag == HwpTag::HWPTAG_PARA_SHAPE)
         {
-            paragraph_shapes.push(ParagraphShape::from_buf(record.payload, version));
+            paragraph_shapes.push(ParagraphShape::from_buf(record.payload, self.version()));
             self.next();
         }
 

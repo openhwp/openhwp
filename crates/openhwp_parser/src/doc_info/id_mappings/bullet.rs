@@ -1,5 +1,5 @@
 use super::{IdMappingCount, Image, NumberingParagraphHeader};
-use crate::{u16, u32, HwpTag, RecordIter};
+use crate::{u16, u32, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct Bullet {
@@ -10,7 +10,7 @@ pub struct Bullet {
     pub checked_char: char,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn bullets(&mut self, id_mappings: &IdMappingCount) -> Vec<Bullet> {
         let mut bullets = vec![];
 

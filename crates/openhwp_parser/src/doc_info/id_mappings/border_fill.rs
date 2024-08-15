@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, HwpTag, RecordIter};
+use crate::{u16, u32, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct BorderFill {
@@ -308,7 +308,7 @@ pub enum GradationKind {
     Unknown(u8),
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn border_fills(&mut self, id_mapping_counts: &IdMappingCount) -> Vec<BorderFill> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 

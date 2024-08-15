@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, HwpTag, RecordIter};
+use crate::{to_string, u16, u32, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct BinData {
@@ -56,7 +56,7 @@ pub enum State {
     Unknown(u16),
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Vec<BinData> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
 

@@ -1,7 +1,7 @@
 mod layout_compatibility;
 mod track_change;
 
-use crate::{HwpTag, RecordIter};
+use crate::{DocInfoIter, HwpTag};
 
 pub use layout_compatibility::*;
 pub use track_change::*;
@@ -12,7 +12,7 @@ pub struct CompatibleDocument {
     pub track_changes: Option<TrackChange>,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn compatible_document(&mut self) -> CompatibleDocument {
         match self.expect(HwpTag::HWPTAG_COMPATIBLE_DOCUMENT) {
             Ok(_) => CompatibleDocument {

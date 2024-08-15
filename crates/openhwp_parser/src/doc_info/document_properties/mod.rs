@@ -1,4 +1,5 @@
-use crate::{u16, u32, HwpDocumentError, HwpTag, RecordIter};
+use super::DocInfoIter;
+use crate::{u16, u32, HwpDocumentError, HwpTag};
 
 #[derive(Debug)]
 pub struct DocumentProperties {
@@ -24,7 +25,7 @@ pub struct CaratLocation {
     pub char_index: u32,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn document_properties(&mut self) -> Result<DocumentProperties, HwpDocumentError> {
         let record = self.expect(HwpTag::HWPTAG_DOCUMENT_PROPERTIES)?;
         let document_properties = DocumentProperties::from_buf(record.payload);

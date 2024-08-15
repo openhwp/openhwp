@@ -1,11 +1,11 @@
-use crate::RecordIter;
+use crate::DocInfoIter;
 
 #[derive(Debug)]
 pub struct LayoutCompatibility {
     //
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn layout_compatibility(&mut self) -> Option<LayoutCompatibility> {
         None
     }

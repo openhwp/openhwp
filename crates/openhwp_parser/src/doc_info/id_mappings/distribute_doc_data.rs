@@ -1,10 +1,10 @@
-use crate::{HwpTag, RecordIter};
+use crate::{DocInfoIter, HwpTag};
 
 /// TODO: HWPTAG_DISTRIBUTE_DOC_DATA 분석 필요
 #[derive(Debug)]
 pub struct DistributeDocData;
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn distribute_doc_data(&mut self) -> Vec<DistributeDocData> {
         let mut distribute_doc_data = vec![];
 
