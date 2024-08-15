@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, DocInfoTag, RecordIter};
+use crate::{to_string, u16, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct Style {
@@ -29,7 +29,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.style as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_STYLE as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_STYLE)
         {
             styles.push(Style::from_buf(record.payload));
             self.next();

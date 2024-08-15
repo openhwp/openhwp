@@ -1,8 +1,8 @@
-use crate::{u32, HwpDocumentError};
+use crate::{u32, HwpDocumentError, HwpTag};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Record<'doc_info> {
-    pub tag_id: u16,
+    pub tag: HwpTag,
     pub level: u16,
     pub size: usize,
     pub payload: &'doc_info [u8],
@@ -26,9 +26,9 @@ impl<'doc_info> RecordIter<'doc_info> {
         Self { buf }
     }
 
-    pub fn expect(&mut self, tag: u16) -> Result<Record, HwpDocumentError> {
+    pub fn expect(&mut self, tag: HwpTag) -> Result<Record, HwpDocumentError> {
         match self.next() {
-            Some(record) if record.tag_id == tag => Ok(record),
+            Some(record) if record.tag == tag => Ok(record),
             _ => Err(HwpDocumentError::InvalidTagId(tag)),
         }
     }
@@ -59,7 +59,7 @@ const fn consume(buf: &[u8]) -> (Record, &[u8]) {
 
     let header = u32(buf, 0);
 
-    let tag_id = (header & 0b0000_0000_0000_0000_0000_0011_1111_1111) as u16;
+    let tag = (header & 0b0000_0000_0000_0000_0000_0011_1111_1111) as u16;
     let level = ((header & 0b0000_0000_0000_1111_1111_1100_0000_0000) >> 10) as u16;
     let size = ((header & 0b1111_1111_1111_0000_0000_0000_0000_0000) >> 20) as usize;
 
@@ -79,7 +79,7 @@ const fn consume(buf: &[u8]) -> (Record, &[u8]) {
         }
     };
     let record = Record {
-        tag_id,
+        tag: HwpTag::from_u16(tag),
         level,
         size,
         payload,

@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{to_string, u16, u32, HwpTag, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct Numbering {
@@ -57,7 +57,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.numbering as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_NUMBERING as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_NUMBERING)
         {
             numberings.push(Numbering::from_buf(record.payload, version));
             self.next();

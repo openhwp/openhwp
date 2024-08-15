@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{u16, u32, HwpTag, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct ParagraphShape {
@@ -159,7 +159,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.paragraph_shape as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_PARA_SHAPE as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_PARA_SHAPE)
         {
             paragraph_shapes.push(ParagraphShape::from_buf(record.payload, version));
             self.next();

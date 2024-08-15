@@ -1,5 +1,5 @@
 use super::Paragraph;
-use crate::{decompress, u32, Compressed, DocInfoTag, HwpDocumentError, Record};
+use crate::{decompress, u32, Compressed, HwpDocumentError, HwpTag, Record};
 
 #[derive(Debug)]
 pub struct Section {
@@ -44,7 +44,7 @@ impl Section {
 
 pub(crate) fn decode(buf: Vec<u8>) -> Result<Vec<u8>, HwpDocumentError> {
     let mut iter = Record::iter(&buf);
-    let record = iter.expect(DocInfoTag::HWPTAG_DISTRIBUTE_DOC_DATA as u16)?;
+    let record = iter.expect(HwpTag::HWPTAG_DISTRIBUTE_DOC_DATA)?;
 
     match <[u8; 256]>::try_from(record.payload) {
         Ok(payload) => {
@@ -55,7 +55,7 @@ pub(crate) fn decode(buf: Vec<u8>) -> Result<Vec<u8>, HwpDocumentError> {
             Ok(decode_aes_128_ecb(key, iter.remaining())?)
         }
         Err(_) => Err(HwpDocumentError::InvalidTagId(
-            DocInfoTag::HWPTAG_DISTRIBUTE_DOC_DATA as u16,
+            HwpTag::HWPTAG_DISTRIBUTE_DOC_DATA,
         )),
     }
 }

@@ -6,8 +6,7 @@ pub use compatible_document::*;
 pub use document_properties::*;
 pub use id_mappings::*;
 
-use crate::decompress;
-use crate::{DocInfoTag, FileHeader, HwpDocumentError, HwpRead, Record, RecordIter, Version};
+use crate::{decompress, FileHeader, HwpDocumentError, HwpRead, Record, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct DocInfo {

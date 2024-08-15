@@ -1,5 +1,5 @@
 use super::{BorderShape, IdMappingCount};
-use crate::{u32, DocInfoTag, RecordIter};
+use crate::{u32, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct TabDefinition {
@@ -32,7 +32,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.tab_def as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_TAB_DEF as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_TAB_DEF)
         {
             tab_defs.push(TabDefinition::from_buf(record.payload));
             self.next();

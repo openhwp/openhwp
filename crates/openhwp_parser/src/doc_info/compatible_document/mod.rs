@@ -1,7 +1,7 @@
 mod layout_compatibility;
 mod track_change;
 
-use super::{DocInfoTag, RecordIter};
+use crate::{HwpTag, RecordIter};
 
 pub use layout_compatibility::*;
 pub use track_change::*;
@@ -14,7 +14,7 @@ pub struct CompatibleDocument {
 
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn compatible_document(&mut self) -> CompatibleDocument {
-        match self.expect(DocInfoTag::HWPTAG_COMPATIBLE_DOCUMENT as u16) {
+        match self.expect(HwpTag::HWPTAG_COMPATIBLE_DOCUMENT) {
             Ok(_) => CompatibleDocument {
                 layout_compatibility: self.layout_compatibility(),
                 track_changes: self.track_changes(),

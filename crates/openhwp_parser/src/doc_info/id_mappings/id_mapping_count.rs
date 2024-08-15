@@ -1,4 +1,4 @@
-use crate::{u32, DocInfoTag, HwpDocumentError, RecordIter};
+use crate::{u32, HwpDocumentError, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct IdMappingCount {
@@ -42,7 +42,7 @@ pub struct IdMappingCount {
 
 impl<'doc_info> RecordIter<'doc_info> {
     pub fn id_mapping_count(&mut self) -> Result<IdMappingCount, HwpDocumentError> {
-        let record = self.expect(DocInfoTag::HWPTAG_ID_MAPPINGS as u16)?;
+        let record = self.expect(HwpTag::HWPTAG_ID_MAPPINGS)?;
 
         Ok(IdMappingCount::from_buf(record.payload))
     }

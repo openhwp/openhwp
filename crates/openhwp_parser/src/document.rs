@@ -1,4 +1,4 @@
-use crate::{Body, DocInfo, FileHeader, HwpRead, HwpReader};
+use crate::{Body, DocInfo, FileHeader, HwpRead, HwpReader, HwpTag};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub enum HwpDocumentError {
     #[error("End of record")]
     EndOfRecord,
     #[error("Invalid tag id: {0:?}")]
-    InvalidTagId(u16),
+    InvalidTagId(HwpTag),
     #[error("Cannot open file: {0}")]
     CannotOpenFile(anyhow::Error),
     #[error("Cannot find file header: {0}")]

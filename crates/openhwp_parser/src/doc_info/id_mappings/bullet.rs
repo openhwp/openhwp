@@ -1,5 +1,5 @@
 use super::{IdMappingCount, Image, ParagraphHeader};
-use crate::{u16, u32, DocInfoTag, RecordIter};
+use crate::{u16, u32, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct Bullet {
@@ -17,7 +17,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.bullet as usize)
-            .filter(|record| record.tag_id == DocInfoTag::HWPTAG_BULLET as u16)
+            .filter(|record| record.tag == HwpTag::HWPTAG_BULLET)
         {
             bullets.push(Bullet::from_buf(record.payload));
             self.next();

@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter};
+use crate::{u16, u32, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct BorderFill {
@@ -315,7 +315,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mapping_counts.border_fill as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BORDER_FILL as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_BORDER_FILL)
         {
             border_fills.push(BorderFill::from_buf(record.payload));
             self.next();

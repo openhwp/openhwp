@@ -1,5 +1,5 @@
 use super::{BorderShape, Color, IdMappingCount};
-use crate::{u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{u16, u32, HwpTag, RecordIter, Version};
 
 #[derive(Debug)]
 pub struct CharShape {
@@ -166,7 +166,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.char_shape as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_CHAR_SHAPE as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_CHAR_SHAPE)
         {
             char_shapes.push(CharShape::from_buf(record.payload, version));
             self.next();

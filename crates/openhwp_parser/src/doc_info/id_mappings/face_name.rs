@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, DocInfoTag, RecordIter};
+use crate::{to_string, u16, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -80,7 +80,7 @@ impl<'doc_info> RecordIter<'doc_info> {
                     for record in self
                         .clone()
                         .take($count as usize)
-                        .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_FACE_NAME as u16)
+                        .take_while(|record| record.tag == HwpTag::HWPTAG_FACE_NAME)
                     {
                         face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language));
                         self.next();

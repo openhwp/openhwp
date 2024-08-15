@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, DocInfoTag, RecordIter};
+use crate::{to_string, u16, u32, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct BinData {
@@ -63,7 +63,7 @@ impl<'doc_info> RecordIter<'doc_info> {
         for record in self
             .clone()
             .take(id_mappings.binary_data as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BIN_DATA as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_BIN_DATA)
         {
             bin_data.push(BinData::from_buf(record.payload));
             self.next();

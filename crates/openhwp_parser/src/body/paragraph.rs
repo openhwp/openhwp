@@ -7,12 +7,7 @@ pub struct Paragraph {
 
 impl<'hwp> RecordIter<'hwp> {
     pub fn paragraphs(&mut self) -> Vec<Paragraph> {
-        let mut paragraphs = vec![];
-
-        for record in self.clone().take_while(|record| record.tag_id == 0x0102) {
-            paragraphs.push(Paragraph::from_buf(record.payload));
-            self.next();
-        }
+        let paragraphs = vec![];
 
         paragraphs
     }
