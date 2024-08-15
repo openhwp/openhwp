@@ -9,19 +9,19 @@ pub struct Numbering {
 
 #[derive(Debug)]
 pub enum ParagraphVec {
-    NonExtends([ParagraphItem; 7]),
-    Extends([ParagraphItem; 10]),
+    NonExtends([NumberingParagraph; 7]),
+    Extends([NumberingParagraph; 10]),
 }
 
 #[derive(Debug)]
-pub struct ParagraphItem {
+pub struct NumberingParagraph {
     pub start_number: Option<u32>,
     pub format: String,
-    pub header: ParagraphHeader,
+    pub header: NumberingParagraphHeader,
 }
 
 #[derive(Debug)]
-pub struct ParagraphHeader {
+pub struct NumberingParagraphHeader {
     pub alignment: ParagraphHeaderAlignment,
     pub use_instance_width: bool,
     pub auth_indent: bool,
@@ -69,13 +69,13 @@ impl<'doc_info> RecordIter<'doc_info> {
 
 impl Numbering {
     pub fn from_buf(buf: &[u8], version: &Version) -> Numbering {
-        let (mut paragraph0, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph1, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph2, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph3, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph4, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph5, buf) = ParagraphItem::from_buf(buf);
-        let (mut paragraph6, buf) = ParagraphItem::from_buf(buf);
+        let (mut paragraph0, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph1, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph2, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph3, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph4, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph5, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph6, buf) = NumberingParagraph::from_buf(buf);
         let (start_number, buf) = buf.split_at(2);
         let start_number = u16(start_number, 0);
         let buf = if version >= &Version::new(5, 0, 2, 5) {
@@ -92,9 +92,9 @@ impl Numbering {
             buf
         };
         let paragraphs = if !buf.is_empty() {
-            let (mut paragraph7, buf) = ParagraphItem::from_buf(buf);
-            let (mut paragraph8, buf) = ParagraphItem::from_buf(buf);
-            let (mut paragraph9, buf) = ParagraphItem::from_buf(buf);
+            let (mut paragraph7, buf) = NumberingParagraph::from_buf(buf);
+            let (mut paragraph8, buf) = NumberingParagraph::from_buf(buf);
+            let (mut paragraph9, buf) = NumberingParagraph::from_buf(buf);
             if version >= &Version::new(5, 1, 0, 0) {
                 paragraph7.start_number = Some(u32(buf, 0));
                 paragraph8.start_number = Some(u32(buf, 4));
@@ -118,9 +118,9 @@ impl Numbering {
     }
 }
 
-impl ParagraphItem {
+impl NumberingParagraph {
     pub fn from_buf(buf: &[u8]) -> (Self, &[u8]) {
-        let header = ParagraphHeader::from_buf(buf);
+        let header = NumberingParagraphHeader::from_buf(buf);
         let size = u16(buf, 12);
         let format = to_string(&buf[14..14 + size as usize * 2]);
         let paragraph = Self {
@@ -133,7 +133,7 @@ impl ParagraphItem {
     }
 }
 
-impl ParagraphHeader {
+impl NumberingParagraphHeader {
     pub fn from_buf(buf: &[u8]) -> Self {
         let attribute = u32(buf, 0);
         let alignment = match attribute & 0b0000_0011 {

@@ -2,9 +2,13 @@
 mod tests;
 
 pub mod paragraph;
+pub mod paragraph_header;
+pub mod paragraph_text;
 pub mod section;
 
 pub use paragraph::*;
+pub use paragraph_header::*;
+pub use paragraph_text::*;
 pub use section::*;
 
 use crate::{Compressed, FileHeader, HwpDocumentError, HwpRead};

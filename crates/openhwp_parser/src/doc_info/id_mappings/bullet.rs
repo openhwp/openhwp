@@ -1,9 +1,9 @@
-use super::{IdMappingCount, Image, ParagraphHeader};
+use super::{IdMappingCount, Image, NumberingParagraphHeader};
 use crate::{u16, u32, HwpTag, RecordIter};
 
 #[derive(Debug)]
 pub struct Bullet {
-    pub paragraph_header: ParagraphHeader,
+    pub paragraph_header: NumberingParagraphHeader,
     pub char: char,
     pub use_image: bool,
     pub image: Image,
@@ -30,7 +30,7 @@ impl<'doc_info> RecordIter<'doc_info> {
 impl Bullet {
     pub fn from_buf(buf: &[u8]) -> Bullet {
         Bullet {
-            paragraph_header: ParagraphHeader::from_buf(buf),
+            paragraph_header: NumberingParagraphHeader::from_buf(buf),
             char: unsafe { char::from_u32_unchecked(u16(buf, 12) as u32) },
             use_image: u32(buf, 14) != 0,
             image: Image::from_buf(&buf[18..23]),

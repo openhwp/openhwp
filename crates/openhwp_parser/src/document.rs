@@ -26,8 +26,6 @@ pub enum HwpDocumentError {
     CannotFindSection(anyhow::Error),
     #[error("Invalid file header: {0}")]
     FileHeader(#[from] crate::FileHeaderError),
-    #[error("Invalid section: {0}")]
-    Section(#[from] crate::SectionError),
 }
 
 impl HwpDocument {

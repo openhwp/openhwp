@@ -6,12 +6,6 @@ pub struct Section {
     pub paragraphs: Vec<Paragraph>,
 }
 
-#[derive(Debug, Error)]
-pub enum SectionError {
-    #[error("Invalid section")]
-    InvalidSection,
-}
-
 impl Section {
     #[inline]
     pub fn from_non_distributed(
@@ -33,11 +27,11 @@ impl Section {
         Ok(Self::from_buf(&buf)?)
     }
 
-    pub fn from_buf(buf: &[u8]) -> Result<Self, SectionError> {
+    pub fn from_buf(buf: &[u8]) -> Result<Self, HwpDocumentError> {
         let mut stream = Record::iter(buf);
 
         Ok(Self {
-            paragraphs: stream.paragraphs(),
+            paragraphs: stream.paragraphs()?,
         })
     }
 }

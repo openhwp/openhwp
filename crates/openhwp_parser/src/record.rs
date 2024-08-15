@@ -34,6 +34,11 @@ impl<'doc_info> RecordIter<'doc_info> {
     }
 
     #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.buf.is_empty()
+    }
+
+    #[inline]
     pub const fn remaining(&self) -> &[u8] {
         self.buf
     }

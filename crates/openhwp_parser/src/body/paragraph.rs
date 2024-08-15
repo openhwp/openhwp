@@ -1,20 +1,27 @@
-use crate::RecordIter;
+use super::{ParagraphHeader, ParagraphText};
+use crate::{HwpDocumentError, RecordIter};
 
 #[derive(Debug)]
 pub struct Paragraph {
-    //
+    pub header: ParagraphHeader,
+    pub text: ParagraphText,
 }
 
 impl<'hwp> RecordIter<'hwp> {
-    pub fn paragraphs(&mut self) -> Vec<Paragraph> {
-        let paragraphs = vec![];
+    pub fn paragraphs(&mut self) -> Result<Vec<Paragraph>, HwpDocumentError> {
+        let mut paragraphs = vec![];
 
-        paragraphs
+        while !self.is_empty() {
+            paragraphs.push(self.paragraph()?);
+        }
+
+        Ok(paragraphs)
     }
-}
 
-impl Paragraph {
-    pub fn from_buf(buf: &[u8]) -> Self {
-        Self {}
+    pub fn paragraph(&mut self) -> Result<Paragraph, HwpDocumentError> {
+        let header = self.paragraph_header()?;
+        let text = self.paragraph_text(header.text_size)?;
+
+        Ok(Paragraph { header, text })
     }
 }
