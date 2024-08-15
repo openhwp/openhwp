@@ -1,6 +1,6 @@
 use crate::{Control, HwpDocumentError, HwpTag, HwpText, RecordIter};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ParagraphText {
     pub text: HwpText,
 }

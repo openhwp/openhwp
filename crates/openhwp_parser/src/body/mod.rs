@@ -11,7 +11,7 @@ pub use paragraph_header::*;
 pub use paragraph_text::*;
 pub use section::*;
 
-use crate::{Compressed, FileHeader, HwpDocumentError, HwpRead};
+use crate::{Compressed, FileHeader, HwpDocumentError, HwpRead, Version};
 
 #[derive(Debug)]
 pub struct Body {
@@ -25,8 +25,9 @@ impl Body {
         file_header: &FileHeader,
     ) -> Result<Self, HwpDocumentError> {
         let compressed = file_header.properties.compressed;
-        let non_distributed = Self::from_reader_for_non_distributed(reader, compressed)?;
-        let distributed = Self::from_reader_for_distributed(reader, compressed)?;
+        let version = &file_header.version;
+        let non_distributed = Self::from_reader_for_non_distributed(reader, compressed, version)?;
+        let distributed = Self::from_reader_for_distributed(reader, compressed, version)?;
 
         Ok(Self {
             non_distributed,
@@ -37,6 +38,7 @@ impl Body {
     pub fn from_reader_for_non_distributed<R: HwpRead>(
         reader: &mut R,
         compressed: Compressed,
+        version: &Version,
     ) -> Result<Vec<Section>, HwpDocumentError> {
         let iter = reader.body_text();
         let mut sections = match iter.size_hint() {
@@ -44,7 +46,9 @@ impl Body {
             _ => vec![],
         };
         for section in iter {
-            sections.push(Section::from_non_distributed(section?, compressed)?);
+            sections.push(Section::from_non_distributed(
+                section?, compressed, version,
+            )?);
         }
 
         Ok(sections)
@@ -53,6 +57,7 @@ impl Body {
     pub fn from_reader_for_distributed<R: HwpRead>(
         reader: &mut R,
         compressed: Compressed,
+        version: &Version,
     ) -> Result<Vec<Section>, HwpDocumentError> {
         let iter = reader.view_text();
         let mut sections = match iter.size_hint() {
@@ -60,7 +65,7 @@ impl Body {
             _ => vec![],
         };
         for section in iter {
-            sections.push(Section::from_distributed(section?, compressed)?);
+            sections.push(Section::from_distributed(section?, compressed, version)?);
         }
 
         Ok(sections)

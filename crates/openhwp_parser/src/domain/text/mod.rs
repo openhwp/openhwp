@@ -127,6 +127,14 @@ impl HwpText {
     }
 }
 
+impl Default for HwpText {
+    fn default() -> Self {
+        let chars = vec![HwpChar::Control(Control::Char(CharControl::ParagraphBreak))];
+
+        Self { chars }
+    }
+}
+
 impl HwpChar {
     pub const fn from_buf(buf: &[u8]) -> Self {
         macro_rules! char {
@@ -138,8 +146,8 @@ impl HwpChar {
         macro_rules! inline {
             ($variant:ident) => {{
                 let info = [
-                    buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9],
-                    buf[10], buf[11], buf[12],
+                    buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10],
+                    buf[11], buf[12], buf[13],
                 ];
 
                 Self::Control(Control::Inline(InlineControl {
@@ -152,8 +160,8 @@ impl HwpChar {
         macro_rules! extend {
             ($variant:ident) => {{
                 let pointer = [
-                    buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9],
-                    buf[10], buf[11], buf[12],
+                    buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10],
+                    buf[11], buf[12], buf[13],
                 ];
 
                 Self::Control(Control::Extend(ExtendControl {

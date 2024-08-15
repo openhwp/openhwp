@@ -134,9 +134,9 @@ impl FileHeader {
             build: buf[33],
             revision: buf[32],
         };
-        if !version.is_compatible() {
+        if version < Version::V5_0_1_7 {
             return Err(FileHeaderError::UnsupportedVersion(version));
-        };
+        }
 
         let properties = Properties {
             compressed: match buf[36] & 0b0000_0001 != 0 {
@@ -192,11 +192,38 @@ impl FileHeader {
 }
 
 impl Version {
-    pub const COMPATIBLE: Self = Self {
+    pub const V5_1_0_0: Self = Self {
         major: 5,
         minor: 1,
         build: 0,
         revision: 0,
+    };
+    pub const V5_0_1_7: Self = Self {
+        major: 5,
+        minor: 0,
+        build: 1,
+        revision: 7,
+    };
+
+    pub const V5_0_2_1: Self = Self {
+        major: 5,
+        minor: 0,
+        build: 2,
+        revision: 1,
+    };
+
+    pub const V5_0_2_5: Self = Self {
+        major: 5,
+        minor: 0,
+        build: 2,
+        revision: 5,
+    };
+
+    pub const V5_0_3_2: Self = Self {
+        major: 5,
+        minor: 0,
+        build: 3,
+        revision: 2,
     };
 
     #[inline]
@@ -207,10 +234,5 @@ impl Version {
             build,
             revision,
         }
-    }
-
-    #[inline]
-    pub const fn is_compatible(&self) -> bool {
-        self.major == Self::COMPATIBLE.major && self.minor <= Self::COMPATIBLE.minor
     }
 }

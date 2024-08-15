@@ -187,14 +187,14 @@ impl CharShape {
         let (underline_color, buf) = buf.split_at(4);
         let (shade_color, buf) = buf.split_at(4);
         let (shadow_color, buf) = buf.split_at(4);
-        let (border_fill_id, buf) = if version >= &Version::new(5, 0, 2, 1) {
+        let (border_fill_id, buf) = if version >= &Version::V5_0_2_1 {
             let (border_fill_id, buf) = buf.split_at(2);
 
             (Some(border_fill_id), buf)
         } else {
             (None, buf)
         };
-        let strike_color = if version >= &Version::new(5, 0, 3, 2) {
+        let strike_color = if version >= &Version::V5_0_3_2 {
             let (strike_color, _) = buf.split_at(4);
 
             Some(strike_color)

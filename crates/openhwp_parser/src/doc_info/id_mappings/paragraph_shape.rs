@@ -247,7 +247,7 @@ impl ParagraphShape {
         let border_offset_right = u16(buf, 36) as i16;
         let border_offset_top = u16(buf, 38) as i16;
         let border_offset_bottom = u16(buf, 40) as i16;
-        let (attribute_5_0_1_7, buf) = if version >= &Version::new(5, 0, 1, 7) {
+        let (attribute_5_0_1_7, buf) = if version >= &Version::V5_0_1_7 {
             let single_line = buf[42] & 0b0000_0001 != 0;
             let auto_spacing_hangeul_alphabet = buf[42] & 0b0000_0010 != 0;
             let auto_spacing_hangeul_number = buf[42] & 0b0000_0100 != 0;
@@ -260,7 +260,7 @@ impl ParagraphShape {
         } else {
             (None, &buf[42..])
         };
-        let attribute_5_0_2_5 = if version >= &Version::new(5, 0, 2, 5) {
+        let attribute_5_0_2_5 = if version >= &Version::V5_0_2_5 {
             let line_spacing_kind = match buf[0] & 0b0000_0011 {
                 0b0000_0000 => LineSpacingKind::Percent,
                 0b0000_0001 => LineSpacingKind::Fixed,

@@ -78,7 +78,7 @@ impl Numbering {
         let (mut paragraph6, buf) = NumberingParagraph::from_buf(buf);
         let (start_number, buf) = buf.split_at(2);
         let start_number = u16(start_number, 0);
-        let buf = if version >= &Version::new(5, 0, 2, 5) {
+        let buf = if version >= &Version::V5_0_2_5 {
             paragraph0.start_number = Some(u32(buf, 0));
             paragraph1.start_number = Some(u32(buf, 4));
             paragraph2.start_number = Some(u32(buf, 8));
@@ -95,7 +95,7 @@ impl Numbering {
             let (mut paragraph7, buf) = NumberingParagraph::from_buf(buf);
             let (mut paragraph8, buf) = NumberingParagraph::from_buf(buf);
             let (mut paragraph9, buf) = NumberingParagraph::from_buf(buf);
-            if version >= &Version::new(5, 1, 0, 0) {
+            if version >= &Version::V5_1_0_0 {
                 paragraph7.start_number = Some(u32(buf, 0));
                 paragraph8.start_number = Some(u32(buf, 4));
                 paragraph9.start_number = Some(u32(buf, 8));

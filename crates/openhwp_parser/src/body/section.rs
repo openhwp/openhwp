@@ -1,5 +1,5 @@
 use super::Paragraph;
-use crate::{decompress, u32, Compressed, HwpDocumentError, HwpTag, Record};
+use crate::{decompress, u32, Compressed, HwpDocumentError, HwpTag, Record, Version};
 
 #[derive(Debug)]
 pub struct Section {
@@ -11,27 +11,29 @@ impl Section {
     pub fn from_non_distributed(
         buf: Vec<u8>,
         compressed: Compressed,
+        version: &Version,
     ) -> Result<Self, HwpDocumentError> {
         let buf = decompress!(buf, compressed);
 
-        Ok(Self::from_buf(&buf)?)
+        Ok(Self::from_buf(&buf, version)?)
     }
 
     pub fn from_distributed(
         buf: Vec<u8>,
         compressed: Compressed,
+        version: &Version,
     ) -> Result<Self, HwpDocumentError> {
         let decoded = decode(buf)?;
         let buf = decompress!(decoded, compressed);
 
-        Ok(Self::from_buf(&buf)?)
+        Ok(Self::from_buf(&buf, version)?)
     }
 
-    pub fn from_buf(buf: &[u8]) -> Result<Self, HwpDocumentError> {
+    pub fn from_buf(buf: &[u8], version: &Version) -> Result<Self, HwpDocumentError> {
         let mut stream = Record::iter(buf);
 
         Ok(Self {
-            paragraphs: stream.paragraphs()?,
+            paragraphs: stream.paragraphs(version)?,
         })
     }
 }
