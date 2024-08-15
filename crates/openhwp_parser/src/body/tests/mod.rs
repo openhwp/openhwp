@@ -1,5 +1,4 @@
-use super::{hash_code, pseudo};
-use crate::u32;
+use crate::{hash_code, pseudo, u32};
 
 #[test]
 fn officially_distributed_hwp_5_0_format() {

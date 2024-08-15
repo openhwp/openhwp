@@ -1,4 +1,4 @@
-use crate::{u16, u32, HwpDocumentError, HwpTag, RecordIter, Version};
+use crate::{u16, u32, BodyIter, HwpDocumentError, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct ParagraphHeader {
@@ -83,7 +83,7 @@ pub struct ControlMask {
     // 32: Reserved
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> BodyIter<'hwp> {
     pub fn paragraph_header(
         &mut self,
         version: &Version,

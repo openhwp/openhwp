@@ -2,14 +2,13 @@
 mod tests;
 
 pub mod paragraph;
-pub mod paragraph_header;
-pub mod paragraph_text;
 pub mod section;
 
+mod stream;
+
 pub use paragraph::*;
-pub use paragraph_header::*;
-pub use paragraph_text::*;
 pub use section::*;
+pub use stream::*;
 
 use crate::{Compressed, FileHeader, HwpDocumentError, HwpRead, Version};
 
@@ -46,9 +45,8 @@ impl Body {
             _ => vec![],
         };
         for section in iter {
-            sections.push(Section::from_non_distributed(
-                section?, compressed, version,
-            )?);
+            let section = Section::from_non_distributed(section?, compressed, version)?;
+            sections.push(section);
         }
 
         Ok(sections)
@@ -65,7 +63,8 @@ impl Body {
             _ => vec![],
         };
         for section in iter {
-            sections.push(Section::from_distributed(section?, compressed, version)?);
+            let section = Section::from_distributed(section?, compressed, version)?;
+            sections.push(section);
         }
 
         Ok(sections)

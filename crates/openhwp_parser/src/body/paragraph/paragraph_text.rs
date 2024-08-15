@@ -1,11 +1,11 @@
-use crate::{Control, HwpDocumentError, HwpTag, HwpText, RecordIter};
+use crate::{BodyIter, Control, HwpDocumentError, HwpTag, HwpText};
 
 #[derive(Debug, Default)]
 pub struct ParagraphText {
     pub text: HwpText,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> BodyIter<'hwp> {
     pub fn paragraph_text(&mut self, size: usize) -> Result<ParagraphText, HwpDocumentError> {
         let record = self.expect(HwpTag::HWPTAG_PARA_TEXT)?;
         let text = HwpText::from_buf(record.payload, size);

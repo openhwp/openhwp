@@ -1,5 +1,5 @@
-use super::Paragraph;
-use crate::{decompress, u32, Compressed, HwpDocumentError, HwpTag, Record, Version};
+use crate::{decompress, u32};
+use crate::{BodyIter, Compressed, HwpDocumentError, HwpTag, Paragraph, Record, Version};
 
 #[derive(Debug)]
 pub struct Section {
@@ -30,11 +30,10 @@ impl Section {
     }
 
     pub fn from_buf(buf: &[u8], version: &Version) -> Result<Self, HwpDocumentError> {
-        let mut stream = Record::iter(buf);
+        let mut stream = BodyIter::new(buf, version);
+        let paragraphs = stream.paragraphs(version)?;
 
-        Ok(Self {
-            paragraphs: stream.paragraphs(version)?,
-        })
+        Ok(Self { paragraphs })
     }
 }
 

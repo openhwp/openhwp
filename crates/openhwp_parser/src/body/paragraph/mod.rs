@@ -1,5 +1,10 @@
-use super::{ParagraphHeader, ParagraphText};
-use crate::{HwpDocumentError, RecordIter, Version};
+pub mod paragraph_header;
+pub mod paragraph_text;
+
+pub use paragraph_header::*;
+pub use paragraph_text::*;
+
+use crate::{BodyIter, HwpDocumentError, Version};
 
 #[derive(Debug)]
 pub struct Paragraph {
@@ -7,7 +12,7 @@ pub struct Paragraph {
     pub text: ParagraphText,
 }
 
-impl<'hwp> RecordIter<'hwp> {
+impl<'hwp> BodyIter<'hwp> {
     pub fn paragraphs(&mut self, version: &Version) -> Result<Vec<Paragraph>, HwpDocumentError> {
         let mut paragraphs = vec![];
 
