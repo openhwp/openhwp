@@ -20,9 +20,7 @@ fn officially_distributed_hwp_5_0_format() {
         245, 245, 97,
     ];
     let seed = u32(&PAYLOAD, 0);
-    insta::assert_debug_snapshot!(seed);
     let pseudo = pseudo(seed);
-    insta::assert_debug_snapshot!(pseudo);
     let hash_code = hash_code(seed, pseudo, PAYLOAD);
-    insta::assert_debug_snapshot!(hash_code);
+    insta::assert_debug_snapshot!((seed, pseudo, hash_code));
 }
