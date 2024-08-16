@@ -1,8 +1,10 @@
 pub mod char_shape;
+pub mod line_segment;
 pub mod paragraph_header;
 pub mod paragraph_text;
 
 pub use char_shape::*;
+pub use line_segment::*;
 pub use paragraph_header::*;
 pub use paragraph_text::*;
 
@@ -13,6 +15,7 @@ pub struct Paragraph {
     pub header: ParagraphHeader,
     pub text: ParagraphText,
     pub char_shapes: Vec<CharShape>,
+    pub line_segments: Vec<LineSegment>,
 }
 
 impl<'hwp> BodyIter<'hwp> {
@@ -32,11 +35,15 @@ impl<'hwp> BodyIter<'hwp> {
         let char_shapes = self
             .char_shapes(header.char_shape_count)
             .unwrap_or_default();
+        let line_segments = self
+            .line_segments(header.line_segment_count)
+            .unwrap_or_default();
 
         Ok(Paragraph {
             header,
             text,
             char_shapes,
+            line_segments,
         })
     }
 }

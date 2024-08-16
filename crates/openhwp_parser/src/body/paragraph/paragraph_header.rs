@@ -23,7 +23,7 @@ pub struct ParagraphHeader {
     /// range tag 정보 수
     pub range_tag_count: u16,
     /// 각 줄에 대한 align에 대한 정보 수
-    pub line_align_count: u16,
+    pub line_segment_count: u16,
     /// 문단 Instance ID (unique ID)
     pub instance_id: u32,
     /// 변경추적 병합 문단여부. (5.0.3.2 버전 이상)
@@ -111,7 +111,7 @@ impl ParagraphHeader {
         let column_break = buf[3] & 0b0000_1000 != 0;
         let char_shape_count = u16(buf, 4);
         let range_tag_count = u16(buf, 6);
-        let line_align_count = u16(buf, 8);
+        let line_segment_count = u16(buf, 8);
         let instance_id = u32(buf, 10);
         let tracking_change_merged = if version >= &Version::V5_0_3_2 {
             Some(buf[14] != 0)
@@ -130,7 +130,7 @@ impl ParagraphHeader {
             column_break,
             char_shape_count,
             range_tag_count,
-            line_align_count,
+            line_segment_count,
             instance_id,
             tracking_change_merged,
         }
