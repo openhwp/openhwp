@@ -11,11 +11,11 @@ pub struct HwpText {
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum HwpChar {
     Utf16(char),
-    Control(Control),
+    Control(HwpCharControl),
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
-pub enum Control {
+pub enum HwpCharControl {
     Char(CharControl),
     Inline(InlineControl),
     Extend(ExtendControl),
@@ -116,7 +116,7 @@ impl HwpText {
         })
     }
 
-    pub fn controls(&self) -> impl Iterator<Item = &Control> + '_ {
+    pub fn controls(&self) -> impl Iterator<Item = &HwpCharControl> + '_ {
         self.chars.iter().filter_map(|char| {
             if let HwpChar::Control(control) = char {
                 Some(control)
@@ -125,11 +125,20 @@ impl HwpText {
             }
         })
     }
+
+    pub fn control_count(&self) -> usize {
+        self.chars
+            .iter()
+            .filter(|char| matches!(char, HwpChar::Control(_)))
+            .count()
+    }
 }
 
 impl Default for HwpText {
     fn default() -> Self {
-        let chars = vec![HwpChar::Control(Control::Char(CharControl::ParagraphBreak))];
+        let chars = vec![HwpChar::Control(HwpCharControl::Char(
+            CharControl::ParagraphBreak,
+        ))];
 
         Self { chars }
     }
@@ -139,7 +148,7 @@ impl HwpChar {
     pub const fn from_buf(buf: &[u8]) -> Self {
         macro_rules! char {
             ($variant:ident) => {
-                Self::Control(Control::Char(CharControl::$variant))
+                Self::Control(HwpCharControl::Char(CharControl::$variant))
             };
         }
 
@@ -150,7 +159,7 @@ impl HwpChar {
                     buf[11], buf[12], buf[13],
                 ];
 
-                Self::Control(Control::Inline(InlineControl {
+                Self::Control(HwpCharControl::Inline(InlineControl {
                     kind: InlineControlKind::$variant,
                     info,
                 }))
@@ -164,7 +173,7 @@ impl HwpChar {
                     buf[11], buf[12], buf[13],
                 ];
 
-                Self::Control(Control::Extend(ExtendControl {
+                Self::Control(HwpCharControl::Extend(ExtendControl {
                     kind: ExtendControlKind::$variant,
                     pointer,
                 }))
@@ -211,9 +220,9 @@ impl HwpChar {
     pub const fn len(&self) -> usize {
         match self {
             Self::Utf16(_) => 1,
-            Self::Control(Control::Char(_)) => 1,
-            Self::Control(Control::Inline(_)) => 8,
-            Self::Control(Control::Extend(_)) => 8,
+            Self::Control(HwpCharControl::Char(_)) => 1,
+            Self::Control(HwpCharControl::Inline(_)) => 8,
+            Self::Control(HwpCharControl::Extend(_)) => 8,
         }
     }
 }

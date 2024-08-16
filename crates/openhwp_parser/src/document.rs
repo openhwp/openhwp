@@ -14,8 +14,8 @@ pub enum HwpDocumentError {
     Decompression(#[from] std::io::Error),
     #[error("End of record")]
     EndOfRecord,
-    #[error("Invalid tag id: {0:?}")]
-    InvalidTagId(HwpTag),
+    #[error("Invalid tag id: {0:?}, expected: {1:?}")]
+    InvalidTagId(Option<HwpTag>, HwpTag),
     #[error("Cannot open file: {0}")]
     CannotOpenFile(anyhow::Error),
     #[error("Cannot find file header: {0}")]

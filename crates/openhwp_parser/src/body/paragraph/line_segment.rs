@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpDocumentError, HwpTag};
+use crate::{u32, BodyIter, HwpTag};
 
 #[derive(Debug)]
 pub struct LineSegment {
@@ -37,8 +37,11 @@ pub struct LineSegment {
 }
 
 impl<'hwp> BodyIter<'hwp> {
-    pub fn line_segments(&mut self, count: u16) -> Result<Vec<LineSegment>, HwpDocumentError> {
-        let record = self.expect(HwpTag::HWPTAG_PARA_LINE_SEG)?;
+    pub fn line_segments(&mut self, count: u16) -> Vec<LineSegment> {
+        let record = match self.expect(HwpTag::HWPTAG_PARA_LINE_SEG) {
+            Ok(record) => record,
+            Err(_) => return vec![],
+        };
         let mut buf = record.payload;
         let mut line_segments = Vec::with_capacity(count as usize);
 
@@ -48,7 +51,7 @@ impl<'hwp> BodyIter<'hwp> {
             buf = rest;
         }
 
-        Ok(line_segments)
+        line_segments
     }
 }
 

@@ -27,9 +27,13 @@ impl<'hwp> RecordIter<'hwp> {
     }
 
     pub fn expect(&mut self, tag: HwpTag) -> Result<Record, HwpDocumentError> {
-        match self.next() {
-            Some(record) if record.tag == tag => Ok(record),
-            _ => Err(HwpDocumentError::InvalidTagId(tag)),
+        match self.clone().next() {
+            Some(record) if record.tag == tag => {
+                self.next();
+                Ok(record)
+            }
+            Some(record) => Err(HwpDocumentError::InvalidTagId(Some(record.tag), tag)),
+            None => Err(HwpDocumentError::InvalidTagId(None, tag)),
         }
     }
 

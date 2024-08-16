@@ -1,4 +1,4 @@
-use crate::{BodyIter, Control, HwpDocumentError, HwpTag, HwpText};
+use crate::{BodyIter, HwpCharControl, HwpTag, HwpText};
 
 #[derive(Debug, Default)]
 pub struct ParagraphText {
@@ -6,11 +6,13 @@ pub struct ParagraphText {
 }
 
 impl<'hwp> BodyIter<'hwp> {
-    pub fn paragraph_text(&mut self, size: usize) -> Result<ParagraphText, HwpDocumentError> {
-        let record = self.expect(HwpTag::HWPTAG_PARA_TEXT)?;
-        let text = HwpText::from_buf(record.payload, size);
-
-        Ok(ParagraphText { text })
+    pub fn paragraph_text(&mut self, size: usize) -> ParagraphText {
+        match self.expect(HwpTag::HWPTAG_PARA_TEXT) {
+            Ok(record) => ParagraphText {
+                text: HwpText::from_buf(record.payload, size),
+            },
+            Err(_) => ParagraphText::default(),
+        }
     }
 }
 
@@ -26,7 +28,12 @@ impl ParagraphText {
     }
 
     #[inline]
-    pub fn controls(&self) -> impl Iterator<Item = &Control> + '_ {
+    pub fn controls(&self) -> impl Iterator<Item = &HwpCharControl> + '_ {
         self.text.controls()
+    }
+
+    #[inline]
+    pub fn control_count(&self) -> usize {
+        self.text.control_count()
     }
 }

@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpDocumentError, HwpTag};
+use crate::{u32, BodyIter, HwpTag};
 
 #[derive(Debug)]
 pub struct CharShape {
@@ -9,8 +9,11 @@ pub struct CharShape {
 }
 
 impl<'hwp> BodyIter<'hwp> {
-    pub fn char_shapes(&mut self, count: u16) -> Result<Vec<CharShape>, HwpDocumentError> {
-        let record = self.expect(HwpTag::HWPTAG_PARA_CHAR_SHAPE)?;
+    pub fn char_shapes(&mut self, count: u16) -> Vec<CharShape> {
+        let record = match self.expect(HwpTag::HWPTAG_PARA_CHAR_SHAPE) {
+            Ok(record) => record,
+            Err(_) => return vec![],
+        };
         let mut buf = record.payload;
         let mut char_shapes = Vec::with_capacity(count as usize);
 
@@ -20,7 +23,7 @@ impl<'hwp> BodyIter<'hwp> {
             buf = rest;
         }
 
-        Ok(char_shapes)
+        char_shapes
     }
 }
 

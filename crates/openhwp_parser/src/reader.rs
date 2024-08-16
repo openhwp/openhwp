@@ -17,10 +17,10 @@ pub struct HwpReader {
 
 impl HwpReader {
     pub fn from_path(path: &Path) -> Result<Self, HwpDocumentError> {
-        Ok(Self {
-            file: cfb::open(path)
-                .map_err(|error| HwpDocumentError::CannotOpenFile(error.into()))?,
-        })
+        match cfb::open(path) {
+            Ok(file) => Ok(Self { file }),
+            Err(error) => Err(HwpDocumentError::CannotOpenFile(error.into())),
+        }
     }
 
     fn read(file: &mut cfb::CompoundFile<File>, path: &str) -> Result<Vec<u8>, std::io::Error> {

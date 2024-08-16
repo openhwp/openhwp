@@ -50,6 +50,7 @@ pub(crate) fn decode(buf: Vec<u8>) -> Result<Vec<u8>, HwpDocumentError> {
             Ok(decode_aes_128_ecb(key, iter.remaining())?)
         }
         Err(_) => Err(HwpDocumentError::InvalidTagId(
+            Some(record.tag),
             HwpTag::HWPTAG_DISTRIBUTE_DOC_DATA,
         )),
     }

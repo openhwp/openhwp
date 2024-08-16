@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpDocumentError, HwpTag};
+use crate::{u32, BodyIter, HwpTag};
 
 #[non_exhaustive]
 #[derive(Debug)]
@@ -13,11 +13,11 @@ pub struct ParagraphRangeTag {
 }
 
 impl<'hwp> BodyIter<'hwp> {
-    pub fn paragraph_range_tags(
-        &mut self,
-        count: u16,
-    ) -> Result<Vec<ParagraphRangeTag>, HwpDocumentError> {
-        let record = self.expect(HwpTag::HWPTAG_PARA_RANGE_TAG)?;
+    pub fn paragraph_range_tags(&mut self, count: u16) -> Vec<ParagraphRangeTag> {
+        let record = match self.expect(HwpTag::HWPTAG_PARA_RANGE_TAG) {
+            Ok(record) => record,
+            Err(_) => return vec![],
+        };
         let mut buf = record.payload;
         let mut paragraph_range_tags = Vec::with_capacity(count as usize);
 
@@ -27,7 +27,7 @@ impl<'hwp> BodyIter<'hwp> {
             buf = rest;
         }
 
-        Ok(paragraph_range_tags)
+        paragraph_range_tags
     }
 }
 

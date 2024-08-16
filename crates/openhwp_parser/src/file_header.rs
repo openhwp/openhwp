@@ -192,39 +192,11 @@ impl FileHeader {
 }
 
 impl Version {
-    pub const V5_1_0_0: Self = Self {
-        major: 5,
-        minor: 1,
-        build: 0,
-        revision: 0,
-    };
-    pub const V5_0_1_7: Self = Self {
-        major: 5,
-        minor: 0,
-        build: 1,
-        revision: 7,
-    };
-
-    pub const V5_0_2_1: Self = Self {
-        major: 5,
-        minor: 0,
-        build: 2,
-        revision: 1,
-    };
-
-    pub const V5_0_2_5: Self = Self {
-        major: 5,
-        minor: 0,
-        build: 2,
-        revision: 5,
-    };
-
-    pub const V5_0_3_2: Self = Self {
-        major: 5,
-        minor: 0,
-        build: 3,
-        revision: 2,
-    };
+    pub const V5_0_1_7: Self = Self::new(5, 0, 1, 7);
+    pub const V5_0_2_1: Self = Self::new(5, 0, 2, 1);
+    pub const V5_0_2_5: Self = Self::new(5, 0, 2, 5);
+    pub const V5_0_3_2: Self = Self::new(5, 0, 3, 2);
+    pub const V5_1_0_0: Self = Self::new(5, 1, 0, 0);
 
     #[inline]
     pub const fn new(major: u8, minor: u8, build: u8, revision: u8) -> Self {
