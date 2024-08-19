@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, DocInfoTag, RecordIter};
+use crate::{to_string, u16, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -38,7 +38,7 @@ pub enum AlternativeFaceNameKind {
     Unexpected(u8),
 }
 
-/// https://en.wikipedia.org/wiki/PANOSE
+/// <https://en.wikipedia.org/wiki/PANOSE>
 #[derive(Debug)]
 pub struct Panose {
     /// 글꼴 계열
@@ -63,7 +63,7 @@ pub struct Panose {
     pub x_height: u8,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn face_names(&mut self, id_mappings: &IdMappingCount) -> Vec<FaceName> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {
@@ -80,7 +80,7 @@ impl<'doc_info> RecordIter<'doc_info> {
                     for record in self
                         .clone()
                         .take($count as usize)
-                        .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_FACE_NAME as u16)
+                        .take_while(|record| record.tag == HwpTag::HWPTAG_FACE_NAME)
                     {
                         face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language));
                         self.next();

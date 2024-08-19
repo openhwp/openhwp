@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, DocInfoTag, RecordIter};
+use crate::{to_string, u16, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct Style {
@@ -22,14 +22,14 @@ pub enum StyleKind {
 #[derive(Debug, Clone, Copy)]
 pub struct LanguageId(pub u16);
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn styles(&mut self, id_mappings: &IdMappingCount) -> Vec<Style> {
         let mut styles = Vec::with_capacity(id_mappings.style as usize);
 
         for record in self
             .clone()
             .take(id_mappings.style as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_STYLE as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_STYLE)
         {
             styles.push(Style::from_buf(record.payload));
             self.next();

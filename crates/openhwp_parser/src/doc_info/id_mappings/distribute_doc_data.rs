@@ -1,16 +1,16 @@
-use crate::{DocInfoTag, RecordIter};
+use crate::{DocInfoIter, HwpTag};
 
 /// TODO: HWPTAG_DISTRIBUTE_DOC_DATA 분석 필요
 #[derive(Debug)]
 pub struct DistributeDocData;
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn distribute_doc_data(&mut self) -> Vec<DistributeDocData> {
         let mut distribute_doc_data = vec![];
 
         for record in self
             .clone()
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_DISTRIBUTE_DOC_DATA as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_DISTRIBUTE_DOC_DATA)
         {
             distribute_doc_data.push(DistributeDocData::from_buf(record.payload));
             self.next();

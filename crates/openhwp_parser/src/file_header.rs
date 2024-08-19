@@ -1,3 +1,5 @@
+use crate::{HwpDocumentError, HwpRead};
+
 #[derive(Debug)]
 pub struct FileHeader {
     /// 파일 버전 정보
@@ -23,7 +25,7 @@ pub struct Version {
 #[derive(Debug, Clone)]
 pub struct Properties {
     /// 압축 여부
-    pub compressed: bool,
+    pub compressed: Compressed,
     /// 암호 설정 여부
     pub encrypted: bool,
     /// 배포용 문서 여부
@@ -85,11 +87,17 @@ pub enum EncryptedVersion {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum KoglLicenseSupportCountry {
     NONE = 0,
     KOR = 6,
     US = 15,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Compressed {
+    No,
+    Yes,
 }
 
 #[derive(Debug, Error)]
@@ -107,8 +115,14 @@ pub enum FileHeaderError {
 }
 
 impl FileHeader {
-    pub fn from_vec(buf: Vec<u8>) -> Result<Self, FileHeaderError> {
-        let buf = match <[u8; 256]>::try_from(buf.as_slice()) {
+    pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
+        let buf = reader.header()?;
+
+        Ok(Self::from_vec(&buf)?)
+    }
+
+    pub fn from_vec(buf: &[u8]) -> Result<Self, FileHeaderError> {
+        let buf = match <[u8; 256]>::try_from(buf) {
             Ok(buf) if !buf.starts_with(b"HWP Document File") => {
                 return Err(FileHeaderError::InvalidSignature(buf[0..32].to_vec()))
             }
@@ -122,12 +136,15 @@ impl FileHeader {
             build: buf[33],
             revision: buf[32],
         };
-        if !version.is_compatible() {
+        if version < Version::V5_0_1_7 {
             return Err(FileHeaderError::UnsupportedVersion(version));
-        };
+        }
 
         let properties = Properties {
-            compressed: buf[36] & 0b0000_0001 != 0,
+            compressed: match buf[36] & 0b0000_0001 != 0 {
+                true => Compressed::Yes,
+                false => Compressed::No,
+            },
             encrypted: buf[36] & 0b0000_0010 != 0,
             distribution: buf[36] & 0b0000_0100 != 0,
             script: buf[36] & 0b0000_1000 != 0,
@@ -177,12 +194,11 @@ impl FileHeader {
 }
 
 impl Version {
-    pub const COMPATIBLE: Self = Self {
-        major: 5,
-        minor: 1,
-        build: 0,
-        revision: 0,
-    };
+    pub const V5_0_1_7: Self = Self::new(5, 0, 1, 7);
+    pub const V5_0_2_1: Self = Self::new(5, 0, 2, 1);
+    pub const V5_0_2_5: Self = Self::new(5, 0, 2, 5);
+    pub const V5_0_3_2: Self = Self::new(5, 0, 3, 2);
+    pub const V5_1_0_0: Self = Self::new(5, 1, 0, 0);
 
     #[inline]
     pub const fn new(major: u8, minor: u8, build: u8, revision: u8) -> Self {
@@ -192,10 +208,5 @@ impl Version {
             build,
             revision,
         }
-    }
-
-    #[inline]
-    pub const fn is_compatible(&self) -> bool {
-        self.major == Self::COMPATIBLE.major && self.minor <= Self::COMPATIBLE.minor
     }
 }

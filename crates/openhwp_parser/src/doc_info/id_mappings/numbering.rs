@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{to_string, u16, u32, DocInfoIter, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct Numbering {
@@ -9,19 +9,19 @@ pub struct Numbering {
 
 #[derive(Debug)]
 pub enum ParagraphVec {
-    NonExtends([Paragraph; 7]),
-    Extends([Paragraph; 10]),
+    NonExtends([NumberingParagraph; 7]),
+    Extends([NumberingParagraph; 10]),
 }
 
 #[derive(Debug)]
-pub struct Paragraph {
+pub struct NumberingParagraph {
     pub start_number: Option<u32>,
     pub format: String,
-    pub header: ParagraphHeader,
+    pub header: NumberingParagraphHeader,
 }
 
 #[derive(Debug)]
-pub struct ParagraphHeader {
+pub struct NumberingParagraphHeader {
     pub alignment: ParagraphHeaderAlignment,
     pub use_instance_width: bool,
     pub auth_indent: bool,
@@ -46,20 +46,16 @@ pub enum TextOffsetKind {
     Value,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
-    pub fn numberings(
-        &mut self,
-        id_mappings: &IdMappingCount,
-        version: &Version,
-    ) -> Vec<Numbering> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn numberings(&mut self, id_mappings: &IdMappingCount) -> Vec<Numbering> {
         let mut numberings = Vec::with_capacity(id_mappings.numbering as usize);
 
         for record in self
             .clone()
             .take(id_mappings.numbering as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_NUMBERING as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_NUMBERING)
         {
-            numberings.push(Numbering::from_buf(record.payload, version));
+            numberings.push(Numbering::from_buf(record.payload, self.version()));
             self.next();
         }
 
@@ -69,16 +65,16 @@ impl<'doc_info> RecordIter<'doc_info> {
 
 impl Numbering {
     pub fn from_buf(buf: &[u8], version: &Version) -> Numbering {
-        let (mut paragraph0, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph1, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph2, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph3, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph4, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph5, buf) = Paragraph::from_buf(buf);
-        let (mut paragraph6, buf) = Paragraph::from_buf(buf);
+        let (mut paragraph0, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph1, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph2, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph3, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph4, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph5, buf) = NumberingParagraph::from_buf(buf);
+        let (mut paragraph6, buf) = NumberingParagraph::from_buf(buf);
         let (start_number, buf) = buf.split_at(2);
         let start_number = u16(start_number, 0);
-        let buf = if version >= &Version::new(5, 0, 2, 5) {
+        let buf = if version >= &Version::V5_0_2_5 {
             paragraph0.start_number = Some(u32(buf, 0));
             paragraph1.start_number = Some(u32(buf, 4));
             paragraph2.start_number = Some(u32(buf, 8));
@@ -92,10 +88,10 @@ impl Numbering {
             buf
         };
         let paragraphs = if !buf.is_empty() {
-            let (mut paragraph7, buf) = Paragraph::from_buf(buf);
-            let (mut paragraph8, buf) = Paragraph::from_buf(buf);
-            let (mut paragraph9, buf) = Paragraph::from_buf(buf);
-            if version >= &Version::new(5, 1, 0, 0) {
+            let (mut paragraph7, buf) = NumberingParagraph::from_buf(buf);
+            let (mut paragraph8, buf) = NumberingParagraph::from_buf(buf);
+            let (mut paragraph9, buf) = NumberingParagraph::from_buf(buf);
+            if version >= &Version::V5_1_0_0 {
                 paragraph7.start_number = Some(u32(buf, 0));
                 paragraph8.start_number = Some(u32(buf, 4));
                 paragraph9.start_number = Some(u32(buf, 8));
@@ -118,9 +114,9 @@ impl Numbering {
     }
 }
 
-impl Paragraph {
+impl NumberingParagraph {
     pub fn from_buf(buf: &[u8]) -> (Self, &[u8]) {
-        let header = ParagraphHeader::from_buf(buf);
+        let header = NumberingParagraphHeader::from_buf(buf);
         let size = u16(buf, 12);
         let format = to_string(&buf[14..14 + size as usize * 2]);
         let paragraph = Self {
@@ -133,7 +129,7 @@ impl Paragraph {
     }
 }
 
-impl ParagraphHeader {
+impl NumberingParagraphHeader {
     pub fn from_buf(buf: &[u8]) -> Self {
         let attribute = u32(buf, 0);
         let alignment = match attribute & 0b0000_0011 {

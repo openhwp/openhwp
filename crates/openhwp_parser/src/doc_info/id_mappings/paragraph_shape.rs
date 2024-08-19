@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter, Version};
+use crate::{u16, u32, DocInfoIter, HwpTag, Version};
 
 #[derive(Debug)]
 pub struct ParagraphShape {
@@ -148,20 +148,16 @@ pub struct Attribute5_0_2_5 {
     pub line_spacing: i32,
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
-    pub fn paragraph_shapes(
-        &mut self,
-        id_mappings: &IdMappingCount,
-        version: &Version,
-    ) -> Vec<ParagraphShape> {
+impl<'hwp> DocInfoIter<'hwp> {
+    pub fn paragraph_shapes(&mut self, id_mappings: &IdMappingCount) -> Vec<ParagraphShape> {
         let mut paragraph_shapes = Vec::with_capacity(id_mappings.paragraph_shape as usize);
 
         for record in self
             .clone()
             .take(id_mappings.paragraph_shape as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_PARA_SHAPE as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_PARA_SHAPE)
         {
-            paragraph_shapes.push(ParagraphShape::from_buf(record.payload, version));
+            paragraph_shapes.push(ParagraphShape::from_buf(record.payload, self.version()));
             self.next();
         }
 
@@ -247,7 +243,7 @@ impl ParagraphShape {
         let border_offset_right = u16(buf, 36) as i16;
         let border_offset_top = u16(buf, 38) as i16;
         let border_offset_bottom = u16(buf, 40) as i16;
-        let (attribute_5_0_1_7, buf) = if version >= &Version::new(5, 0, 1, 7) {
+        let (attribute_5_0_1_7, buf) = if version >= &Version::V5_0_1_7 {
             let single_line = buf[42] & 0b0000_0001 != 0;
             let auto_spacing_hangeul_alphabet = buf[42] & 0b0000_0010 != 0;
             let auto_spacing_hangeul_number = buf[42] & 0b0000_0100 != 0;
@@ -260,7 +256,7 @@ impl ParagraphShape {
         } else {
             (None, &buf[42..])
         };
-        let attribute_5_0_2_5 = if version >= &Version::new(5, 0, 2, 5) {
+        let attribute_5_0_2_5 = if version >= &Version::V5_0_2_5 {
             let line_spacing_kind = match buf[0] & 0b0000_0011 {
                 0b0000_0000 => LineSpacingKind::Percent,
                 0b0000_0001 => LineSpacingKind::Fixed,

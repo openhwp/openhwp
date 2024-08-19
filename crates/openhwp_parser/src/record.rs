@@ -1,34 +1,55 @@
-use crate::u32;
+use crate::{u32, HwpDocumentError, HwpTag};
 
-#[derive(Debug, Default)]
-pub struct Record<'doc_info> {
-    pub tag_id: u16,
+#[derive(Debug)]
+pub struct Record<'hwp> {
+    pub tag: HwpTag,
     pub level: u16,
     pub size: usize,
-    pub payload: &'doc_info [u8],
+    pub payload: &'hwp [u8],
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct RecordIter<'doc_info> {
-    buf: &'doc_info [u8],
+pub struct RecordIter<'hwp> {
+    buf: &'hwp [u8],
 }
 
-impl<'doc_info> Record<'doc_info> {
+impl<'hwp> Record<'hwp> {
     #[inline]
     pub const fn iter(buf: &[u8]) -> RecordIter {
         RecordIter::new(buf)
     }
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> RecordIter<'hwp> {
     #[inline]
-    pub const fn new(buf: &'doc_info [u8]) -> Self {
+    pub const fn new(buf: &'hwp [u8]) -> Self {
         Self { buf }
+    }
+
+    pub fn expect(&mut self, tag: HwpTag) -> Result<Record, HwpDocumentError> {
+        match self.clone().next() {
+            Some(record) if record.tag == tag => {
+                self.next();
+                Ok(record)
+            }
+            Some(record) => Err(HwpDocumentError::InvalidTagId(Some(record.tag), tag)),
+            None => Err(HwpDocumentError::InvalidTagId(None, tag)),
+        }
+    }
+
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.buf.is_empty()
+    }
+
+    #[inline]
+    pub const fn remaining(&self) -> &[u8] {
+        self.buf
     }
 }
 
-impl<'doc_info> Iterator for RecordIter<'doc_info> {
-    type Item = Record<'doc_info>;
+impl<'hwp> Iterator for RecordIter<'hwp> {
+    type Item = Record<'hwp>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.buf.is_empty() {
@@ -47,7 +68,7 @@ const fn consume(buf: &[u8]) -> (Record, &[u8]) {
 
     let header = u32(buf, 0);
 
-    let tag_id = (header & 0b0000_0000_0000_0000_0000_0011_1111_1111) as u16;
+    let tag = (header & 0b0000_0000_0000_0000_0000_0011_1111_1111) as u16;
     let level = ((header & 0b0000_0000_0000_1111_1111_1100_0000_0000) >> 10) as u16;
     let size = ((header & 0b1111_1111_1111_0000_0000_0000_0000_0000) >> 20) as usize;
 
@@ -67,7 +88,7 @@ const fn consume(buf: &[u8]) -> (Record, &[u8]) {
         }
     };
     let record = Record {
-        tag_id,
+        tag: HwpTag::from_u16(tag),
         level,
         size,
         payload,

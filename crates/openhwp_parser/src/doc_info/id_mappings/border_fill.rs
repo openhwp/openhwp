@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoTag, RecordIter};
+use crate::{u16, u32, DocInfoIter, HwpTag};
 
 #[derive(Debug)]
 pub struct BorderFill {
@@ -308,14 +308,14 @@ pub enum GradationKind {
     Unknown(u8),
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn border_fills(&mut self, id_mapping_counts: &IdMappingCount) -> Vec<BorderFill> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 
         for record in self
             .clone()
             .take(id_mapping_counts.border_fill as usize)
-            .take_while(|record| record.tag_id == DocInfoTag::HWPTAG_BORDER_FILL as u16)
+            .take_while(|record| record.tag == HwpTag::HWPTAG_BORDER_FILL)
         {
             border_fills.push(BorderFill::from_buf(record.payload));
             self.next();

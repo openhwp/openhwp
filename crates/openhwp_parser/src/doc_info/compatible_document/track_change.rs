@@ -1,11 +1,11 @@
-use crate::RecordIter;
+use crate::DocInfoIter;
 
 #[derive(Debug)]
 pub struct TrackChange {
     //
 }
 
-impl<'doc_info> RecordIter<'doc_info> {
+impl<'hwp> DocInfoIter<'hwp> {
     pub fn track_changes(&mut self) -> Option<TrackChange> {
         None
     }
