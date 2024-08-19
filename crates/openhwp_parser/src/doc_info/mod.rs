@@ -25,11 +25,11 @@ impl DocInfo {
         let buf = reader.doc_info()?;
         let buf = decompress!(buf, file_header.properties.compressed);
 
-        Ok(Self::from_vec(buf, &file_header.version)?)
+        Ok(Self::from_buf(&buf, &file_header.version)?)
     }
 
-    pub fn from_vec(buf: Vec<u8>, version: &Version) -> Result<Self, HwpDocumentError> {
-        let mut stream = DocInfoIter::new(&buf, version);
+    pub fn from_buf(buf: &[u8], version: &Version) -> Result<Self, HwpDocumentError> {
+        let mut stream = DocInfoIter::new(buf, version);
 
         Ok(Self {
             document_properties: stream.document_properties()?,

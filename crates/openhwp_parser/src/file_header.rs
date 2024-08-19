@@ -116,11 +116,13 @@ pub enum FileHeaderError {
 
 impl FileHeader {
     pub fn from_reader<R: HwpRead>(reader: &mut R) -> Result<Self, HwpDocumentError> {
-        Ok(Self::from_vec(reader.header()?)?)
+        let buf = reader.header()?;
+
+        Ok(Self::from_vec(&buf)?)
     }
 
-    pub fn from_vec(buf: Vec<u8>) -> Result<Self, FileHeaderError> {
-        let buf = match <[u8; 256]>::try_from(buf.as_slice()) {
+    pub fn from_vec(buf: &[u8]) -> Result<Self, FileHeaderError> {
+        let buf = match <[u8; 256]>::try_from(buf) {
             Ok(buf) if !buf.starts_with(b"HWP Document File") => {
                 return Err(FileHeaderError::InvalidSignature(buf[0..32].to_vec()))
             }

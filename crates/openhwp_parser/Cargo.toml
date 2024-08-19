@@ -8,5 +8,5 @@ aes = "0.8.4"
 anyhow = { workspace = true }
 cfb = "0.10.0"
 flate2 = "1.0.30"
-thiserror = { workspace = true }
 insta = { workspace = true }
+thiserror = { workspace = true }
