@@ -1,12 +1,12 @@
 [package]
 name = "openhwp_parser"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-aes = "0.8.4"
-anyhow = { workspace = true }
-cfb = "0.10.0"
-flate2 = "1.0.30"
-insta = { workspace = true }
-thiserror = { workspace = true }
+aes.workspace = true
+anyhow.workspace = true
+cfb.workspace = true
+flate2.workspace = true
+insta.workspace = true
+thiserror.workspace = true

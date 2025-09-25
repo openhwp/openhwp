@@ -3,6 +3,9 @@ resolver = "2"
 members = ["crates/openhwp_parser"]
 
 [workspace.dependencies]
-anyhow = "1.0.86"
-thiserror = "1.0.63"
-insta = "1.39.0"
+aes = "0.8.4"
+anyhow = "1.0.100"
+cfb = "0.11.0"
+flate2 = "1.0.30"
+insta = "1.43.2"
+thiserror = "2.0.16"
