@@ -1,0 +1,14 @@
+---
+source: crates/openhwp_parser/src/tests/mod.rs
+assertion_line: 9
+expression: "HwpDocument::from_path(FILE_PATH)"
+---
+Err(
+    CannotOpenFile(
+        Os {
+            code: 2,
+            kind: NotFound,
+            message: "No such file or directory",
+        },
+    ),
+)
