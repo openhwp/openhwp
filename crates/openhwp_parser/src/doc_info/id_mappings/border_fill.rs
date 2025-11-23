@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoIter, HwpTag};
+use crate::{DocInfoIter, HwpTag, u16, u32};
 
 #[derive(Debug)]
 pub struct BorderFill {
@@ -26,15 +26,15 @@ pub struct SlashDiagonal {
 #[derive(Debug, Clone, Copy)]
 pub enum SlashDiagonalShape {
     /// none
-    None = 0b0000,
+    None = 0b_0000,
     /// slash
-    Slash = 0b0010,
+    Slash = 0b_0010,
     /// LeftTop --> Bottom Edge
-    LeftTop2BottomEdge = 0b0011,
+    LeftTop2BottomEdge = 0b_0011,
     /// LeftTop --> Right Edge
-    LeftTop2RightEdge = 0b0110,
+    LeftTop2RightEdge = 0b_0110,
     /// LeftTop --> Bottom & Right Edge
-    LeftTop2BottomAndRightEdge = 0b0111,
+    LeftTop2BottomAndRightEdge = 0b_0111,
     Unknown(u8),
 }
 
@@ -42,15 +42,15 @@ pub enum SlashDiagonalShape {
 #[derive(Debug, Clone, Copy)]
 pub enum BackSlashDiagonalShape {
     /// none
-    None = 0b0000,
+    None = 0b_0000,
     /// back slash
-    BackSlash = 0b0010,
+    BackSlash = 0b_0010,
     /// RightTop --> Bottom Edge
-    RightTop2BottomEdge = 0b0011,
+    RightTop2BottomEdge = 0b_0011,
     /// RightTop --> Left Edge
-    RightTop2LeftEdge = 0b0110,
+    RightTop2LeftEdge = 0b_0110,
     /// RightTop --> Bottom & Left Edge
-    RightTop2BottomAndLeftEdge = 0b0111,
+    RightTop2BottomAndLeftEdge = 0b_0111,
     Unknown(u8),
 }
 
@@ -312,13 +312,11 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn border_fills(&mut self, id_mapping_counts: &IdMappingCount) -> Vec<BorderFill> {
         let mut border_fills = Vec::with_capacity(id_mapping_counts.border_fill as usize);
 
-        for record in self
-            .clone()
-            .take(id_mapping_counts.border_fill as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_BORDER_FILL)
-        {
-            border_fills.push(BorderFill::from_buf(record.payload));
-            self.next();
+        for _ in 0..id_mapping_counts.border_fill {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_BORDER_FILL) {
+                Some(record) => border_fills.push(BorderFill::from_buf(record.payload)),
+                None => break,
+            }
         }
 
         border_fills
@@ -351,29 +349,29 @@ impl BorderFill {
 impl SlashDiagonal {
     pub const fn from_buf(buf: &[u8]) -> Self {
         Self {
-            effect_3d: buf[0] & 0b0000_0001 != 0,
-            effect_shadow: buf[0] & 0b0000_0010 != 0,
-            shape: match buf[0] & 0b0001_1100 {
-                0b0000 => SlashDiagonalShape::None,
-                0b0010 => SlashDiagonalShape::Slash,
-                0b0011 => SlashDiagonalShape::LeftTop2BottomEdge,
-                0b0110 => SlashDiagonalShape::LeftTop2RightEdge,
-                0b0111 => SlashDiagonalShape::LeftTop2BottomAndRightEdge,
+            effect_3d: buf[0] & 0b_0000_0001 != 0,
+            effect_shadow: buf[0] & 0b_0000_0010 != 0,
+            shape: match buf[0] & 0b_0001_1100 {
+                0b_0000 => SlashDiagonalShape::None,
+                0b_0010 => SlashDiagonalShape::Slash,
+                0b_0011 => SlashDiagonalShape::LeftTop2BottomEdge,
+                0b_0110 => SlashDiagonalShape::LeftTop2RightEdge,
+                0b_0111 => SlashDiagonalShape::LeftTop2BottomAndRightEdge,
                 shape => SlashDiagonalShape::Unknown(shape),
             },
-            back_shape: match buf[0] & 0b1110_0000 {
-                0b0000 => BackSlashDiagonalShape::None,
-                0b0010 => BackSlashDiagonalShape::BackSlash,
-                0b0011 => BackSlashDiagonalShape::RightTop2BottomEdge,
-                0b0110 => BackSlashDiagonalShape::RightTop2LeftEdge,
-                0b0111 => BackSlashDiagonalShape::RightTop2BottomAndLeftEdge,
+            back_shape: match buf[0] & 0b_1110_0000 {
+                0b_0000 => BackSlashDiagonalShape::None,
+                0b_0010 => BackSlashDiagonalShape::BackSlash,
+                0b_0011 => BackSlashDiagonalShape::RightTop2BottomEdge,
+                0b_0110 => BackSlashDiagonalShape::RightTop2LeftEdge,
+                0b_0111 => BackSlashDiagonalShape::RightTop2BottomAndLeftEdge,
                 shape => BackSlashDiagonalShape::Unknown(shape),
             },
-            broken_line: buf[1] & 0b0000_0011 != 0,
-            broken_back_line: buf[1] & 0b0000_0100 != 0,
-            line_rotated: buf[1] & 0b0000_1000 != 0,
-            back_line_rotated: buf[1] & 0b0001_0000 != 0,
-            center_line: buf[1] & 0b0010_0000 != 0,
+            broken_line: buf[1] & 0b_0000_0011 != 0,
+            broken_back_line: buf[1] & 0b_0000_0100 != 0,
+            line_rotated: buf[1] & 0b_0000_1000 != 0,
+            back_line_rotated: buf[1] & 0b_0001_0000 != 0,
+            center_line: buf[1] & 0b_0010_0000 != 0,
         }
     }
 }
@@ -393,7 +391,7 @@ impl Border {
 
 impl BorderShape {
     pub const fn from_buf(buf: &[u8]) -> Self {
-        match buf[0] & 0b0000_1111 {
+        match buf[0] & 0b_0000_1111 {
             0 => BorderShape::Solid,
             1 => BorderShape::Dashed,
             2 => BorderShape::Dotted,

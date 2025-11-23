@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpTag};
+use crate::{BodyIter, HwpTag, u32};
 
 #[derive(Debug)]
 pub struct LineSegment {
@@ -69,14 +69,14 @@ impl LineSegment {
             line_spacing: u32(buf, 20) as i32,
             start_position_in_column: u32(buf, 24) as i32,
             width: u32(buf, 28) as i32,
-            is_first_line_in_page: buf[32] & 0b0000_0001 != 0,
-            is_first_line_in_column: buf[32] & 0b0000_0010 != 0,
-            is_empty: buf[34] & 0b0000_0001 != 0,
-            is_first: buf[34] & 0b0000_0010 != 0,
-            is_last: buf[34] & 0b0000_0100 != 0,
-            auto_hyphenated: buf[34] & 0b0000_1000 != 0,
-            indented: buf[34] & 0b0001_0000 != 0,
-            use_heading: buf[34] & 0b0010_0000 != 0,
+            is_first_line_in_page: buf[32] & 0b_0000_0001 != 0,
+            is_first_line_in_column: buf[32] & 0b_0000_0010 != 0,
+            is_empty: buf[34] & 0b_0000_0001 != 0,
+            is_first: buf[34] & 0b_0000_0010 != 0,
+            is_last: buf[34] & 0b_0000_0100 != 0,
+            auto_hyphenated: buf[34] & 0b_0000_1000 != 0,
+            indented: buf[34] & 0b_0001_0000 != 0,
+            use_heading: buf[34] & 0b_0010_0000 != 0,
         }
     }
 }

@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, DocInfoIter, HwpTag};
+use crate::{DocInfoIter, HwpDocumentError, HwpTag, to_string, u16, u32};
 
 #[derive(Debug)]
 pub struct BinData {
@@ -25,7 +25,6 @@ pub enum BinDataKind {
     Storage {
         id: u32,
     },
-    Unknown(u16),
 }
 
 #[derive(Debug)]
@@ -36,15 +35,13 @@ pub enum Extension {
     Png,
     Wmf,
     Ole,
-    Unknown(String),
 }
 
 #[derive(Debug)]
 pub enum Compression {
-    Default,
+    DependsOn,
     Yes,
     No,
-    Unknown(u16),
 }
 
 #[derive(Debug)]
@@ -53,32 +50,32 @@ pub enum State {
     Accessed,
     Failed,
     Ignored,
-    Unknown(u16),
 }
 
 impl<'hwp> DocInfoIter<'hwp> {
-    pub fn bin_data(&mut self, id_mappings: &IdMappingCount) -> Vec<BinData> {
+    pub fn bin_data(
+        &mut self,
+        id_mappings: &IdMappingCount,
+    ) -> Result<Vec<BinData>, HwpDocumentError> {
         let mut bin_data = Vec::with_capacity(id_mappings.binary_data as usize);
 
-        for record in self
-            .clone()
-            .take(id_mappings.binary_data as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_BIN_DATA)
-        {
-            bin_data.push(BinData::from_buf(record.payload));
-            self.next();
+        for _ in 0..id_mappings.binary_data {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_BIN_DATA) {
+                Some(record) => bin_data.push(BinData::from_buf(record.payload)?),
+                None => break,
+            }
         }
 
-        bin_data
+        Ok(bin_data)
     }
 }
 
 impl BinData {
-    pub fn from_buf(buf: &[u8]) -> Self {
+    pub fn from_buf(buf: &[u8]) -> Result<Self, HwpDocumentError> {
         let (attribute, buf) = buf.split_at(2);
         let attribute = u16(attribute, 0);
 
-        Self {
+        Ok(Self {
             kind: match attribute & 0x000f {
                 0x0000 => {
                     let (size, buf) = buf.split_at(2);
@@ -102,37 +99,56 @@ impl BinData {
                     let (size, buf) = buf.split_at(2);
                     let size = u16(size, 0);
                     let (extension, _) = buf.split_at(2 * size as usize);
-                    let extension = to_string(extension).to_lowercase();
 
                     BinDataKind::Embedding {
                         id,
-                        extension: match extension.as_str() {
-                            "jpg" => Extension::Jpg,
-                            "bmp" => Extension::Bmp,
-                            "gif" => Extension::Gif,
-                            "png" => Extension::Png,
-                            "wmf" => Extension::Wmf,
-                            "ole" => Extension::Ole,
-                            _ => Extension::Unknown(extension),
+                        extension: match extension {
+                            b"jpg" => Extension::Jpg,
+                            b"bmp" => Extension::Bmp,
+                            b"gif" => Extension::Gif,
+                            b"png" => Extension::Png,
+                            b"wmf" => Extension::Wmf,
+                            b"ole" => Extension::Ole,
+                            _ => {
+                                return Err(HwpDocumentError::Any(anyhow::anyhow!(
+                                    "Unknown embedding extension: {:?}",
+                                    extension
+                                )));
+                            }
                         },
                     }
                 }
                 0x00002 => BinDataKind::Storage { id: u32(buf, 4) },
-                r#type => BinDataKind::Unknown(r#type),
+                r#type => {
+                    return Err(HwpDocumentError::Any(anyhow::anyhow!(
+                        "Unknown bin data type: {}",
+                        r#type
+                    )));
+                }
             },
             compression: match attribute & 0x00f0 {
-                0x0000 => Compression::Default,
+                0x0000 => Compression::DependsOn,
                 0x0010 => Compression::Yes,
                 0x0020 => Compression::No,
-                compression => Compression::Unknown(compression),
+                compression => {
+                    return Err(HwpDocumentError::Any(anyhow::anyhow!(
+                        "Unknown bin data compression: {}",
+                        compression
+                    )));
+                }
             },
             state: match attribute & 0x0f00 {
                 0x0000 => State::NoAccessed,
                 0x0100 => State::Accessed,
                 0x0200 => State::Failed,
                 0x0300 => State::Ignored,
-                state => State::Unknown(state),
+                state => {
+                    return Err(HwpDocumentError::Any(anyhow::anyhow!(
+                        "Unknown bin data state: {}",
+                        state
+                    )));
+                }
             },
-        }
+        })
     }
 }

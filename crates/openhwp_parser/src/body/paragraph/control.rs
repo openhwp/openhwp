@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpDocumentError, HwpTag, Record};
+use crate::{BodyIter, HwpDocumentError, HwpTag, Record, u32};
 
 #[derive(Debug)]
 pub enum Control {
@@ -45,10 +45,22 @@ impl Control {
 
 #[derive(Debug)]
 pub enum ControlRecord {
-    ListHeader { level: u16, header: ListHeader },
-    PageDefinition { level: u16, page: PageDef },
-    PageBorderFill { level: u16, fill: PageBorderFill },
-    FootnoteShape { level: u16, shape: FootnoteShape },
+    ListHeader {
+        level: u16,
+        header: ListHeader,
+    },
+    PageDefinition {
+        level: u16,
+        page: PageDef,
+    },
+    PageBorderFill {
+        level: u16,
+        fill: PageBorderFill,
+    },
+    FootnoteShape {
+        level: u16,
+        shape: FootnoteShape,
+    },
     Raw {
         tag: HwpTag,
         level: u16,
@@ -144,8 +156,8 @@ impl PageDefProperty {
     pub const fn from_raw(raw: u32) -> Self {
         Self {
             raw,
-            landscape: raw & 0b1 != 0,
-            binding: BindingMethod::from_bits(((raw >> 1) & 0b11) as u8),
+            landscape: raw & 0b_1 != 0,
+            binding: BindingMethod::from_bits(((raw >> 1) & 0b_11) as u8),
         }
     }
 }
@@ -222,10 +234,10 @@ impl PageBorderFillProperty {
     pub const fn from_raw(raw: u32) -> Self {
         Self {
             raw,
-            relative_to_paper: raw & 0b1 != 0,
-            include_header: raw & 0b10 != 0,
-            include_footer: raw & 0b100 != 0,
-            area: BorderFillArea::from_bits(((raw >> 3) & 0b11) as u8),
+            relative_to_paper: raw & 0b_1 != 0,
+            include_header: raw & 0b_10 != 0,
+            include_footer: raw & 0b_100 != 0,
+            area: BorderFillArea::from_bits(((raw >> 3) & 0b_11) as u8),
         }
     }
 }
@@ -299,8 +311,8 @@ impl FootnoteShapeProperty {
         Self {
             raw,
             number_shape: (raw & 0xff) as u8,
-            arrangement: ((raw >> 8) & 0b11) as u8,
-            numbering: ((raw >> 10) & 0b11) as u8,
+            arrangement: ((raw >> 8) & 0b_11) as u8,
+            numbering: ((raw >> 10) & 0b_11) as u8,
             superscript: raw & (1 << 12) != 0,
             continue_with_text: raw & (1 << 13) != 0,
         }
@@ -325,7 +337,9 @@ const fn read_i16(buf: &[u8], index: usize) -> i16 {
 
 #[cfg(test)]
 mod tests {
-    use super::{BindingMethod, BorderFillArea, FootnoteShape, ListHeader, PageBorderFill, PageDef};
+    use super::{
+        BindingMethod, BorderFillArea, FootnoteShape, ListHeader, PageBorderFill, PageDef,
+    };
 
     #[test]
     fn parses_list_header_payload() {
@@ -342,7 +356,7 @@ mod tests {
         for value in 1i32..=9 {
             buf.extend_from_slice(&(value * 10).to_le_bytes());
         }
-        buf.extend_from_slice(&0b10u32.to_le_bytes());
+        buf.extend_from_slice(&0b_10u32.to_le_bytes());
 
         let page_def = PageDef::from_buf(&buf);
         assert_eq!(page_def.width, 10);
@@ -354,7 +368,7 @@ mod tests {
     #[test]
     fn parses_page_border_fill_payload() {
         let mut buf = vec![];
-        buf.extend_from_slice(&0b1111u32.to_le_bytes());
+        buf.extend_from_slice(&0b_1111u32.to_le_bytes());
         buf.extend_from_slice(&5i16.to_le_bytes());
         buf.extend_from_slice(&6i16.to_le_bytes());
         buf.extend_from_slice(&7i16.to_le_bytes());

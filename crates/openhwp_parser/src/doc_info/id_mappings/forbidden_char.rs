@@ -8,12 +8,9 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn forbidden_chars(&mut self) -> Vec<ForbiddenChar> {
         let mut forbidden_chars = vec![];
 
-        for record in self
-            .clone()
-            .take_while(|record| record.tag == HwpTag::HWPTAG_FORBIDDEN_CHAR)
+        while let Some(record) = self.next_if(|record| record.tag == HwpTag::HWPTAG_FORBIDDEN_CHAR)
         {
             forbidden_chars.push(ForbiddenChar::from_buf(record.payload));
-            self.next();
         }
 
         forbidden_chars

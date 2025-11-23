@@ -1,7 +1,7 @@
-use super::super::{Body, MemoRecord, MemoStore, Section};
 use super::super::section::{MemoListHeader, SectionMemoShape};
+use super::super::{Body, MemoRecord, MemoStore, Section};
 use crate::doc_info::memo_shape::MemoShape as DocMemoShape;
-use crate::{hash_code, pseudo, u32, HwpDocumentError};
+use crate::{HwpDocumentError, hash_code, pseudo, u32};
 
 #[test]
 fn officially_distributed_hwp_5_0_format() {
@@ -50,8 +50,8 @@ fn validate_sections_rejects_mismatch() {
             memos: vec![],
         },
     ];
-    let error = Body::validate_sections(sections, Some(1), "ViewText")
-        .expect_err("should detect mismatch");
+    let error =
+        Body::validate_sections(sections, Some(1), "ViewText").expect_err("should detect mismatch");
 
     match error {
         HwpDocumentError::SectionCountMismatch {
@@ -69,10 +69,7 @@ fn validate_sections_rejects_mismatch() {
 
 #[test]
 fn memo_store_collects_memos() {
-    let doc_shapes = vec![
-        DocMemoShape { raw: vec![1] },
-        DocMemoShape { raw: vec![2] },
-    ];
+    let doc_shapes = vec![DocMemoShape { raw: vec![1] }, DocMemoShape { raw: vec![2] }];
     let sections = vec![Section {
         paragraphs: vec![],
         memos: vec![

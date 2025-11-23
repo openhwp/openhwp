@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, DocInfoIter, HwpTag};
+use crate::{DocInfoIter, HwpDocumentError, HwpTag, to_string, u16};
 
 #[derive(Debug)]
 pub struct FaceName {
@@ -35,7 +35,6 @@ pub enum AlternativeFaceNameKind {
     Ttf,
     /// 한/글 전용 글꼴(HFT)
     Htf,
-    Unexpected(u8),
 }
 
 /// <https://en.wikipedia.org/wiki/PANOSE>
@@ -64,7 +63,10 @@ pub struct Panose {
 }
 
 impl<'hwp> DocInfoIter<'hwp> {
-    pub fn face_names(&mut self, id_mappings: &IdMappingCount) -> Vec<FaceName> {
+    pub fn face_names(
+        &mut self,
+        id_mappings: &IdMappingCount,
+    ) -> Result<Vec<FaceName>, HwpDocumentError> {
         macro_rules! face_name_count {
             ($( $tag:ident -> $language:ident .take ($count:expr) )+) => {
                 let face_name_count = id_mappings.hangul_font
@@ -77,17 +79,15 @@ impl<'hwp> DocInfoIter<'hwp> {
                 let mut face_names = Vec::with_capacity(face_name_count as usize);
 
                 $(
-                    for record in self
-                        .clone()
-                        .take($count as usize)
-                        .take_while(|record| record.tag == HwpTag::HWPTAG_FACE_NAME)
-                    {
-                        face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language));
-                        self.next();
+                    for _ in 0..$count {
+                        match self.next_if(|record| record.tag == HwpTag::HWPTAG_FACE_NAME) {
+                            Some(record) => face_names.push(FaceName::from_buf(record.payload, FontLanguage::$language)?),
+                            None => break,
+                        }
                     }
                 )+
 
-                face_names
+                Ok(face_names)
             };
         }
 
@@ -104,7 +104,7 @@ impl<'hwp> DocInfoIter<'hwp> {
 }
 
 impl FaceName {
-    pub fn from_buf(buf: &[u8], language: FontLanguage) -> Self {
+    pub fn from_buf(buf: &[u8], language: FontLanguage) -> Result<Self, HwpDocumentError> {
         let (attribute, buf) = buf.split_at(1);
         // 대체 글꼴 존재 여부
         let has_alternative = attribute[0] & 0x80 != 0;
@@ -128,7 +128,12 @@ impl FaceName {
                     0 => AlternativeFaceNameKind::Unknown,
                     1 => AlternativeFaceNameKind::Ttf,
                     2 => AlternativeFaceNameKind::Htf,
-                    kind => AlternativeFaceNameKind::Unexpected(kind),
+                    kind => {
+                        return Err(HwpDocumentError::Any(anyhow::anyhow!(
+                            "Unknown alternative face name kind: {}",
+                            kind
+                        )));
+                    }
                 };
 
                 (kind, buf)
@@ -177,12 +182,12 @@ impl FaceName {
             None
         };
 
-        Self {
+        Ok(Self {
             language,
             name,
             alternative,
             panose,
             default,
-        }
+        })
     }
 }

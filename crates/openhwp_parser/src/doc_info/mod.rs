@@ -8,13 +8,13 @@ pub use document_properties::*;
 pub use id_mappings::*;
 pub use stream::*;
 
-use crate::{decompress, FileHeader, HwpDocumentError, HwpRead, Version};
+use crate::{FileHeader, HwpDocumentError, HwpRead, Version, decompress};
 
 #[derive(Debug)]
 pub struct DocInfo {
     pub document_properties: DocumentProperties,
     pub id_mappings: IdMappings,
-    pub compatible_document: CompatibleDocument,
+    pub compatible_document: Option<CompatibleDocument>,
 }
 
 impl DocInfo {
@@ -25,16 +25,28 @@ impl DocInfo {
         let buf = reader.doc_info()?;
         let buf = decompress!(buf, file_header.properties.compressed);
 
-        Ok(Self::from_buf(&buf, &file_header.version)?)
+        Ok(Self::from_buf(
+            &buf,
+            &file_header.version,
+            file_header.properties.encrypted,
+        )?)
     }
 
-    pub fn from_buf(buf: &[u8], version: &Version) -> Result<Self, HwpDocumentError> {
+    pub fn from_buf(
+        buf: &[u8],
+        version: &Version,
+        encrypted: bool,
+    ) -> Result<Self, HwpDocumentError> {
         let mut stream = DocInfoIter::new(buf, version);
 
         Ok(Self {
             document_properties: stream.document_properties()?,
             id_mappings: stream.id_mappings()?,
-            compatible_document: stream.compatible_document(),
+            compatible_document: if encrypted {
+                None
+            } else {
+                stream.compatible_document()
+            },
         })
     }
 }

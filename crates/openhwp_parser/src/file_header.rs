@@ -124,7 +124,7 @@ impl FileHeader {
     pub fn from_vec(buf: &[u8]) -> Result<Self, FileHeaderError> {
         let buf = match <[u8; 256]>::try_from(buf) {
             Ok(buf) if !buf.starts_with(b"HWP Document File") => {
-                return Err(FileHeaderError::InvalidSignature(buf[0..32].to_vec()))
+                return Err(FileHeaderError::InvalidSignature(buf[0..32].to_vec()));
             }
             Ok(buf) => buf,
             Err(_) => return Err(FileHeaderError::InvalidSize(buf.len())),
@@ -141,32 +141,32 @@ impl FileHeader {
         }
 
         let properties = Properties {
-            compressed: match buf[36] & 0b0000_0001 != 0 {
+            compressed: match buf[36] & 0b_0000_0001 != 0 {
                 true => Compressed::Yes,
                 false => Compressed::No,
             },
-            encrypted: buf[36] & 0b0000_0010 != 0,
-            distribution: buf[36] & 0b0000_0100 != 0,
-            script: buf[36] & 0b0000_1000 != 0,
-            drm: buf[36] & 0b0001_0000 != 0,
-            has_xml_template_storage: buf[36] & 0b0010_0000 != 0,
-            vcs: buf[36] & 0b0100_0000 != 0,
-            has_electronic_signature_information: buf[36] & 0b1000_0000 != 0,
-            certificate_encryption: buf[37] & 0b0000_0001 != 0,
-            prepare_signature: buf[37] & 0b0000_0010 != 0,
-            certificate_drm: buf[37] & 0b0000_0100 != 0,
-            ccl: buf[37] & 0b0000_1000 != 0,
-            mobile: buf[37] & 0b0001_0000 != 0,
-            is_privacy_security_document: buf[37] & 0b0010_0000 != 0,
-            track_changes: buf[37] & 0b0100_0000 != 0,
-            kogl: buf[37] & 0b1000_0000 != 0,
-            has_video_control: buf[38] & 0b0000_0001 != 0,
-            has_order_field_control: buf[38] & 0b0000_0010 != 0,
+            encrypted: buf[36] & 0b_0000_0010 != 0,
+            distribution: buf[36] & 0b_0000_0100 != 0,
+            script: buf[36] & 0b_0000_1000 != 0,
+            drm: buf[36] & 0b_0001_0000 != 0,
+            has_xml_template_storage: buf[36] & 0b_0010_0000 != 0,
+            vcs: buf[36] & 0b_0100_0000 != 0,
+            has_electronic_signature_information: buf[36] & 0b_1000_0000 != 0,
+            certificate_encryption: buf[37] & 0b_0000_0001 != 0,
+            prepare_signature: buf[37] & 0b_0000_0010 != 0,
+            certificate_drm: buf[37] & 0b_0000_0100 != 0,
+            ccl: buf[37] & 0b_0000_1000 != 0,
+            mobile: buf[37] & 0b_0001_0000 != 0,
+            is_privacy_security_document: buf[37] & 0b_0010_0000 != 0,
+            track_changes: buf[37] & 0b_0100_0000 != 0,
+            kogl: buf[37] & 0b_1000_0000 != 0,
+            has_video_control: buf[38] & 0b_0000_0001 != 0,
+            has_order_field_control: buf[38] & 0b_0000_0010 != 0,
         };
         let license = License {
-            ccl: buf[40] & 0b0000_0001 != 0,
-            copy_limit: buf[40] & 0b0000_0010 != 0,
-            copy_same: buf[40] & 0b0000_01000 != 0,
+            ccl: buf[40] & 0b_0000_0001 != 0,
+            copy_limit: buf[40] & 0b_0000_0010 != 0,
+            copy_same: buf[40] & 0b_0000_0100 != 0,
         };
         let encrypted_version = match buf[44] {
             0 => EncryptedVersion::None,

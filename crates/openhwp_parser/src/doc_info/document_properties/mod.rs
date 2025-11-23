@@ -1,5 +1,5 @@
 use super::DocInfoIter;
-use crate::{u16, u32, HwpDocumentError, HwpTag};
+use crate::{HwpDocumentError, HwpTag, u16, u32};
 
 #[derive(Debug)]
 pub struct DocumentProperties {

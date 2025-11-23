@@ -1,5 +1,5 @@
 use super::{IdMappingCount, Image, NumberingParagraphHeader};
-use crate::{u16, u32, DocInfoIter, HwpTag};
+use crate::{DocInfoIter, HwpTag, u16, u32};
 
 #[derive(Debug)]
 pub struct Bullet {
@@ -14,13 +14,11 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn bullets(&mut self, id_mappings: &IdMappingCount) -> Vec<Bullet> {
         let mut bullets = vec![];
 
-        for record in self
-            .clone()
-            .take(id_mappings.bullet as usize)
-            .filter(|record| record.tag == HwpTag::HWPTAG_BULLET)
-        {
-            bullets.push(Bullet::from_buf(record.payload));
-            self.next();
+        for _ in 0..id_mappings.bullet {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_BULLET) {
+                Some(record) => bullets.push(Bullet::from_buf(record.payload)),
+                None => break,
+            }
         }
 
         bullets

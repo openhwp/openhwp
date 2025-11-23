@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpTag};
+use crate::{BodyIter, HwpTag, u32};
 
 #[non_exhaustive]
 #[derive(Debug)]

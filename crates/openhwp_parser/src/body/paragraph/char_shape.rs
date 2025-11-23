@@ -1,4 +1,4 @@
-use crate::{u32, BodyIter, HwpTag};
+use crate::{BodyIter, HwpTag, u32};
 
 #[derive(Debug)]
 pub struct CharShape {

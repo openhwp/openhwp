@@ -1,5 +1,5 @@
-use crate::{decompress, u32};
 use crate::{BodyIter, Compressed, HwpDocumentError, HwpTag, Paragraph, Record, Version};
+use crate::{decompress, u32};
 
 #[derive(Debug)]
 pub struct Section {
@@ -97,8 +97,8 @@ pub(crate) const fn hash_code(seed: u32, pseudo: [u8; 256], payload: [u8; 256]) 
 }
 
 fn decode_aes_128_ecb(key: [u8; 16], buf: &[u8]) -> Result<Vec<u8>, HwpDocumentError> {
-    use aes::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
     use aes::Aes128;
+    use aes::cipher::{BlockDecrypt, KeyInit, generic_array::GenericArray};
 
     let mut blocks: Vec<_> = buf
         .chunks_exact(16)

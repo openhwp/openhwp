@@ -36,12 +36,7 @@ impl Body {
             (!file_header.properties.distribution).then_some(expected_sections),
         )?;
         let distributed = if file_header.properties.distribution {
-            Self::from_reader_for_distributed(
-                reader,
-                compressed,
-                version,
-                Some(expected_sections),
-            )?
+            Self::from_reader_for_distributed(reader, compressed, version, Some(expected_sections))?
         } else {
             vec![]
         };

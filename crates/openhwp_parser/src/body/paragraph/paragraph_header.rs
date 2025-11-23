@@ -1,4 +1,4 @@
-use crate::{u16, u32, BodyIter, HwpDocumentError, HwpTag, Version};
+use crate::{BodyIter, HwpDocumentError, HwpTag, Version, u16, u32};
 
 #[derive(Debug)]
 pub struct ParagraphHeader {
@@ -105,10 +105,10 @@ impl ParagraphHeader {
         let control_mask = ControlMask::from_buf(control_mask);
         let paragraph_shape_id = u16(buf, 0);
         let paragraph_style_id = buf[2];
-        let section_break = buf[3] & 0b0000_0001 != 0;
-        let columns_break = buf[3] & 0b0000_0010 != 0;
-        let page_break = buf[3] & 0b0000_0100 != 0;
-        let column_break = buf[3] & 0b0000_1000 != 0;
+        let section_break = buf[3] & 0b_0000_0001 != 0;
+        let columns_break = buf[3] & 0b_0000_0010 != 0;
+        let page_break = buf[3] & 0b_0000_0100 != 0;
+        let column_break = buf[3] & 0b_0000_1000 != 0;
         let char_shape_count = u16(buf, 4);
         let range_tag_count = u16(buf, 6);
         let line_segment_count = u16(buf, 8);
@@ -140,23 +140,23 @@ impl ParagraphHeader {
 impl ControlMask {
     pub const fn from_buf(buf: &[u8]) -> Self {
         Self {
-            section_column_definition: buf[0] & 0b0000_0010 != 0,
-            field_start: buf[0] & 0b0000_0100 != 0,
-            field_end: buf[0] & 0b0000_1000 != 0,
-            tab: buf[1] & 0b0000_0001 != 0,
-            line_break: buf[1] & 0b0000_0010 != 0,
-            shape_object_table: buf[1] & 0b0000_0100 != 0,
-            paragraph_break: buf[1] & 0b0001_0000 != 0,
-            hidden_comment: buf[1] & 0b0100_0000 != 0,
-            header_footer: buf[1] & 0b1000_0000 != 0,
-            headnote_footnote: buf[2] & 0b0000_0001 != 0,
-            auto_number: buf[2] & 0b0000_0010 != 0,
-            page_break: buf[2] & 0b0001_0000 != 0,
-            book_mark_index_mark: buf[2] & 0b0010_0000 != 0,
-            sub_text: buf[2] & 0b0100_0000 != 0,
-            hyphen: buf[2] & 0b1000_0000 != 0,
-            keep_word_space: buf[3] & 0b0100_0000 != 0,
-            fixed_width_space: buf[3] & 0b1000_0000 != 0,
+            section_column_definition: buf[0] & 0b_0000_0010 != 0,
+            field_start: buf[0] & 0b_0000_0100 != 0,
+            field_end: buf[0] & 0b_0000_1000 != 0,
+            tab: buf[1] & 0b_0000_0001 != 0,
+            line_break: buf[1] & 0b_0000_0010 != 0,
+            shape_object_table: buf[1] & 0b_0000_0100 != 0,
+            paragraph_break: buf[1] & 0b_0001_0000 != 0,
+            hidden_comment: buf[1] & 0b_0100_0000 != 0,
+            header_footer: buf[1] & 0b_1000_0000 != 0,
+            headnote_footnote: buf[2] & 0b_0000_0001 != 0,
+            auto_number: buf[2] & 0b_0000_0010 != 0,
+            page_break: buf[2] & 0b_0001_0000 != 0,
+            book_mark_index_mark: buf[2] & 0b_0010_0000 != 0,
+            sub_text: buf[2] & 0b_0100_0000 != 0,
+            hyphen: buf[2] & 0b_1000_0000 != 0,
+            keep_word_space: buf[3] & 0b_0100_0000 != 0,
+            fixed_width_space: buf[3] & 0b_1000_0000 != 0,
         }
     }
 }

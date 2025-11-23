@@ -1,5 +1,5 @@
 use super::{BorderShape, Color, IdMappingCount};
-use crate::{u16, u32, DocInfoIter, HwpTag, Version};
+use crate::{DocInfoIter, HwpTag, Version, u16, u32};
 
 #[derive(Debug)]
 pub struct CharShape {
@@ -159,13 +159,13 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn char_shapes(&mut self, id_mappings: &IdMappingCount) -> Vec<CharShape> {
         let mut char_shapes = Vec::with_capacity(id_mappings.char_shape as usize);
 
-        for record in self
-            .clone()
-            .take(id_mappings.char_shape as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_CHAR_SHAPE)
-        {
-            char_shapes.push(CharShape::from_buf(record.payload, self.version()));
-            self.next();
+        for _ in 0..id_mappings.char_shape {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_CHAR_SHAPE) {
+                Some(record) => {
+                    char_shapes.push(CharShape::from_buf(record.payload, self.version()));
+                }
+                None => break,
+            }
         }
 
         char_shapes
@@ -273,16 +273,16 @@ impl FontByLanguage {
 impl FontShape {
     pub const fn from_buf(buf: &[u8]) -> Self {
         Self {
-            italic: buf[0] & 0b0000_0001 != 0,
-            bold: buf[0] & 0b0000_0010 != 0,
-            underline_kind: match buf[0] & 0b0000_1100 {
-                0b0000_0000 => UnderlineKind::None,
-                0b0000_0100 => UnderlineKind::Under,
-                0b0000_1100 => UnderlineKind::Over,
+            italic: buf[0] & 0b_0000_0001 != 0,
+            bold: buf[0] & 0b_0000_0010 != 0,
+            underline_kind: match buf[0] & 0b_0000_1100 {
+                0b_0000_0000 => UnderlineKind::None,
+                0b_0000_0100 => UnderlineKind::Under,
+                0b_0000_1100 => UnderlineKind::Over,
                 kind => UnderlineKind::Unknown(kind),
             },
             underline_border: BorderShape::from_buf(&[buf[0] >> 4]),
-            outline_kind: match buf[1] & 0b0000_0111 {
+            outline_kind: match buf[1] & 0b_0000_0111 {
                 0 => OutlineKind::None,
                 1 => OutlineKind::Solid,
                 2 => OutlineKind::Dot,
@@ -292,30 +292,30 @@ impl FontShape {
                 6 => OutlineKind::DashDotDot,
                 kind => OutlineKind::Unknown(kind),
             },
-            shadow_kind: match buf[1] & 0b0001_1000 {
+            shadow_kind: match buf[1] & 0b_0001_1000 {
                 0 => ShadowKind::None,
                 1 => ShadowKind::Discontinuous,
                 2 => ShadowKind::Continuous,
                 kind => ShadowKind::Unknown(kind),
             },
-            emboss: buf[1] & 0b0010_0000 != 0,
-            engrave: buf[1] & 0b0100_0000 != 0,
-            superscript: buf[1] & 0b1000_0000 != 0,
-            subscript: buf[2] & 0b0000_0001 != 0,
-            strike: buf[2] & 0b0001_1000 != 0,
-            symbol: match buf[2] & 0b1110_0000 {
-                0b0000_0000 => SymbolKind::None,
-                0b0010_0000 => SymbolKind::DotAbove,
-                0b0100_0000 => SymbolKind::RingAbove,
-                0b0110_0000 => SymbolKind::Caron,
-                0b1000_0000 => SymbolKind::Tilde,
-                0b1010_0000 => SymbolKind::DotMiddle,
-                0b1100_0000 => SymbolKind::Colon,
+            emboss: buf[1] & 0b_0010_0000 != 0,
+            engrave: buf[1] & 0b_0100_0000 != 0,
+            superscript: buf[1] & 0b_1000_0000 != 0,
+            subscript: buf[2] & 0b_0000_0001 != 0,
+            strike: buf[2] & 0b_0001_1000 != 0,
+            symbol: match buf[2] & 0b_1110_0000 {
+                0b_0000_0000 => SymbolKind::None,
+                0b_0010_0000 => SymbolKind::DotAbove,
+                0b_0100_0000 => SymbolKind::RingAbove,
+                0b_0110_0000 => SymbolKind::Caron,
+                0b_1000_0000 => SymbolKind::Tilde,
+                0b_1010_0000 => SymbolKind::DotMiddle,
+                0b_1100_0000 => SymbolKind::Colon,
                 kind => SymbolKind::Unknown(kind),
             },
-            use_font_space: buf[3] & 0b0000_0010 != 0,
-            strike_shape: BorderShape::from_buf(&[(buf[3] >> 2) & 0b0000_11111]),
-            use_kerning: buf[3] & 0b0100_0000 != 0,
+            use_font_space: buf[3] & 0b_0000_0010 != 0,
+            strike_shape: BorderShape::from_buf(&[(buf[3] >> 2) & 0b_0000_11111]),
+            use_kerning: buf[3] & 0b_0100_0000 != 0,
         }
     }
 }

@@ -8,12 +8,8 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn doc_data(&mut self) -> Vec<DocData> {
         let mut doc_data = vec![];
 
-        for record in self
-            .clone()
-            .take_while(|record| record.tag == HwpTag::HWPTAG_DOC_DATA)
-        {
+        while let Some(record) = self.next_if(|record| record.tag == HwpTag::HWPTAG_DOC_DATA) {
             doc_data.push(DocData::from_buf(record.payload));
-            self.next();
         }
 
         doc_data

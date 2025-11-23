@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{u16, u32, DocInfoIter, HwpTag, Version};
+use crate::{DocInfoIter, HwpTag, Version, u16, u32};
 
 #[derive(Debug)]
 pub struct ParagraphShape {
@@ -152,13 +152,13 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn paragraph_shapes(&mut self, id_mappings: &IdMappingCount) -> Vec<ParagraphShape> {
         let mut paragraph_shapes = Vec::with_capacity(id_mappings.paragraph_shape as usize);
 
-        for record in self
-            .clone()
-            .take(id_mappings.paragraph_shape as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_PARA_SHAPE)
-        {
-            paragraph_shapes.push(ParagraphShape::from_buf(record.payload, self.version()));
-            self.next();
+        for _ in 0..id_mappings.paragraph_shape {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_PARA_SHAPE) {
+                Some(record) => {
+                    paragraph_shapes.push(ParagraphShape::from_buf(record.payload, self.version()));
+                }
+                None => break,
+            }
         }
 
         paragraph_shapes
@@ -167,69 +167,69 @@ impl<'hwp> DocInfoIter<'hwp> {
 
 impl ParagraphShape {
     fn from_buf(buf: &[u8], version: &Version) -> Self {
-        let line_space_kind = match buf[0] & 0b0000_0011 {
-            0b0000_0000 => LineSpacingKind::Percent,
-            0b0000_0001 => LineSpacingKind::Fixed,
-            0b0000_0010 => LineSpacingKind::BetweenLine,
-            0b0000_0011 => LineSpacingKind::AtLeast,
+        let line_space_kind = match buf[0] & 0b_0000_0011 {
+            0b_0000_0000 => LineSpacingKind::Percent,
+            0b_0000_0001 => LineSpacingKind::Fixed,
+            0b_0000_0010 => LineSpacingKind::BetweenLine,
+            0b_0000_0011 => LineSpacingKind::AtLeast,
             _ => std::unreachable!(),
         };
-        let alignment = match buf[0] & 0b0001_1100 {
-            0b0000_0000 => ParagraphShapeAlignment::Justify,
-            0b0000_0100 => ParagraphShapeAlignment::Left,
-            0b0000_1000 => ParagraphShapeAlignment::Right,
-            0b0000_1100 => ParagraphShapeAlignment::Center,
-            0b0001_0000 => ParagraphShapeAlignment::Distributive,
-            0b0001_0100 => ParagraphShapeAlignment::DistributiveSpace,
+        let alignment = match buf[0] & 0b_0001_1100 {
+            0b_0000_0000 => ParagraphShapeAlignment::Justify,
+            0b_0000_0100 => ParagraphShapeAlignment::Left,
+            0b_0000_1000 => ParagraphShapeAlignment::Right,
+            0b_0000_1100 => ParagraphShapeAlignment::Center,
+            0b_0001_0000 => ParagraphShapeAlignment::Distributive,
+            0b_0001_0100 => ParagraphShapeAlignment::DistributiveSpace,
             alignment => ParagraphShapeAlignment::Unknown(alignment as u8),
         };
-        let break_word_alphabet = match buf[0] & 0b0110_0000 {
-            0b0000_0000 => BreakWordAlphabet::Word,
-            0b0010_0000 => BreakWordAlphabet::Hyphen,
-            0b0100_0000 => BreakWordAlphabet::Character,
-            0b0110_0000 => BreakWordAlphabet::Unknown,
+        let break_word_alphabet = match buf[0] & 0b_0110_0000 {
+            0b_0000_0000 => BreakWordAlphabet::Word,
+            0b_0010_0000 => BreakWordAlphabet::Hyphen,
+            0b_0100_0000 => BreakWordAlphabet::Character,
+            0b_0110_0000 => BreakWordAlphabet::Unknown,
             _ => std::unreachable!(),
         };
-        let break_word_hangeul = match buf[0] & 0b1000_0000 {
-            0b0000_0000 => BreakWordHangeul::Word,
-            0b1000_0000 => BreakWordHangeul::Character,
+        let break_word_hangeul = match buf[0] & 0b_1000_0000 {
+            0b_0000_0000 => BreakWordHangeul::Word,
+            0b_1000_0000 => BreakWordHangeul::Character,
             _ => std::unreachable!(),
         };
-        let snap_to_grid = buf[1] & 0b0000_0001 != 0;
-        let condense = (buf[1] >> 1) & 0b0111_1111;
-        let widow_orphan = buf[2] & 0b0000_0001 != 0;
-        let keep_with_next = buf[2] & 0b0000_0010 != 0;
-        let keep_lines = buf[2] & 0b0000_0100 != 0;
-        let page_break_before = buf[2] & 0b0000_1000 != 0;
-        let vertical_align = match (buf[2] >> 4) & 0b0000_0011 {
-            0b0000_0000 => VerticalAlign::Baseline,
-            0b0001_0000 => VerticalAlign::Top,
-            0b0010_0000 => VerticalAlign::Center,
-            0b0011_0000 => VerticalAlign::Bottom,
+        let snap_to_grid = buf[1] & 0b_0000_0001 != 0;
+        let condense = (buf[1] >> 1) & 0b_0111_1111;
+        let widow_orphan = buf[2] & 0b_0000_0001 != 0;
+        let keep_with_next = buf[2] & 0b_0000_0010 != 0;
+        let keep_lines = buf[2] & 0b_0000_0100 != 0;
+        let page_break_before = buf[2] & 0b_0000_1000 != 0;
+        let vertical_align = match (buf[2] >> 4) & 0b_0000_0011 {
+            0b_0000_0000 => VerticalAlign::Baseline,
+            0b_0001_0000 => VerticalAlign::Top,
+            0b_0010_0000 => VerticalAlign::Center,
+            0b_0011_0000 => VerticalAlign::Bottom,
             _ => std::unreachable!(),
         };
-        let auto_line_height = buf[2] & 0b0100_0000 != 0;
-        let heading_kind = match u16(buf, 2) & 0b0000_0001_1000_0000 {
-            0b0000_0000_0000_0000 => HeadingKind::None,
-            0b0000_0000_1000_0000 => HeadingKind::Outline,
-            0b0000_0001_0000_0000 => HeadingKind::Number,
-            0b0000_0001_1000_0000 => HeadingKind::Bullet,
+        let auto_line_height = buf[2] & 0b_0100_0000 != 0;
+        let heading_kind = match u16(buf, 2) & 0b_0000_0001_1000_0000 {
+            0b_0000_0000_0000_0000 => HeadingKind::None,
+            0b_0000_0000_1000_0000 => HeadingKind::Outline,
+            0b_0000_0001_0000_0000 => HeadingKind::Number,
+            0b_0000_0001_1000_0000 => HeadingKind::Bullet,
             _ => std::unreachable!(),
         };
-        let heading_level = match buf[3] & 0b0000_0110 {
-            0b0000_0000 => HeadingLevel::Level1,
-            0b0000_0010 => HeadingLevel::Level2,
-            0b0000_0100 => HeadingLevel::Level3,
-            0b0000_0110 => HeadingLevel::Level4,
-            0b0000_1000 => HeadingLevel::Level5,
-            0b0000_1010 => HeadingLevel::Level6,
-            0b0000_1100 => HeadingLevel::Level7,
-            0b0000_1110 => HeadingLevel::Unknown,
+        let heading_level = match buf[3] & 0b_0000_0110 {
+            0b_0000_0000 => HeadingLevel::Level1,
+            0b_0000_0010 => HeadingLevel::Level2,
+            0b_0000_0100 => HeadingLevel::Level3,
+            0b_0000_0110 => HeadingLevel::Level4,
+            0b_0000_1000 => HeadingLevel::Level5,
+            0b_0000_1010 => HeadingLevel::Level6,
+            0b_0000_1100 => HeadingLevel::Level7,
+            0b_0000_1110 => HeadingLevel::Unknown,
             _ => std::unreachable!(),
         };
-        let border_connect = buf[3] & 0b0000_1000 != 0;
-        let border_ignore_margin = buf[3] & 0b0001_0000 != 0;
-        let tailing = (buf[3] >> 5) & 0b0000_0111;
+        let border_connect = buf[3] & 0b_0000_1000 != 0;
+        let border_ignore_margin = buf[3] & 0b_0001_0000 != 0;
+        let tailing = (buf[3] >> 5) & 0b_0000_0111;
         let padding_left = u32(buf, 4) as i32;
         let padding_right = u32(buf, 8) as i32;
         let indent = u32(buf, 12) as i32;
@@ -244,9 +244,9 @@ impl ParagraphShape {
         let border_offset_top = u16(buf, 38) as i16;
         let border_offset_bottom = u16(buf, 40) as i16;
         let (attribute_5_0_1_7, buf) = if version >= &Version::V5_0_1_7 {
-            let single_line = buf[42] & 0b0000_0001 != 0;
-            let auto_spacing_hangeul_alphabet = buf[42] & 0b0000_0010 != 0;
-            let auto_spacing_hangeul_number = buf[42] & 0b0000_0100 != 0;
+            let single_line = buf[42] & 0b_0000_0001 != 0;
+            let auto_spacing_hangeul_alphabet = buf[42] & 0b_0000_0010 != 0;
+            let auto_spacing_hangeul_number = buf[42] & 0b_0000_0100 != 0;
             let attribute_5_0_1_7 = Attribute5_0_1_7 {
                 single_line,
                 auto_spacing_hangeul_alphabet,
@@ -257,11 +257,11 @@ impl ParagraphShape {
             (None, &buf[42..])
         };
         let attribute_5_0_2_5 = if version >= &Version::V5_0_2_5 {
-            let line_spacing_kind = match buf[0] & 0b0000_0011 {
-                0b0000_0000 => LineSpacingKind::Percent,
-                0b0000_0001 => LineSpacingKind::Fixed,
-                0b0000_0010 => LineSpacingKind::BetweenLine,
-                0b0000_0011 => LineSpacingKind::AtLeast,
+            let line_spacing_kind = match buf[0] & 0b_0000_0011 {
+                0b_0000_0000 => LineSpacingKind::Percent,
+                0b_0000_0001 => LineSpacingKind::Fixed,
+                0b_0000_0010 => LineSpacingKind::BetweenLine,
+                0b_0000_0011 => LineSpacingKind::AtLeast,
                 _ => std::unreachable!(),
             };
             let line_spacing = u32(buf, 4) as i32;

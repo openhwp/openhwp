@@ -1,5 +1,5 @@
 use super::{BorderShape, IdMappingCount};
-use crate::{u32, DocInfoIter, HwpTag};
+use crate::{DocInfoIter, HwpTag, u32};
 
 #[derive(Debug)]
 pub struct TabDefinition {
@@ -29,13 +29,11 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn tab_definitions(&mut self, id_mappings: &IdMappingCount) -> Vec<TabDefinition> {
         let mut tab_defs = Vec::with_capacity(id_mappings.tab_def as usize);
 
-        for record in self
-            .clone()
-            .take(id_mappings.tab_def as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_TAB_DEF)
-        {
-            tab_defs.push(TabDefinition::from_buf(record.payload));
-            self.next();
+        for _ in 0..id_mappings.tab_def {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_TAB_DEF) {
+                Some(record) => tab_defs.push(TabDefinition::from_buf(record.payload)),
+                None => break,
+            }
         }
 
         tab_defs

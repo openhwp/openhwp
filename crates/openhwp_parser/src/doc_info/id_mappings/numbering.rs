@@ -1,5 +1,5 @@
 use super::IdMappingCount;
-use crate::{to_string, u16, u32, DocInfoIter, HwpTag, Version};
+use crate::{DocInfoIter, HwpTag, Version, to_string, u16, u32};
 
 #[derive(Debug)]
 pub struct Numbering {
@@ -50,13 +50,13 @@ impl<'hwp> DocInfoIter<'hwp> {
     pub fn numberings(&mut self, id_mappings: &IdMappingCount) -> Vec<Numbering> {
         let mut numberings = Vec::with_capacity(id_mappings.numbering as usize);
 
-        for record in self
-            .clone()
-            .take(id_mappings.numbering as usize)
-            .take_while(|record| record.tag == HwpTag::HWPTAG_NUMBERING)
-        {
-            numberings.push(Numbering::from_buf(record.payload, self.version()));
-            self.next();
+        for _ in 0..id_mappings.numbering {
+            match self.next_if(|record| record.tag == HwpTag::HWPTAG_NUMBERING) {
+                Some(record) => {
+                    numberings.push(Numbering::from_buf(record.payload, self.version()));
+                }
+                None => break,
+            }
         }
 
         numberings
@@ -132,15 +132,15 @@ impl NumberingParagraph {
 impl NumberingParagraphHeader {
     pub fn from_buf(buf: &[u8]) -> Self {
         let attribute = u32(buf, 0);
-        let alignment = match attribute & 0b0000_0011 {
+        let alignment = match attribute & 0b_0000_0011 {
             0 => ParagraphHeaderAlignment::Left,
             1 => ParagraphHeaderAlignment::Center,
             2 => ParagraphHeaderAlignment::Right,
             alignment => ParagraphHeaderAlignment::Unknown(alignment as u8),
         };
-        let use_instance_width = attribute & 0b0000_0100 != 0;
-        let auth_indent = attribute & 0b0000_1000 != 0;
-        let text_offset_kind = if attribute & 0b0001_0000 != 0 {
+        let use_instance_width = attribute & 0b_0000_0100 != 0;
+        let auth_indent = attribute & 0b_0000_1000 != 0;
+        let text_offset_kind = if attribute & 0b_0001_0000 != 0 {
             TextOffsetKind::Value
         } else {
             TextOffsetKind::Relative
