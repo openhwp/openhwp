@@ -1645,6 +1645,14 @@ impl std::str::FromStr for MemoKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IdRef(pub String);
 
+impl std::str::FromStr for IdRef {
+    type Err = crate::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.to_string()))
+    }
+}
+
 /// "NumberType1"
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NumberType1 {

@@ -68,39 +68,23 @@ impl TryFrom<AnyElement> for HWPMLHeadType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__HEAD)?;
 
-        let mut begin_number = None;
-        let mut reference = None;
-        let mut forbidden_words = None;
-        let mut compatible_document = None;
-        let mut track_change_config = None;
-        let mut document_option = None;
-        let mut meta_tag = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__BEGIN_NUMBER => begin_number = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__REFERENCES => reference = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__FORBIDDEN_WORDS => {
-                    forbidden_words = Some(child.try_into()?)
-                }
-                ElementName::HANCOM__HEAD__COMPATIBLE_DOCUMENT => {
-                    compatible_document = Some(child.try_into()?)
-                }
-                ElementName::HANCOM__HEAD__TRACK_CHANGE_CONFIG => {
-                    track_change_config = Some(child.try_into()?)
-                }
-                ElementName::HANCOM__HEAD__DOCUMENT_OPTION => {
-                    document_option = Some(child.try_into()?)
-                }
-                ElementName::HANCOM__HEAD__META_TAG => meta_tag = Some(child.try_into()?),
-                _ => {}
-            }
-        }
-
-        let (begin_number, reference) = match (begin_number, reference) {
-            (Some(begin_number), Some(reference)) => (begin_number, reference),
-            (None, _) => missing_element!("<beginNum>"),
-            (_, None) => missing_element!("<refList>"),
+        let (
+            begin_number,
+            reference,
+            forbidden_words,
+            compatible_document,
+            track_change_config,
+            document_option,
+            meta_tag,
+        ) = children! {
+            element;
+            one HANCOM__HEAD__BEGIN_NUMBER, BeginNumber;
+            one HANCOM__HEAD__REFERENCES, MappingTableType;
+            opt HANCOM__HEAD__FORBIDDEN_WORDS, ForbiddenWordList;
+            opt HANCOM__HEAD__COMPATIBLE_DOCUMENT, CompatibleDocument;
+            opt HANCOM__HEAD__TRACK_CHANGE_CONFIG, TrackChangeConfig;
+            opt HANCOM__HEAD__DOCUMENT_OPTION, DocumentOption;
+            opt HANCOM__HEAD__META_TAG, MetaTag;
         };
 
         let forbidden_words = forbidden_words.unwrap_or_default();
@@ -175,42 +159,14 @@ impl TryFrom<AnyElement> for BeginNumber {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__BEGIN_NUMBER)?;
 
-        let mut page = None;
-        let mut foot_note = None;
-        let mut end_note = None;
-        let mut picture = None;
-        let mut table = None;
-        let mut equation = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "page" => page = Some(value.parse()?),
-                "footnote" => foot_note = Some(value.parse()?),
-                "endnote" => end_note = Some(value.parse()?),
-                "pic" => picture = Some(value.parse()?),
-                "tbl" => table = Some(value.parse()?),
-                "equation" => equation = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (page, foot_note, end_note, picture, table, equation) =
-            match (page, foot_note, end_note, picture, table, equation) {
-                (
-                    Some(page),
-                    Some(foot_note),
-                    Some(end_note),
-                    Some(picture),
-                    Some(table),
-                    Some(equation),
-                ) => (page, foot_note, end_note, picture, table, equation),
-                (None, _, _, _, _, _) => missing_attribute!("<beginNum page>"),
-                (_, None, _, _, _, _) => missing_attribute!("<beginNum footnote>"),
-                (_, _, None, _, _, _) => missing_attribute!("<beginNum endnote>"),
-                (_, _, _, None, _, _) => missing_attribute!("<beginNum pic>"),
-                (_, _, _, _, None, _) => missing_attribute!("<beginNum tbl>"),
-                (_, _, _, _, _, None) => missing_attribute!("<beginNum equation>"),
-            };
+        let (page, foot_note, end_note, picture, table, equation) = attributes!(element, "beginNum";
+            "page" as page => one xs::PositiveInteger32,
+            "footnote" as foot_note => one xs::PositiveInteger32,
+            "endnote" as end_note => one xs::PositiveInteger32,
+            "pic" as picture => one xs::PositiveInteger32,
+            "tbl" as table => one xs::PositiveInteger32,
+            "equation" as equation => one xs::PositiveInteger32,
+        );
 
         Ok(Self {
             page,
@@ -249,7 +205,7 @@ pub struct MappingTableType {
     /// ```
     ///
     /// 글꼴 리스트
-    pub font_faces: Vec<FontFaceType>,
+    pub font_faces: NonEmpty<FontFaceType>,
     /// ```xml
     /// <borderFills itemCnt="{xs:positiveInteger}">
     ///   <borderFill ...>...</borderFill>
@@ -338,88 +294,31 @@ impl TryFrom<AnyElement> for MappingTableType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__REFERENCES)?;
 
-        let mut font_faces = vec![];
-        let mut border_fills = vec![];
-        let mut character_properties = vec![];
-        let mut tab_properties = vec![];
-        let mut numberings = vec![];
-        let mut bullets = vec![];
-        let mut paragraph_properties = vec![];
-        let mut styles = vec![];
-        let mut memo = vec![];
-        let mut track_changes = vec![];
-        let mut track_change_authors = vec![];
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__FONT_FACES => {
-                    for font_face in child.children {
-                        font_faces.push(font_face.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__BORDER_FILLS => {
-                    for border_fill in child.children {
-                        border_fills.push(border_fill.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__CHARACTER_PROPERTIES => {
-                    for character_property in child.children {
-                        character_properties.push(character_property.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__TAB_PROPERTIES => {
-                    for tab_property in child.children {
-                        tab_properties.push(tab_property.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__NUMBERING => {
-                    for numbering in child.children {
-                        numberings.push(numbering.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__BULLETS => {
-                    for bullet in child.children {
-                        bullets.push(bullet.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__PARAGRAPH_PROPERTIES => {
-                    for paragraph_property in child.children {
-                        paragraph_properties.push(paragraph_property.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__STYLES => {
-                    for style in child.children {
-                        styles.push(style.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__MEMO_PROPERTIES => {
-                    for memo_shape in child.children {
-                        memo.push(memo_shape.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__TRACK_CHANGES => {
-                    for track_change in child.children {
-                        track_changes.push(track_change.try_into()?);
-                    }
-                }
-                ElementName::HANCOM__HEAD__TRACK_CHANGE_AUTHORS => {
-                    for track_change_author in child.children {
-                        track_change_authors.push(track_change_author.try_into()?);
-                    }
-                }
-                _ => continue,
-            }
-        }
-
-        let (character_properties, paragraph_properties) = match (
-            NonEmpty::from_vec(character_properties),
-            NonEmpty::from_vec(paragraph_properties),
-        ) {
-            (Some(character_properties), Some(paragraph_properties)) => {
-                (character_properties, paragraph_properties)
-            }
-            (None, _) => missing_element!("<charProperties>"),
-            (_, None) => missing_element!("<paraProperties>"),
+        let (
+            font_faces,
+            border_fills,
+            character_properties,
+            tab_properties,
+            numberings,
+            bullets,
+            paragraph_properties,
+            styles,
+            memo,
+            track_changes,
+            track_change_authors,
+        ) = children! {
+            element;
+            nested_nonempty HANCOM__HEAD__FONT_FACES, FontFaceType;
+            nested_opt HANCOM__HEAD__BORDER_FILLS, BorderFillType;
+            nested_nonempty HANCOM__HEAD__CHARACTER_PROPERTIES, CharShapeType;
+            nested_opt HANCOM__HEAD__TAB_PROPERTIES, TabDefType;
+            nested_opt HANCOM__HEAD__NUMBERING, NumberingType;
+            nested HANCOM__HEAD__BULLETS, BulletType;
+            nested_nonempty HANCOM__HEAD__PARAGRAPH_PROPERTIES, ParaShapeType;
+            nested HANCOM__HEAD__STYLES, StyleType;
+            nested_opt HANCOM__HEAD__MEMO_PROPERTIES, MemoShapeType;
+            nested_opt HANCOM__HEAD__TRACK_CHANGES, TrackChange;
+            nested_opt HANCOM__HEAD__TRACK_CHANGE_AUTHORS, TrackChangeAuthor;
         };
 
         Ok(Self {
@@ -471,27 +370,13 @@ impl TryFrom<AnyElement> for FontFaceType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__FONT_FACE)?;
 
-        let mut language = None;
-        let mut fonts = vec![];
+        let language = attributes!(element, "fontFace";
+            "lang" as language => one Language,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "lang" => language = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__FONT => fonts.push(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (language, fonts) = match (language, NonEmpty::from_vec(fonts)) {
-            (Some(language), Some(fonts)) => (language, fonts),
-            (None, _) => missing_attribute!("<fontFace lang>"),
-            (_, None) => missing_element!("<fontFace font>"),
+        let fonts = children! {
+            element;
+            nonempty HANCOM__HEAD__FONT, Font
         };
 
         Ok(Self { language, fonts })
@@ -558,39 +443,18 @@ impl TryFrom<AnyElement> for Font {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__FONT)?;
 
-        let mut id = None;
-        let mut face = None;
-        let mut r#type = None;
-        let mut embedded = false;
-        let mut binary_item_id_ref = None;
-        let mut subset = None;
-        let mut type_info = None;
+        let (id, face, r#type, embedded, binary_item_id_ref) = attributes!(element, "font";
+            "id" as id => one xs::NonNegativeInteger32,
+            "face" as face => one (string),
+            "type" as r#type => one FontKind,
+            "embedded" as embedded => default false; boolean,
+            "binaryItemIDRef" as binary_item_id_ref => opt (string),
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "face" => face = Some(value),
-                "type" => r#type = Some(value.parse()?),
-                "embedded" => embedded = boolean!(value.as_str(), "<font embedded>"),
-                "binaryItemIDRef" => binary_item_id_ref = Some(value),
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__SUBSET_FONT => subset = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__TYPE_INFO => type_info = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (id, face, r#type) = match (id, face, r#type) {
-            (Some(id), Some(face), Some(r#type)) => (id, face, r#type),
-            (None, _, _) => missing_attribute!("<font id>"),
-            (_, None, _) => missing_attribute!("<font face>"),
-            (_, _, None) => missing_attribute!("<font type>"),
-        };
+        let (subset, type_info) = children!(element;
+            opt HANCOM__HEAD__SUBSET_FONT, SubsetFont;
+            opt HANCOM__HEAD__TYPE_INFO, TypeInfo;
+        );
 
         Ok(Self {
             id,
@@ -644,26 +508,12 @@ impl TryFrom<AnyElement> for SubsetFont {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__SUBSET_FONT)?;
 
-        let mut face = None;
-        let mut r#type = None;
-        let mut embedded = false;
-        let mut binary_item_id_ref = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "face" => face = Some(value),
-                "type" => r#type = Some(value.parse()?),
-                "embedded" => embedded = boolean!(value.as_str(), "<subsetFont embedded>"),
-                "binaryItemIDRef" => binary_item_id_ref = Some(value),
-                _ => continue,
-            }
-        }
-
-        let (face, r#type) = match (face, r#type) {
-            (Some(face), Some(r#type)) => (face, r#type),
-            (None, _) => missing_attribute!("<subsetFont face>"),
-            (_, None) => missing_attribute!("<subsetFont type>"),
-        };
+        let (face, r#type, embedded, binary_item_id_ref) = attributes!(element, "substFont";
+            "face" as face => one (string),
+            "type" as r#type => one FontKind,
+            "embedded" as embedded => default false; boolean,
+            "binaryItemIDRef" as binary_item_id_ref => opt (string),
+        );
 
         Ok(Self {
             face,
@@ -760,35 +610,9 @@ impl TryFrom<AnyElement> for TypeInfo {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TYPE_INFO)?;
 
-        let mut family_type = None;
-        let mut serif_style = None;
-        let mut weight = None;
-        let mut proportion = None;
-        let mut contrast = None;
-        let mut stroke_variation = None;
-        let mut arm_style = None;
-        let mut letter_form = None;
-        let mut midline = None;
-        let mut x_height = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "familyType" => family_type = Some(value.parse()?),
-                "serifStyle" => serif_style = Some(value),
-                "weight" => weight = Some(value.parse()?),
-                "proportion" => proportion = Some(value.parse()?),
-                "contrast" => contrast = Some(value.parse()?),
-                "strokeVariation" => stroke_variation = Some(value.parse()?),
-                "armStyle" => arm_style = boolean!(value.as_str(), "<typeInfo armStyle>"),
-                "letterform" => letter_form = boolean!(value.as_str(), "<typeInfo letterform>"),
-                "midline" => midline = boolean!(value.as_str(), "<typeInfo midline>"),
-                "xHeight" => x_height = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
         let (
             family_type,
+            serif_style,
             weight,
             proportion,
             contrast,
@@ -797,48 +621,18 @@ impl TryFrom<AnyElement> for TypeInfo {
             letter_form,
             midline,
             x_height,
-        ) = match (
-            family_type,
-            weight,
-            proportion,
-            contrast,
-            stroke_variation,
-            arm_style,
-            letter_form,
-            midline,
-            x_height,
-        ) {
-            (
-                Some(family_type),
-                Some(weight),
-                Some(proportion),
-                Some(contrast),
-                Some(stroke_variation),
-                Some(arm_style),
-                Some(letter_form),
-                Some(midline),
-                Some(x_height),
-            ) => (
-                family_type,
-                weight,
-                proportion,
-                contrast,
-                stroke_variation,
-                arm_style,
-                letter_form,
-                midline,
-                x_height,
-            ),
-            (None, _, _, _, _, _, _, _, _) => missing_attribute!("<typeInfo familyType>"),
-            (_, None, _, _, _, _, _, _, _) => missing_attribute!("<typeInfo weight>"),
-            (_, _, None, _, _, _, _, _, _) => missing_attribute!("<typeInfo proportion>"),
-            (_, _, _, None, _, _, _, _, _) => missing_attribute!("<typeInfo contrast>"),
-            (_, _, _, _, None, _, _, _, _) => missing_attribute!("<typeInfo strokeVariation>"),
-            (_, _, _, _, _, None, _, _, _) => missing_attribute!("<typeInfo armStyle>"),
-            (_, _, _, _, _, _, None, _, _) => missing_attribute!("<typeInfo letterForm>"),
-            (_, _, _, _, _, _, _, None, _) => missing_attribute!("<typeInfo midline>"),
-            (_, _, _, _, _, _, _, _, None) => missing_attribute!("<typeInfo xHeight>"),
-        };
+        ) = attributes!(element, "typeInfo";
+            "familyType" as family_type => one FamilyType,
+            "serifStyle" as serif_style => opt (string),
+            "weight" as weight => one xs::Integer32,
+            "proportion" as proportion => one xs::Integer32,
+            "contrast" as contrast => one xs::Integer32,
+            "strokeVariation" as stroke_variation => one xs::Integer32,
+            "armStyle" as arm_style => one (boolean),
+            "letterform" as letter_form => one (boolean),
+            "midline" as midline => one (boolean),
+            "xHeight" as x_height => one xs::Integer32,
+        );
 
         Ok(Self {
             family_type,
@@ -955,53 +749,33 @@ impl TryFrom<AnyElement> for BorderFillType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__BORDER_FILL)?;
 
-        let mut id = None;
-        let mut effect_3d = false;
-        let mut shadow = false;
-        let mut center_line = None;
-        let mut break_cell_separate_line = false;
-        let mut slash = None;
-        let mut back_slash = None;
-        let mut left_border = None;
-        let mut right_border = None;
-        let mut top_border = None;
-        let mut bottom_border = None;
-        let mut diagonal = None;
-        let mut fill_brush = None;
+        let (id, effect_3d, shadow, center_line, break_cell_separate_line) = attributes!(element, "borderFill";
+            "id" as id => one xs::NonNegativeInteger32,
+            "effect3D" as effect_3d => default false; boolean,
+            "shadow" as shadow => default false; boolean,
+            "centerLine" as center_line => one CenterLine,
+            "breakCellSeparateLine" as break_cell_separate_line => default false; boolean,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "effect3D" => effect_3d = boolean!(value.as_str(), "<borderFill effect3D>"),
-                "shadow" => shadow = boolean!(value.as_str(), "<borderFill shadow>"),
-                "centerLine" => center_line = Some(value.parse()?),
-                "breakCellSeparateLine" => {
-                    break_cell_separate_line =
-                        boolean!(value.as_str(), "<borderFill breakCellSeparateLine>")
-                }
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__SLASH => slash = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__BACK_SLASH => back_slash = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__LEFT_BORDER => left_border = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__RIGHT_BORDER => right_border = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__TOP_BORDER => top_border = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__BOTTOM_BORDER => bottom_border = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__DIAGONAL => diagonal = Some(child.try_into()?),
-                ElementName::HANCOM__CORE__FILL_BRUSH => fill_brush = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (id, center_line) = match (id, center_line) {
-            (Some(id), Some(center_line)) => (id, center_line),
-            (None, _) => missing_attribute!("<borderFill id>"),
-            (_, None) => missing_attribute!("<borderFill centerLine>"),
-        };
+        let (
+            slash,
+            back_slash,
+            left_border,
+            right_border,
+            top_border,
+            bottom_border,
+            diagonal,
+            fill_brush,
+        ) = children!(element;
+            opt HANCOM__HEAD__SLASH, Slash;
+            opt HANCOM__HEAD__BACK_SLASH, Slash;
+            opt HANCOM__HEAD__LEFT_BORDER, BorderType;
+            opt HANCOM__HEAD__RIGHT_BORDER, BorderType;
+            opt HANCOM__HEAD__TOP_BORDER, BorderType;
+            opt HANCOM__HEAD__BOTTOM_BORDER, BorderType;
+            opt HANCOM__HEAD__DIAGONAL, BorderType;
+            opt HANCOM__CORE__FILL_BRUSH, FillBrush;
+        );
 
         Ok(Self {
             id,
@@ -1048,25 +822,11 @@ impl TryFrom<AnyElement> for Slash {
     type Error = Error;
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
-        let mut r#type = None;
-        let mut crooked = None;
-        let mut counter = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "Crooked" => crooked = boolean!(value.as_str(), "<slash crooked>"),
-                "isCounter" => counter = boolean!(value.as_str(), "<slash counter>"),
-                _ => continue,
-            }
-        }
-
-        let (r#type, crooked, counter) = match (r#type, crooked, counter) {
-            (Some(r#type), Some(crooked), Some(counter)) => (r#type, crooked, counter),
-            (None, _, _) => missing_attribute!("<slash type>"),
-            (_, None, _) => missing_attribute!("<slash crooked>"),
-            (_, _, None) => missing_attribute!("<slash counter>"),
-        };
+        let (r#type, crooked, counter) = attributes!(element, "slash";
+            "type" as r#type => one SlashKind,
+            "Crooked" as crooked => one (boolean),
+            "isCounter" as counter => one (boolean),
+        );
 
         Ok(Self {
             r#type,
@@ -1110,25 +870,11 @@ impl TryFrom<AnyElement> for BorderType {
     type Error = Error;
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
-        let mut r#type = None;
-        let mut width = None;
-        let mut color = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "width" => width = Some(value.parse()?),
-                "color" => color = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, width, color) = match (r#type, width, color) {
-            (Some(r#type), Some(width), Some(color)) => (r#type, width, color),
-            (None, _, _) => missing_attribute!("<border type>"),
-            (_, None, _) => missing_attribute!("<border width>"),
-            (_, _, None) => missing_attribute!("<border color>"),
-        };
+        let (r#type, width, color) = attributes!(element, "border";
+            "type" as r#type => one LineType2,
+            "width" as width => one LineWidth,
+            "color" as color => one RgbColorType,
+        );
 
         Ok(Self {
             r#type,
@@ -1212,27 +958,12 @@ impl TryFrom<AnyElement> for WinBrush {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__CORE__WIN_BRUSH)?;
 
-        let mut face_color = None;
-        let mut hatch_color = None;
-        let mut hatch_style = None;
-        let mut alpha = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "faceColor" => face_color = Some(value.parse()?),
-                "hatchColor" => hatch_color = Some(value.parse()?),
-                "hatchStyle" => hatch_style = Some(value.parse()?),
-                "alpha" => alpha = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (face_color, hatch_color, alpha) = match (face_color, hatch_color, alpha) {
-            (Some(face_color), Some(hatch_color), Some(alpha)) => (face_color, hatch_color, alpha),
-            (None, _, _) => missing_attribute!("<winBrush faceColor>"),
-            (_, None, _) => missing_attribute!("<winBrush hatchColor>"),
-            (_, _, None) => missing_attribute!("<winBrush alpha>"),
-        };
+        let (face_color, hatch_color, hatch_style, alpha) = attributes!(element, "winBrush";
+            "faceColor" as face_color => one RgbColorType,
+            "hatchColor" as hatch_color => one RgbColorType,
+            "hatchStyle" as hatch_style => opt HatchStyle,
+            "alpha" as alpha => one xs::Float32,
+        );
 
         Ok(Self {
             face_color,
@@ -1321,71 +1052,20 @@ impl TryFrom<AnyElement> for Gradation {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__CORE__GRADATION)?;
 
-        let mut r#type = None;
-        let mut angle = 90;
-        let mut center_x = None;
-        let mut center_y = None;
-        let mut step = None;
-        let mut color_number = None;
-        let mut step_center = None;
-        let mut alpha = None;
-        let mut colors = vec![];
+        let (r#type, angle, center_x, center_y, step, color_number, step_center, alpha) = attributes!(element, "gradation";
+            "type" as r#type => one GradationKind,
+            "angle" as angle => default 90,
+            "centerX" as center_x => one xs::Integer32,
+            "centerY" as center_y => one xs::Integer32,
+            "step" as step => one xs::Integer8,
+            "colorNum" as color_number => one xs::NonNegativeInteger8,
+            "stepCenter" as step_center => one xs::Integer8,
+            "alpha" as alpha => one xs::Float32,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "angle" => angle = value.parse()?,
-                "centerX" => center_x = Some(value.parse()?),
-                "centerY" => center_y = Some(value.parse()?),
-                "step" => step = Some(value.parse()?),
-                "colorNum" => color_number = Some(value.parse()?),
-                "stepCenter" => step_center = Some(value.parse()?),
-                "alpha" => alpha = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__COLOR => colors.push(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, center_x, center_y, step, color_number, step_center, alpha) = match (
-            r#type,
-            center_x,
-            center_y,
-            step,
-            color_number,
-            step_center,
-            alpha,
-        ) {
-            (
-                Some(r#type),
-                Some(center_x),
-                Some(center_y),
-                Some(step),
-                Some(color_number),
-                Some(step_center),
-                Some(alpha),
-            ) => (
-                r#type,
-                center_x,
-                center_y,
-                step,
-                color_number,
-                step_center,
-                alpha,
-            ),
-            (None, _, _, _, _, _, _) => missing_attribute!("<gradation type>"),
-            (_, None, _, _, _, _, _) => missing_attribute!("<gradation centerX>"),
-            (_, _, None, _, _, _, _) => missing_attribute!("<gradation centerY>"),
-            (_, _, _, None, _, _, _) => missing_attribute!("<gradation step>"),
-            (_, _, _, _, None, _, _) => missing_attribute!("<gradation colorNum>"),
-            (_, _, _, _, _, None, _) => missing_attribute!("<gradation stepCenter>"),
-            (_, _, _, _, _, _, None) => missing_attribute!("<gradation alpha>"),
-        };
+        let colors = children!(element;
+            many HANCOM__HEAD__COLOR, GradationColor;
+        );
 
         Ok(Self {
             r#type,
@@ -1422,19 +1102,9 @@ impl TryFrom<AnyElement> for GradationColor {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__COLOR)?;
 
-        let mut value = None;
-
-        for (key, value_str) in element.attributes {
-            match key.as_str() {
-                "value" => value = Some(value_str.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (value,) = match (value,) {
-            (Some(value),) => (value,),
-            (None,) => missing_attribute!("<color value>"),
-        };
+        let value = attributes!(element, "color";
+            "value" as value => one RgbColorType,
+        );
 
         Ok(Self { value })
     }
@@ -1469,28 +1139,13 @@ impl TryFrom<AnyElement> for ImageBrush {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__CORE__IMAGE_BRUSH)?;
 
-        let mut mode = None;
-        let mut image = None;
+        let mode = attributes!(element, "imageBrush";
+            "mode" as mode => one ImageBrushMode,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "mode" => mode = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__CORE__IMAGE => image = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (mode, image) = match (mode, image) {
-            (Some(mode), Some(image)) => (mode, image),
-            (None, _) => missing_attribute!("<imageBrush mode>"),
-            (_, None) => missing_element!("<imageBrush image>"),
-        };
+        let image = children!(element;
+            one HANCOM__CORE__IMAGE, ImageType;
+        );
 
         Ok(Self { mode, image })
     }
@@ -1545,28 +1200,13 @@ impl TryFrom<AnyElement> for ImageType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__CORE__IMAGE)?;
 
-        let mut binary_id_ref = None;
-        let mut bright = 0;
-        let mut contrast = 0;
-        let mut effect = ImageEffect::RealPicture;
-        let mut alpha = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "binaryItemIDRef" => binary_id_ref = Some(value),
-                "bright" => bright = value.parse()?,
-                "contrast" => contrast = value.parse()?,
-                "effect" => effect = value.parse()?,
-                "alpha" => alpha = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (binary_id_ref, alpha) = match (binary_id_ref, alpha) {
-            (Some(binary_id_ref), Some(alpha)) => (binary_id_ref, alpha),
-            (None, _) => missing_attribute!("<img binaryItemIDRef>"),
-            (_, None) => missing_attribute!("<img alpha>"),
-        };
+        let (binary_id_ref, bright, contrast, effect, alpha) = attributes!(element, "img";
+            "binaryItemIDRef" as binary_id_ref => one (string),
+            "bright" as bright => default 0,
+            "contrast" as contrast => default 0,
+            "effect" as effect => default ImageEffect::RealPicture,
+            "alpha" as alpha => one xs::Float32,
+        );
 
         Ok(Self {
             binary_id_ref,
@@ -1935,46 +1575,15 @@ impl TryFrom<AnyElement> for FontReference {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__FONT_REFERENCE)?;
 
-        let mut hangul = None;
-        let mut latin = None;
-        let mut hanja = None;
-        let mut japanese = None;
-        let mut other = None;
-        let mut symbol = None;
-        let mut user = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "hangul" => hangul = Some(value.parse()?),
-                "latin" => latin = Some(value.parse()?),
-                "hanja" => hanja = Some(value.parse()?),
-                "japanese" => japanese = Some(value.parse()?),
-                "other" => other = Some(value.parse()?),
-                "symbol" => symbol = Some(value.parse()?),
-                "user" => user = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (hangul, latin, hanja, japanese, other, symbol, user) =
-            match (hangul, latin, hanja, japanese, other, symbol, user) {
-                (
-                    Some(hangul),
-                    Some(latin),
-                    Some(hanja),
-                    Some(japanese),
-                    Some(other),
-                    Some(symbol),
-                    Some(user),
-                ) => (hangul, latin, hanja, japanese, other, symbol, user),
-                (None, _, _, _, _, _, _) => missing_attribute!("<fontRef hangul>"),
-                (_, None, _, _, _, _, _) => missing_attribute!("<fontRef latin>"),
-                (_, _, None, _, _, _, _) => missing_attribute!("<fontRef hanja>"),
-                (_, _, _, None, _, _, _) => missing_attribute!("<fontRef japanese>"),
-                (_, _, _, _, None, _, _) => missing_attribute!("<fontRef other>"),
-                (_, _, _, _, _, None, _) => missing_attribute!("<fontRef symbol>"),
-                (_, _, _, _, _, _, None) => missing_attribute!("<fontRef user>"),
-            };
+        let (hangul, latin, hanja, japanese, other, symbol, user) = attributes!(element, "fontRef";
+            "hangul" as hangul => one xs::NonNegativeInteger32,
+            "latin" as latin => one xs::NonNegativeInteger32,
+            "hanja" as hanja => one xs::NonNegativeInteger32,
+            "japanese" as japanese => one xs::NonNegativeInteger32,
+            "other" as other => one xs::NonNegativeInteger32,
+            "symbol" as symbol => one xs::NonNegativeInteger32,
+            "user" as user => one xs::NonNegativeInteger32,
+        );
 
         Ok(Self {
             hangul,
@@ -2039,46 +1648,15 @@ impl TryFrom<AnyElement> for Ratio {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__RATIO)?;
 
-        let mut hangul = None;
-        let mut latin = None;
-        let mut hanja = None;
-        let mut japanese = None;
-        let mut other = None;
-        let mut symbol = None;
-        let mut user = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "hangul" => hangul = Some(value.parse()?),
-                "latin" => latin = Some(value.parse()?),
-                "hanja" => hanja = Some(value.parse()?),
-                "japanese" => japanese = Some(value.parse()?),
-                "other" => other = Some(value.parse()?),
-                "symbol" => symbol = Some(value.parse()?),
-                "user" => user = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (hangul, latin, hanja, japanese, other, symbol, user) =
-            match (hangul, latin, hanja, japanese, other, symbol, user) {
-                (
-                    Some(hangul),
-                    Some(latin),
-                    Some(hanja),
-                    Some(japanese),
-                    Some(other),
-                    Some(symbol),
-                    Some(user),
-                ) => (hangul, latin, hanja, japanese, other, symbol, user),
-                (None, _, _, _, _, _, _) => missing_attribute!("<ratio hangul>"),
-                (_, None, _, _, _, _, _) => missing_attribute!("<ratio latin>"),
-                (_, _, None, _, _, _, _) => missing_attribute!("<ratio hanja>"),
-                (_, _, _, None, _, _, _) => missing_attribute!("<ratio japanese>"),
-                (_, _, _, _, None, _, _) => missing_attribute!("<ratio other>"),
-                (_, _, _, _, _, None, _) => missing_attribute!("<ratio symbol>"),
-                (_, _, _, _, _, _, None) => missing_attribute!("<ratio user>"),
-            };
+        let (hangul, latin, hanja, japanese, other, symbol, user) = attributes!(element, "ratio";
+            "hangul" as hangul => one xs::PositiveInteger8,
+            "latin" as latin => one xs::PositiveInteger8,
+            "hanja" as hanja => one xs::PositiveInteger8,
+            "japanese" as japanese => one xs::PositiveInteger8,
+            "other" as other => one xs::PositiveInteger8,
+            "symbol" as symbol => one xs::PositiveInteger8,
+            "user" as user => one xs::PositiveInteger8,
+        );
 
         Ok(Self {
             hangul,
@@ -2142,46 +1720,15 @@ impl TryFrom<AnyElement> for Spacing {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__SPACING)?;
 
-        let mut hangul = None;
-        let mut latin = None;
-        let mut hanja = None;
-        let mut japanese = None;
-        let mut other = None;
-        let mut symbol = None;
-        let mut user = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "hangul" => hangul = Some(value.parse()?),
-                "latin" => latin = Some(value.parse()?),
-                "hanja" => hanja = Some(value.parse()?),
-                "japanese" => japanese = Some(value.parse()?),
-                "other" => other = Some(value.parse()?),
-                "symbol" => symbol = Some(value.parse()?),
-                "user" => user = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (hangul, latin, hanja, japanese, other, symbol, user) =
-            match (hangul, latin, hanja, japanese, other, symbol, user) {
-                (
-                    Some(hangul),
-                    Some(latin),
-                    Some(hanja),
-                    Some(japanese),
-                    Some(other),
-                    Some(symbol),
-                    Some(user),
-                ) => (hangul, latin, hanja, japanese, other, symbol, user),
-                (None, _, _, _, _, _, _) => missing_attribute!("<spacing hangul>"),
-                (_, None, _, _, _, _, _) => missing_attribute!("<spacing latin>"),
-                (_, _, None, _, _, _, _) => missing_attribute!("<spacing hanja>"),
-                (_, _, _, None, _, _, _) => missing_attribute!("<spacing japanese>"),
-                (_, _, _, _, None, _, _) => missing_attribute!("<spacing other>"),
-                (_, _, _, _, _, None, _) => missing_attribute!("<spacing symbol>"),
-                (_, _, _, _, _, _, None) => missing_attribute!("<spacing user>"),
-            };
+        let (hangul, latin, hanja, japanese, other, symbol, user) = attributes!(element, "spacing";
+            "hangul" as hangul => one xs::Integer8,
+            "latin" as latin => one xs::Integer8,
+            "hanja" as hanja => one xs::Integer8,
+            "japanese" as japanese => one xs::Integer8,
+            "other" as other => one xs::Integer8,
+            "symbol" as symbol => one xs::Integer8,
+            "user" as user => one xs::Integer8,
+        );
 
         Ok(Self {
             hangul,
@@ -2245,46 +1792,15 @@ impl TryFrom<AnyElement> for RelativeSize {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__RELATIVE_SIZE)?;
 
-        let mut hangul = None;
-        let mut latin = None;
-        let mut hanja = None;
-        let mut japanese = None;
-        let mut other = None;
-        let mut symbol = None;
-        let mut user = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "hangul" => hangul = Some(value.parse()?),
-                "latin" => latin = Some(value.parse()?),
-                "hanja" => hanja = Some(value.parse()?),
-                "japanese" => japanese = Some(value.parse()?),
-                "other" => other = Some(value.parse()?),
-                "symbol" => symbol = Some(value.parse()?),
-                "user" => user = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (hangul, latin, hanja, japanese, other, symbol, user) =
-            match (hangul, latin, hanja, japanese, other, symbol, user) {
-                (
-                    Some(hangul),
-                    Some(latin),
-                    Some(hanja),
-                    Some(japanese),
-                    Some(other),
-                    Some(symbol),
-                    Some(user),
-                ) => (hangul, latin, hanja, japanese, other, symbol, user),
-                (None, _, _, _, _, _, _) => missing_attribute!("<relSz hangul>"),
-                (_, None, _, _, _, _, _) => missing_attribute!("<relSz latin>"),
-                (_, _, None, _, _, _, _) => missing_attribute!("<relSz hanja>"),
-                (_, _, _, None, _, _, _) => missing_attribute!("<relSz japanese>"),
-                (_, _, _, _, None, _, _) => missing_attribute!("<relSz other>"),
-                (_, _, _, _, _, None, _) => missing_attribute!("<relSz symbol>"),
-                (_, _, _, _, _, _, None) => missing_attribute!("<relSz user>"),
-            };
+        let (hangul, latin, hanja, japanese, other, symbol, user) = attributes!(element, "relSz";
+            "hangul" as hangul => one xs::PositiveInteger8,
+            "latin" as latin => one xs::PositiveInteger8,
+            "hanja" as hanja => one xs::PositiveInteger8,
+            "japanese" as japanese => one xs::PositiveInteger8,
+            "other" as other => one xs::PositiveInteger8,
+            "symbol" as symbol => one xs::PositiveInteger8,
+            "user" as user => one xs::PositiveInteger8,
+        );
 
         Ok(Self {
             hangul,
@@ -2348,46 +1864,15 @@ impl TryFrom<AnyElement> for Offset {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__OFFSET)?;
 
-        let mut hangul = None;
-        let mut latin = None;
-        let mut hanja = None;
-        let mut japanese = None;
-        let mut other = None;
-        let mut symbol = None;
-        let mut user = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "hangul" => hangul = Some(value.parse()?),
-                "latin" => latin = Some(value.parse()?),
-                "hanja" => hanja = Some(value.parse()?),
-                "japanese" => japanese = Some(value.parse()?),
-                "other" => other = Some(value.parse()?),
-                "symbol" => symbol = Some(value.parse()?),
-                "user" => user = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (hangul, latin, hanja, japanese, other, symbol, user) =
-            match (hangul, latin, hanja, japanese, other, symbol, user) {
-                (
-                    Some(hangul),
-                    Some(latin),
-                    Some(hanja),
-                    Some(japanese),
-                    Some(other),
-                    Some(symbol),
-                    Some(user),
-                ) => (hangul, latin, hanja, japanese, other, symbol, user),
-                (None, _, _, _, _, _, _) => missing_attribute!("<offset hangul>"),
-                (_, None, _, _, _, _, _) => missing_attribute!("<offset latin>"),
-                (_, _, None, _, _, _, _) => missing_attribute!("<offset hanja>"),
-                (_, _, _, None, _, _, _) => missing_attribute!("<offset japanese>"),
-                (_, _, _, _, None, _, _) => missing_attribute!("<offset other>"),
-                (_, _, _, _, _, None, _) => missing_attribute!("<offset symbol>"),
-                (_, _, _, _, _, _, None) => missing_attribute!("<offset user>"),
-            };
+        let (hangul, latin, hanja, japanese, other, symbol, user) = attributes!(element, "offset";
+            "hangul" as hangul => one xs::Integer8,
+            "latin" as latin => one xs::Integer8,
+            "hanja" as hanja => one xs::Integer8,
+            "japanese" as japanese => one xs::Integer8,
+            "other" as other => one xs::Integer8,
+            "symbol" as symbol => one xs::Integer8,
+            "user" as user => one xs::Integer8,
+        );
 
         Ok(Self {
             hangul,
@@ -2431,25 +1916,11 @@ impl TryFrom<AnyElement> for Underline {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__UNDERLINE)?;
 
-        let mut r#type = None;
-        let mut shape = None;
-        let mut color = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "shape" => shape = Some(value.parse()?),
-                "color" => color = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, shape, color) = match (r#type, shape, color) {
-            (Some(r#type), Some(shape), Some(color)) => (r#type, shape, color),
-            (None, _, _) => missing_attribute!("<underline type>"),
-            (_, None, _) => missing_attribute!("<underline shape>"),
-            (_, _, None) => missing_attribute!("<underline color>"),
-        };
+        let (r#type, shape, color) = attributes!(element, "underline";
+            "type" as r#type => one UnderlineKind,
+            "shape" as shape => one LineType2,
+            "color" as color => one RgbColorType,
+        );
 
         Ok(Self {
             r#type,
@@ -2484,22 +1955,10 @@ impl TryFrom<AnyElement> for Strikeout {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__STRIKEOUT)?;
 
-        let mut shape = None;
-        let mut color = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "shape" => shape = Some(value.parse()?),
-                "color" => color = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (shape, color) = match (shape, color) {
-            (Some(shape), Some(color)) => (shape, color),
-            (None, _) => missing_attribute!("<strikeout shape>"),
-            (_, None) => missing_attribute!("<strikeout color>"),
-        };
+        let (shape, color) = attributes!(element, "strikeout";
+            "shape" as shape => one LineType2,
+            "color" as color => one RgbColorType,
+        );
 
         Ok(Self { shape, color })
     }
@@ -2525,19 +1984,9 @@ impl TryFrom<AnyElement> for Outline {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__OUTLINE)?;
 
-        let mut r#type = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type,) = match (r#type,) {
-            (Some(r#type),) => (r#type,),
-            (None,) => missing_attribute!("<outline type>"),
-        };
+        let r#type = attributes!(element, "outline";
+            "type" as r#type => one LineType1,
+        );
 
         Ok(Self { r#type })
     }
@@ -2586,30 +2035,12 @@ impl TryFrom<AnyElement> for Shadow {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__SHADOW)?;
 
-        let mut r#type = None;
-        let mut color = None;
-        let mut offset_x = None;
-        let mut offset_y = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "color" => color = Some(value.parse()?),
-                "offsetX" => offset_x = Some(value.parse()?),
-                "offsetY" => offset_y = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, color, offset_x, offset_y) = match (r#type, color, offset_x, offset_y) {
-            (Some(r#type), Some(color), Some(offset_x), Some(offset_y)) => {
-                (r#type, color, offset_x, offset_y)
-            }
-            (None, _, _, _) => missing_attribute!("<shadow type>"),
-            (_, None, _, _) => missing_attribute!("<shadow color>"),
-            (_, _, None, _) => missing_attribute!("<shadow offsetX>"),
-            (_, _, _, None) => missing_attribute!("<shadow offsetY>"),
-        };
+        let (r#type, color, offset_x, offset_y) = attributes!(element, "shadow";
+            "type" as r#type => one ShadowKind,
+            "color" as color => one RgbColorType,
+            "offsetX" as offset_x => one xs::Integer8,
+            "offsetY" as offset_y => one xs::Integer8,
+        );
 
         Ok(Self {
             r#type,
@@ -2660,33 +2091,15 @@ impl TryFrom<AnyElement> for TabDefType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TAB_DEFINITION)?;
 
-        let mut id = None;
-        let mut auto_tab_left = false;
-        let mut auto_tab_right = false;
-        let mut tab = None;
+        let (id, auto_tab_left, auto_tab_right) = attributes!(element, "tabDef";
+            "id" as id => one xs::NonNegativeInteger32,
+            "autoTabLeft" as auto_tab_left => default false; boolean,
+            "autoTabRight" as auto_tab_right => default false; boolean,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "autoTabLeft" => auto_tab_left = boolean!(value.as_str(), "<tabDef autoTabLeft>"),
-                "autoTabRight" => {
-                    auto_tab_right = boolean!(value.as_str(), "<tabDef autoTabRight>")
-                }
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__TAB_ITEM => tab = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let id = match id {
-            Some(id) => id,
-            None => missing_attribute!("<tabDef id>"),
-        };
+        let tab = children!(element;
+            opt HANCOM__HEAD__TAB_ITEM, TabItem;
+        );
 
         Ok(Self {
             id,
@@ -2731,25 +2144,11 @@ impl TryFrom<AnyElement> for TabItem {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TAB_ITEM)?;
 
-        let mut position = None;
-        let mut r#type = None;
-        let mut leader = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "pos" => position = Some(value.parse()?),
-                "type" => r#type = Some(value.parse()?),
-                "leader" => leader = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (position, r#type, leader) = match (position, r#type, leader) {
-            (Some(position), Some(r#type), Some(leader)) => (position, r#type, leader),
-            (None, _, _) => missing_attribute!("<tabItem position>"),
-            (_, None, _) => missing_attribute!("<tabItem type>"),
-            (_, _, None) => missing_attribute!("<tabItem leader>"),
-        };
+        let (position, r#type, leader) = attributes!(element, "tabItem";
+            "pos" as position => one xs::Integer32,
+            "type" as r#type => one TabItemKind,
+            "leader" as leader => one LineType2,
+        );
 
         Ok(Self {
             position,
@@ -2795,29 +2194,14 @@ impl TryFrom<AnyElement> for NumberingType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__NUMBERING)?;
 
-        let mut id = None;
-        let mut start = 1;
-        let mut heads = vec![];
+        let (id, start) = attributes!(element, "numbering";
+            "id" as id => one xs::NonNegativeInteger32,
+            "start" as start => default 1,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "start" => start = value.parse()?,
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__PARAGRAPH_HEAD => heads.push(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (id,) = match (id,) {
-            (Some(id),) => (id,),
-            (None,) => missing_attribute!("<numbering id>"),
-        };
+        let heads = children!(element;
+            many HANCOM__HEAD__PARAGRAPH_HEAD, ParagraphHeadType;
+        );
 
         Ok(Self { id, start, heads })
     }
@@ -2936,13 +2320,24 @@ impl TryFrom<AnyElement> for ParaShapeType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__PARAGRAPH_PROPERTY)?;
 
-        let mut id = None;
-        let mut tab_pr_id_ref = None;
-        let mut condense = 0;
-        let mut font_line_height = false;
-        let mut snap_to_grid = true;
-        let mut suppress_line_numbers = false;
-        let mut checked = false;
+        let (
+            id,
+            tab_pr_id_ref,
+            condense,
+            font_line_height,
+            snap_to_grid,
+            suppress_line_numbers,
+            checked,
+        ) = attributes!(element, "paraPr";
+            "id" as id => one xs::NonNegativeInteger32,
+            "tabPrIDRef" as tab_pr_id_ref => opt xs::NonNegativeInteger32,
+            "condense" as condense => default 0,
+            "fontLineHeight" as font_line_height => default false; boolean,
+            "snapToGrid" as snap_to_grid => default true; boolean,
+            "suppressLineNumbers" as suppress_line_numbers => default false; boolean,
+            "checked" as checked => default false; boolean,
+        );
+
         let mut align = None;
         let mut heading = None;
         let mut break_setting = None;
@@ -2950,24 +2345,6 @@ impl TryFrom<AnyElement> for ParaShapeType {
         let mut line_spacing = None;
         let mut border = None;
         let mut auto_spacing = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "tabPrIDRef" => tab_pr_id_ref = Some(value.parse()?),
-                "condense" => condense = value.parse()?,
-                "fontLineHeight" => {
-                    font_line_height = boolean!(value.as_str(), "<paraShape fontLineHeight>")
-                }
-                "snapToGrid" => snap_to_grid = boolean!(value.as_str(), "<paraShape snapToGrid>"),
-                "suppressLineNumbers" => {
-                    suppress_line_numbers =
-                        boolean!(value.as_str(), "<paraShape suppressLineNumbers>")
-                }
-                "checked" => checked = boolean!(value.as_str(), "<paraShape checked>"),
-                _ => continue,
-            }
-        }
 
         for child in element.children {
             match child.name {
@@ -2982,8 +2359,7 @@ impl TryFrom<AnyElement> for ParaShapeType {
             }
         }
 
-        let (id, align, heading, break_setting, margin, line_spacing, border, auto_spacing) = match (
-            id,
+        let (align, heading, break_setting, margin, line_spacing, border, auto_spacing) = match (
             align,
             heading,
             break_setting,
@@ -2993,7 +2369,6 @@ impl TryFrom<AnyElement> for ParaShapeType {
             auto_spacing,
         ) {
             (
-                Some(id),
                 Some(align),
                 Some(heading),
                 Some(break_setting),
@@ -3002,7 +2377,6 @@ impl TryFrom<AnyElement> for ParaShapeType {
                 Some(border),
                 Some(auto_spacing),
             ) => (
-                id,
                 align,
                 heading,
                 break_setting,
@@ -3011,14 +2385,13 @@ impl TryFrom<AnyElement> for ParaShapeType {
                 border,
                 auto_spacing,
             ),
-            (None, _, _, _, _, _, _, _) => missing_attribute!("<paraPr id>"),
-            (_, None, _, _, _, _, _, _) => missing_element!("<align>"),
-            (_, _, None, _, _, _, _, _) => missing_element!("<heading>"),
-            (_, _, _, None, _, _, _, _) => missing_element!("<breakSetting>"),
-            (_, _, _, _, None, _, _, _) => missing_element!("<margin>"),
-            (_, _, _, _, _, None, _, _) => missing_element!("<lineSpacing>"),
-            (_, _, _, _, _, _, None, _) => missing_element!("<border>"),
-            (_, _, _, _, _, _, _, None) => missing_element!("<autoSpacing>"),
+            (None, _, _, _, _, _, _) => missing_element!("<align>"),
+            (_, None, _, _, _, _, _) => missing_element!("<heading>"),
+            (_, _, None, _, _, _, _) => missing_element!("<breakSetting>"),
+            (_, _, _, None, _, _, _) => missing_element!("<margin>"),
+            (_, _, _, _, None, _, _) => missing_element!("<lineSpacing>"),
+            (_, _, _, _, _, None, _) => missing_element!("<border>"),
+            (_, _, _, _, _, _, None) => missing_element!("<autoSpacing>"),
         };
 
         Ok(Self {
@@ -3070,22 +2443,10 @@ impl TryFrom<AnyElement> for ParagraphAlignType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__ALIGN)?;
 
-        let mut horizontal = None;
-        let mut vertical = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "horizontal" => horizontal = Some(value.parse()?),
-                "vertical" => vertical = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (horizontal, vertical) = match (horizontal, vertical) {
-            (Some(horizontal), Some(vertical)) => (horizontal, vertical),
-            (None, _) => missing_attribute!("<align horizontal>"),
-            (_, None) => missing_attribute!("<align vertical>"),
-        };
+        let (horizontal, vertical) = attributes!(element, "align";
+            "horizontal" as horizontal => one ParagraphHorizontalAlignKind,
+            "vertical" as vertical => one ParagraphVerticalAlignKind,
+        );
 
         Ok(Self {
             horizontal,
@@ -3131,24 +2492,11 @@ impl TryFrom<AnyElement> for ParagraphHeading {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__HEADING)?;
 
-        let mut r#type = None;
-        let mut id_ref = None;
-        let mut level = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "idRef" => id_ref = Some(value.parse()?),
-                "level" => level = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, level) = match (r#type, level) {
-            (Some(r#type), Some(level)) => (r#type, level),
-            (None, _) => missing_attribute!("<heading type>"),
-            (_, None) => missing_attribute!("<heading level>"),
-        };
+        let (r#type, id_ref, level) = attributes!(element, "heading";
+            "type" as r#type => one ParagraphHeadingKind,
+            "idRef" as id_ref => opt xs::NonNegativeInteger32,
+            "level" as level => one xs::NonNegativeInteger32,
+        );
 
         Ok(Self {
             r#type,
@@ -3223,33 +2571,6 @@ impl TryFrom<AnyElement> for ParagraphBreakSetting {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__BREAK_SETTING)?;
 
-        let mut break_latin_word = None;
-        let mut break_non_latin_word = None;
-        let mut widow_orphan = None;
-        let mut keep_with_next = None;
-        let mut keep_lines = None;
-        let mut page_break_before = None;
-        let mut line_wrap = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "breakLatinWord" => break_latin_word = Some(value.parse()?),
-                "breakNonLatinWord" => break_non_latin_word = Some(value.parse()?),
-                "widowOrphan" => {
-                    widow_orphan = boolean!(value.as_str(), "<breakSetting widowOrphan>")
-                }
-                "keepWithNext" => {
-                    keep_with_next = boolean!(value.as_str(), "<breakSetting keepWithNext>")
-                }
-                "keepLines" => keep_lines = boolean!(value.as_str(), "<breakSetting keepLines>"),
-                "pageBreakBefore" => {
-                    page_break_before = boolean!(value.as_str(), "<breakSetting pageBreakBefore>")
-                }
-                "lineWrap" => line_wrap = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
         let (
             break_latin_word,
             break_non_latin_word,
@@ -3258,44 +2579,15 @@ impl TryFrom<AnyElement> for ParagraphBreakSetting {
             keep_lines,
             page_break_before,
             line_wrap,
-        ) = match (
-            break_latin_word,
-            break_non_latin_word,
-            widow_orphan,
-            keep_with_next,
-            keep_lines,
-            page_break_before,
-            line_wrap,
-        ) {
-            (
-                Some(break_latin_word),
-                Some(break_non_latin_word),
-                Some(widow_orphan),
-                Some(keep_with_next),
-                Some(keep_lines),
-                Some(page_break_before),
-                Some(line_wrap),
-            ) => (
-                break_latin_word,
-                break_non_latin_word,
-                widow_orphan,
-                keep_with_next,
-                keep_lines,
-                page_break_before,
-                line_wrap,
-            ),
-            (None, _, _, _, _, _, _) => missing_attribute!("<breakSetting breakLatinWord>"),
-            (_, None, _, _, _, _, _) => {
-                missing_attribute!("<breakSetting breakNonLatinWord>")
-            }
-            (_, _, None, _, _, _, _) => missing_attribute!("<breakSetting widowOrphan>"),
-            (_, _, _, None, _, _, _) => missing_attribute!("<breakSetting keepWithNext>"),
-            (_, _, _, _, None, _, _) => missing_attribute!("<breakSetting keepLines>"),
-            (_, _, _, _, _, None, _) => {
-                missing_attribute!("<breakSetting pageBreakBefore>")
-            }
-            (_, _, _, _, _, _, None) => missing_attribute!("<breakSetting lineWrap>"),
-        };
+        ) = attributes!(element, "breakSetting";
+            "breakLatinWord" as break_latin_word => one BreakLatinWordKind,
+            "breakNonLatinWord" as break_non_latin_word => one BreakNonLatinWordKind,
+            "widowOrphan" as widow_orphan => one (boolean),
+            "keepWithNext" as keep_with_next => one (boolean),
+            "keepLines" as keep_lines => one (boolean),
+            "pageBreakBefore" as page_break_before => one (boolean),
+            "lineWrap" as line_wrap => one LineWrapKind,
+        );
 
         Ok(Self {
             break_latin_word,
@@ -3367,33 +2659,13 @@ impl TryFrom<AnyElement> for ParagraphMargin {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__MARGIN)?;
 
-        let mut indent = None;
-        let mut left = None;
-        let mut right = None;
-        let mut previous = None;
-        let mut next = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__CORE__INDENT => indent = Some(child.try_into()?),
-                ElementName::HANCOM__CORE__LEFT => left = Some(child.try_into()?),
-                ElementName::HANCOM__CORE__RIGHT => right = Some(child.try_into()?),
-                ElementName::HANCOM__CORE__PREVIOUS => previous = Some(child.try_into()?),
-                ElementName::HANCOM__CORE__NEXT => next = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (indent, left, right, previous, next) = match (indent, left, right, previous, next) {
-            (Some(indent), Some(left), Some(right), Some(previous), Some(next)) => {
-                (indent, left, right, previous, next)
-            }
-            (None, _, _, _, _) => missing_element!("<margin indent>"),
-            (_, None, _, _, _) => missing_element!("<margin left>"),
-            (_, _, None, _, _) => missing_element!("<margin right>"),
-            (_, _, _, None, _) => missing_element!("<margin previous>"),
-            (_, _, _, _, None) => missing_element!("<margin next>"),
-        };
+        let (indent, left, right, previous, next) = children!(element;
+            one HANCOM__CORE__INDENT, HWPValue;
+            one HANCOM__CORE__LEFT, HWPValue;
+            one HANCOM__CORE__RIGHT, HWPValue;
+            one HANCOM__CORE__PREVIOUS, HWPValue;
+            one HANCOM__CORE__NEXT, HWPValue;
+        );
 
         Ok(Self {
             indent,
@@ -3444,25 +2716,11 @@ impl TryFrom<AnyElement> for ParagraphLineSpacing {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__LINE_SPACING)?;
 
-        let mut r#type = None;
-        let mut value = None;
-        let mut unit = None;
-
-        for (key, value_) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value_.parse()?),
-                "value" => value = Some(value_.parse()?),
-                "unit" => unit = Some(value_.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, value, unit) = match (r#type, value, unit) {
-            (Some(r#type), Some(value), Some(unit)) => (r#type, value, unit),
-            (None, _, _) => missing_attribute!("<lineSpacing type>"),
-            (_, None, _) => missing_attribute!("<lineSpacing value>"),
-            (_, _, None) => missing_attribute!("<lineSpacing unit>"),
-        };
+        let (r#type, value, unit) = attributes!(element, "lineSpacing";
+            "type" as r#type => one LineSpacingKind,
+            "value" as value => one xs::Integer16,
+            "unit" as unit => one HWPUnit,
+        );
 
         Ok(Self {
             r#type,
@@ -3537,26 +2795,23 @@ impl TryFrom<AnyElement> for ParagraphBorder {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__BORDER)?;
 
-        let mut border_fill_id_ref = None;
-        let mut offset_left = 0;
-        let mut offset_right = 0;
-        let mut offset_top = 0;
-        let mut offset_bottom = 0;
-        let mut connect = false;
-        let mut ignore_margin = false;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "borderFillIDRef" => border_fill_id_ref = Some(value.parse()?),
-                "offsetLeft" => offset_left = value.parse()?,
-                "offsetRight" => offset_right = value.parse()?,
-                "offsetTop" => offset_top = value.parse()?,
-                "offsetBottom" => offset_bottom = value.parse()?,
-                "connect" => connect = boolean!(value.as_str(), "<border connect>"),
-                "ignoreMargin" => ignore_margin = boolean!(value.as_str(), "<border ignoreMargin>"),
-                _ => continue,
-            }
-        }
+        let (
+            border_fill_id_ref,
+            offset_left,
+            offset_right,
+            offset_top,
+            offset_bottom,
+            connect,
+            ignore_margin,
+        ) = attributes!(element, "border";
+            "borderFillIDRef" as border_fill_id_ref => opt xs::NonNegativeInteger32,
+            "offsetLeft" as offset_left => default 0,
+            "offsetRight" as offset_right => default 0,
+            "offsetTop" as offset_top => default 0,
+            "offsetBottom" as offset_bottom => default 0,
+            "connect" as connect => default false; boolean,
+            "ignoreMargin" as ignore_margin => default false; boolean,
+        );
 
         Ok(Self {
             border_fill_id_ref,
@@ -3600,22 +2855,10 @@ impl TryFrom<AnyElement> for ParagraphAutoSpacing {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__AUTO_SPACING)?;
 
-        let mut e_asian_eng = None;
-        let mut e_asian_num = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "eAsianEng" => e_asian_eng = boolean!(value.as_str(), "<autoSpacing eAsianEng>"),
-                "eAsianNum" => e_asian_num = boolean!(value.as_str(), "<autoSpacing eAsianNum>"),
-                _ => continue,
-            }
-        }
-
-        let (e_asian_eng, e_asian_num) = match (e_asian_eng, e_asian_num) {
-            (Some(e_asian_eng), Some(e_asian_num)) => (e_asian_eng, e_asian_num),
-            (None, _) => missing_attribute!("<autoSpacing eAsianEng>"),
-            (_, None) => missing_attribute!("<autoSpacing eAsianNum>"),
-        };
+        let (e_asian_eng, e_asian_num) = attributes!(element, "autoSpacing";
+            "eAsianEng" as e_asian_eng => one (boolean),
+            "eAsianNum" as e_asian_num => one (boolean),
+        );
 
         Ok(Self {
             e_asian_eng,
@@ -3731,41 +2974,31 @@ impl TryFrom<AnyElement> for ParagraphHeadType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__PARAGRAPH_HEAD)?;
 
-        let mut start = 1;
-        let mut level = None;
-        let mut align = ParagraphHorizontalAlignKind::Left;
-        let mut use_inset_width = true;
-        let mut auto_indent = true;
-        let mut width_adjust = 0;
-        let mut text_offset_type = TextOffsetKind::Percent;
-        let mut text_offset = 50;
-        let mut number_format = NumberType1::Digit;
-        let mut char_pr_id_ref = None;
-        let mut checkable = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "start" => start = value.parse()?,
-                "level" => level = Some(value.parse()?),
-                "align" => align = value.parse()?,
-                "useInsetWidth" => {
-                    use_inset_width = boolean!(value.as_str(), "<paraHead useInsetWidth>")
-                }
-                "autoIndent" => auto_indent = boolean!(value.as_str(), "<paraHead autoIndent>"),
-                "widthAdjust" => width_adjust = value.parse()?,
-                "textOffsetType" => text_offset_type = value.parse()?,
-                "textOffset" => text_offset = value.parse()?,
-                "numFormat" => number_format = value.parse()?,
-                "charPrIDRef" => char_pr_id_ref = Some(value.parse()?),
-                "checkable" => checkable = boolean!(value.as_str(), "<paraHead checkable>"),
-                _ => continue,
-            }
-        }
-
-        let level = match level {
-            Some(level) => level,
-            None => missing_attribute!("<paraHead level>"),
-        };
+        let (
+            start,
+            level,
+            align,
+            use_inset_width,
+            auto_indent,
+            width_adjust,
+            text_offset_type,
+            text_offset,
+            number_format,
+            char_pr_id_ref,
+            checkable,
+        ) = attributes!(element, "paraHead";
+            "start" as start => default 1u32,
+            "level" as level => one xs::PositiveInteger32,
+            "align" as align => default ParagraphHorizontalAlignKind::Left,
+            "useInsetWidth" as use_inset_width => default true; boolean,
+            "autoIndent" as auto_indent => default true; boolean,
+            "widthAdjust" as width_adjust => default 0,
+            "textOffsetType" as text_offset_type => default TextOffsetKind::Percent,
+            "textOffset" as text_offset => default 50,
+            "numFormat" as number_format => default NumberType1::Digit,
+            "charPrIDRef" as char_pr_id_ref => opt xs::NonNegativeInteger32,
+            "checkable" as checkable => opt (boolean),
+        );
 
         Ok(Self {
             start,
@@ -3839,22 +3072,15 @@ impl TryFrom<AnyElement> for BulletType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__BULLET)?;
 
-        let mut id = None;
-        let mut character = None;
-        let mut checked_character = None;
-        let mut use_image = None;
+        let (id, character, checked_character, use_image) = attributes!(element, "bullet";
+            "id" as id => one xs::NonNegativeInteger32,
+            "char" as character => one (string),
+            "checkedChar" as checked_character => opt (string),
+            "useImage" as use_image => one (boolean),
+        );
+
         let mut image = None;
         let mut head = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "char" => character = Some(value),
-                "checkedChar" => checked_character = Some(value),
-                "useImage" => use_image = Some(boolean!(value.as_str(), "<bullet useImage>")),
-                _ => continue,
-            }
-        }
 
         for child in element.children {
             match child.name {
@@ -3864,14 +3090,9 @@ impl TryFrom<AnyElement> for BulletType {
             }
         }
 
-        let (id, character, use_image, head) = match (id, character, use_image, head) {
-            (Some(id), Some(character), Some(use_image), Some(head)) => {
-                (id, character, use_image, head)
-            }
-            (None, _, _, _) => missing_attribute!("<bullet id>"),
-            (_, None, _, _) => missing_attribute!("<bullet char>"),
-            (_, _, None, _) => missing_attribute!("<bullet useImage>"),
-            (_, _, _, None) => missing_element!("<paraHead>"),
+        let head = match head {
+            Some(head) => head,
+            None => missing_element!("<paraHead>"),
         };
 
         Ok(Self {
@@ -3972,37 +3193,27 @@ impl TryFrom<AnyElement> for StyleType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__STYLE)?;
 
-        let mut id = None;
-        let mut r#type = None;
-        let mut name = None;
-        let mut eng_name = None;
-        let mut para_pr_id_ref = None;
-        let mut char_pr_id_ref = None;
-        let mut next_style_id_ref = None;
-        let mut lang_id = None;
-        let mut lock_form = false;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "type" => r#type = Some(value.parse()?),
-                "name" => name = Some(value),
-                "engName" => eng_name = Some(value),
-                "paraPrIDRef" => para_pr_id_ref = Some(value.parse()?),
-                "charPrIDRef" => char_pr_id_ref = Some(value.parse()?),
-                "nextStyleIDRef" => next_style_id_ref = Some(value.parse()?),
-                "langID" => lang_id = Some(value.parse()?),
-                "lockForm" => lock_form = boolean!(value.as_str(), "<style lockForm>"),
-                _ => continue,
-            }
-        }
-
-        let (id, r#type, name) = match (id, r#type, name) {
-            (Some(id), Some(r#type), Some(name)) => (id, r#type, name),
-            (None, _, _) => missing_attribute!("<style id>"),
-            (_, None, _) => missing_attribute!("<style type>"),
-            (_, _, None) => missing_attribute!("<style name>"),
-        };
+        let (
+            id,
+            r#type,
+            name,
+            eng_name,
+            para_pr_id_ref,
+            char_pr_id_ref,
+            next_style_id_ref,
+            lang_id,
+            lock_form,
+        ) = attributes!(element, "style";
+            "id" as id => one xs::NonNegativeInteger32,
+            "type" as r#type => one StyleKind,
+            "name" as name => one (string),
+            "engName" as eng_name => opt (string),
+            "paraPrIDRef" as para_pr_id_ref => opt xs::NonNegativeInteger32,
+            "charPrIDRef" as char_pr_id_ref => opt xs::NonNegativeInteger32,
+            "nextStyleIDRef" as next_style_id_ref => opt xs::NonNegativeInteger32,
+            "langID" as lang_id => opt xs::UnsignedShort,
+            "lockForm" as lock_form => default false; boolean,
+        );
 
         Ok(Self {
             id,
@@ -4090,68 +3301,16 @@ impl TryFrom<AnyElement> for MemoShapeType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__MEMO_PROPERTY)?;
 
-        let mut id = None;
-        let mut width = None;
-        let mut line_width = None;
-        let mut line_type = None;
-        let mut line_color = None;
-        let mut fill_color = None;
-        let mut active_color = None;
-        let mut memo_type = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "width" => width = Some(value.parse()?),
-                "lineWidth" => line_width = Some(value.parse()?),
-                "lineType" => line_type = Some(value.parse()?),
-                "lineColor" => line_color = Some(value.parse()?),
-                "fillColor" => fill_color = Some(value.parse()?),
-                "activeColor" => active_color = Some(value.parse()?),
-                "memoType" => memo_type = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (id, width, line_width, line_type, line_color, fill_color, active_color, memo_type) =
-            match (
-                id,
-                width,
-                line_width,
-                line_type,
-                line_color,
-                fill_color,
-                active_color,
-                memo_type,
-            ) {
-                (
-                    Some(id),
-                    Some(width),
-                    Some(line_width),
-                    Some(line_type),
-                    Some(line_color),
-                    Some(fill_color),
-                    Some(active_color),
-                    Some(memo_type),
-                ) => (
-                    id,
-                    width,
-                    line_width,
-                    line_type,
-                    line_color,
-                    fill_color,
-                    active_color,
-                    memo_type,
-                ),
-                (None, _, _, _, _, _, _, _) => missing_attribute!("<memoShape id>"),
-                (_, None, _, _, _, _, _, _) => missing_attribute!("<memoShape width>"),
-                (_, _, None, _, _, _, _, _) => missing_attribute!("<memoShape lineWidth>"),
-                (_, _, _, None, _, _, _, _) => missing_attribute!("<memoShape lineType>"),
-                (_, _, _, _, None, _, _, _) => missing_attribute!("<memoShape lineColor>"),
-                (_, _, _, _, _, None, _, _) => missing_attribute!("<memoShape fillColor>"),
-                (_, _, _, _, _, _, None, _) => missing_attribute!("<memoShape activeColor>"),
-                (_, _, _, _, _, _, _, None) => missing_attribute!("<memoShape memoType>"),
-            };
+        let (id, width, line_width, line_type, line_color, fill_color, active_color, memo_type) = attributes!(element, "memoShape";
+            "id" as id => one xs::NonNegativeInteger32,
+            "width" as width => one xs::NonNegativeInteger32,
+            "lineWidth" as line_width => one LineWidth,
+            "lineType" as line_type => one LineType2,
+            "lineColor" as line_color => one RgbColorType,
+            "fillColor" as fill_color => one RgbColorType,
+            "activeColor" as active_color => one RgbColorType,
+            "memoType" as memo_type => one MemoKind,
+        );
 
         Ok(Self {
             id,
@@ -4231,37 +3390,15 @@ impl TryFrom<AnyElement> for TrackChange {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TRACK_CHANGE)?;
 
-        let mut r#type = None;
-        let mut date = None;
-        let mut author_id = None;
-        let mut char_shape_id = None;
-        let mut para_shape_id = None;
-        let mut hide = None;
-        let mut id = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "date" => date = Some(value),
-                "authorID" => author_id = Some(value.parse()?),
-                "charPrIDRef" => char_shape_id = Some(value.parse()?),
-                "paraPrIDRef" => para_shape_id = Some(value.parse()?),
-                "hide" => hide = Some(boolean!(value.as_str(), "<trackChange hide>")),
-                "id" => id = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, date, author_id, hide, id) = match (r#type, date, author_id, hide, id) {
-            (Some(r#type), Some(date), Some(author_id), Some(hide), Some(id)) => {
-                (r#type, date, author_id, hide, id)
-            }
-            (None, _, _, _, _) => missing_attribute!("<trackChange type>"),
-            (_, None, _, _, _) => missing_attribute!("<trackChange date>"),
-            (_, _, None, _, _) => missing_attribute!("<trackChange authorID>"),
-            (_, _, _, None, _) => missing_attribute!("<trackChange hide>"),
-            (_, _, _, _, None) => missing_attribute!("<trackChange id>"),
-        };
+        let (r#type, date, author_id, char_shape_id, para_shape_id, hide, id) = attributes!(element, "trackChange";
+            "type" as r#type => one TrackChangeKind,
+            "date" as date => one (string),
+            "authorID" as author_id => one xs::NonNegativeInteger32,
+            "charPrIDRef" as char_shape_id => opt xs::NonNegativeInteger32,
+            "paraPrIDRef" as para_shape_id => opt xs::NonNegativeInteger32,
+            "hide" as hide => one (boolean),
+            "id" as id => one xs::NonNegativeInteger32,
+        );
 
         Ok(Self {
             r#type,
@@ -4311,25 +3448,12 @@ impl TryFrom<AnyElement> for TrackChangeAuthor {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TRACK_CHANGE_AUTHOR)?;
 
-        let mut name = None;
-        let mut mark = None;
-        let mut color = None;
-        let mut id = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "name" => name = Some(value),
-                "mark" => mark = boolean!(value.as_str(), "<trackChangeAuthor mark>"),
-                "color" => color = Some(value.parse()?),
-                "id" => id = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (id,) = match (id,) {
-            (Some(id),) => (id,),
-            (None,) => missing_attribute!("<trackChangeAuthor id>"),
-        };
+        let (name, mark, color, id) = attributes!(element, "trackChangeAuthor";
+            "name" as name => opt (string),
+            "mark" as mark => opt (boolean),
+            "color" as color => opt RgbColorType,
+            "id" as id => one xs::NonNegativeInteger32,
+        );
 
         Ok(Self {
             name,
@@ -4402,15 +3526,11 @@ impl TryFrom<AnyElement> for CompatibleDocument {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__COMPATIBLE_DOCUMENT)?;
 
-        let mut target_program = None;
-        let mut layout_compatibility = None;
+        let target_program = attributes!(element, "compatibleDocument";
+            "targetProgram" as target_program => one TargetProgram,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "targetProgram" => target_program = Some(value.parse()?),
-                _ => continue,
-            }
-        }
+        let mut layout_compatibility = None;
 
         for child in element.children {
             match child.name {
@@ -4420,11 +3540,6 @@ impl TryFrom<AnyElement> for CompatibleDocument {
                 _ => continue,
             }
         }
-
-        let target_program = match target_program {
-            Some(target_program) => target_program,
-            None => missing_attribute!("<compatibleDocument targetProgram>"),
-        };
 
         let layout_compatibility = layout_compatibility.unwrap_or_default();
 
@@ -4549,16 +3664,10 @@ impl TryFrom<AnyElement> for DocumentOption {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__DOCUMENT_OPTION)?;
 
-        let mut link_info = None;
-        let mut license_mark = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__LINK_INFO => link_info = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__LICENSE_MARK => license_mark = Some(child.try_into()?),
-                _ => {}
-            }
-        }
+        let (link_info, license_mark) = children!(element;
+            opt HANCOM__HEAD__LINK_INFO, LinkInfo;
+            opt HANCOM__HEAD__LICENSE_MARK, LicenseMark;
+        );
 
         Ok(Self {
             link_info,
@@ -4587,25 +3696,11 @@ impl TryFrom<AnyElement> for LinkInfo {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__LINK_INFO)?;
 
-        let mut path = None;
-        let mut page_inherit = false;
-        let mut footnote_inherit = false;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "path" => path = Some(value),
-                "pageInherit" => page_inherit = boolean!(value.as_str(), "<linkInfo pageInherit>"),
-                "footnoteInherit" => {
-                    footnote_inherit = boolean!(value.as_str(), "<linkInfo footnoteInherit>")
-                }
-                _ => continue,
-            }
-        }
-
-        let path = match path {
-            Some(path) => path,
-            None => missing_attribute!("<linkInfo path>"),
-        };
+        let (path, page_inherit, footnote_inherit) = attributes!(element, "linkInfo";
+            "path" as path => one (string),
+            "pageInherit" as page_inherit => default false; boolean,
+            "footnoteInherit" as footnote_inherit => default false; boolean,
+        );
 
         Ok(Self {
             path,
@@ -4644,25 +3739,11 @@ impl TryFrom<AnyElement> for LicenseMark {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__LICENSE_MARK)?;
 
-        let mut r#type = None;
-        let mut flag = None;
-        let mut lang = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "type" => r#type = Some(value.parse()?),
-                "flag" => flag = Some(value.parse()?),
-                "lang" => lang = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        let (r#type, flag, lang) = match (r#type, flag, lang) {
-            (Some(r#type), Some(flag), Some(lang)) => (r#type, flag, lang),
-            (None, _, _) => missing_attribute!("<licenseMark type>"),
-            (_, None, _) => missing_attribute!("<licenseMark flag>"),
-            (_, _, None) => missing_attribute!("<licenseMark lang>"),
-        };
+        let (r#type, flag, lang) = attributes!(element, "licenseMark";
+            "type" as r#type => one xs::UnsignedInt32,
+            "flag" as flag => one xs::Byte,
+            "lang" as lang => one xs::Byte,
+        );
 
         Ok(Self { r#type, flag, lang })
     }
@@ -4707,29 +3788,13 @@ impl TryFrom<AnyElement> for TrackChangeConfig {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__TRACK_CHANGE_CONFIG)?;
 
-        let mut flag = None;
-        let mut track_change_encryption = None;
+        let flag = attributes!(element, "trackchangeConfig";
+            "flag" as flag => one xs::NonNegativeInteger32,
+        );
 
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "flag" => flag = Some(value.parse()?),
-                _ => continue,
-            }
-        }
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__TRACK_CHANGE_ENCRYPTION => {
-                    track_change_encryption = Some(child.try_into()?)
-                }
-                _ => continue,
-            }
-        }
-
-        let (flag,) = match (flag,) {
-            (Some(flag),) => (flag,),
-            (None,) => missing_attribute!("<trackchangeConfig flag>"),
-        };
+        let track_change_encryption = children!(element;
+            opt HANCOM__HEAD__TRACK_CHANGE_ENCRYPTION, TrackChangeEncryption;
+        );
 
         Ok(Self {
             flag,
@@ -4833,30 +3898,12 @@ impl TryFrom<AnyElement> for DerivationKey {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__DERIVATION_KEY)?;
 
-        let mut algorithm = None;
-        let mut size = None;
-        let mut count = None;
-        let mut salt = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "algorithm" => algorithm = Some(value),
-                "size" => size = Some(value.parse()?),
-                "count" => count = Some(value.parse()?),
-                "salt" => salt = Some(value),
-                _ => continue,
-            }
-        }
-
-        let (algorithm, size, count, salt) = match (algorithm, size, count, salt) {
-            (Some(algorithm), Some(size), Some(count), Some(salt)) => {
-                (algorithm, size, count, salt)
-            }
-            (None, _, _, _) => missing_attribute!("<derivationKey algorithm>"),
-            (_, None, _, _) => missing_attribute!("<derivationKey size>"),
-            (_, _, None, _) => missing_attribute!("<derivationKey count>"),
-            (_, _, _, None) => missing_attribute!("<derivationKey salt>"),
-        };
+        let (algorithm, size, count, salt) = attributes!(element, "derivationKey";
+            "algorithm" as algorithm => one (string),
+            "size" as size => one xs::NonNegativeInteger32,
+            "count" as count => one xs::NonNegativeInteger32,
+            "salt" as salt => one (string),
+        );
 
         Ok(Self {
             algorithm,
@@ -5067,8 +4114,6 @@ mod tests {
         const XML: &[u8] = br#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <hh:tabDef xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" id="1" autoTabLeft="0" autoTabRight="0">
   <hh:tabItem pos="36" type="LEFT" leader="NONE" />
-  <hh:tabItem pos="72" type="CENTER" leader="DASH" />
-  <hh:tabItem pos="108" type="RIGHT" leader="DASH" />
 </hh:tabDef>"#;
         let element = AnyElement::from_bytes(XML)?;
         let tab_definition = TabDefType::try_from(element)?;

@@ -25,30 +25,27 @@ impl TryFrom<AnyElement> for Version {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__VERSION__HCF_VERSION)?;
 
-        let mut target_application = None;
-        let mut major = None;
-        let mut minor = None;
-        let mut micro = None;
-        let mut build = None;
-        let mut os = None;
-        let mut xml_version = None;
-        let mut application = None;
-        let mut app_version = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "targetApplication" => target_application = Some(value),
-                "major" => major = Some(value.parse()?),
-                "minor" => minor = Some(value.parse()?),
-                "micro" => micro = Some(value.parse()?),
-                "buildNumber" => build = Some(value.parse()?),
-                "os" => os = Some(value.parse()?),
-                "xmlVersion" => xml_version = Some(value),
-                "application" => application = Some(value),
-                "appVersion" => app_version = Some(value),
-                _ => {}
-            }
-        }
+        let (
+            target_application,
+            major,
+            minor,
+            micro,
+            build,
+            os,
+            xml_version,
+            application,
+            app_version,
+        ) = attributes!(element, "HCFVersion";
+            "targetApplication" as target_application => opt (string),
+            "major" as major => opt u32,
+            "minor" as minor => opt u32,
+            "micro" as micro => opt u32,
+            "buildNumber" as build => opt u32,
+            "os" as os => opt u32,
+            "xmlVersion" as xml_version => opt (string),
+            "application" as application => opt (string),
+            "appVersion" as app_version => opt (string),
+        );
 
         Ok(Self {
             target_application,

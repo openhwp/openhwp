@@ -8,9 +8,9 @@ TabDefType {
     auto_tab_right: false,
     tab: Some(
         TabItem {
-            position: 108,
-            type: Right,
-            leader: Dash,
+            position: 36,
+            type: Left,
+            leader: None,
         },
     ),
 }

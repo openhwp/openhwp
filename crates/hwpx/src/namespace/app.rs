@@ -38,20 +38,10 @@ impl TryFrom<AnyElement> for Setting {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__APP__HWP_APPLICATION_SETTING)?;
 
-        let mut caret_position = None;
-        let mut print = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__APP__CARET_POSITION => {
-                    caret_position = Some(CaretPosition::try_from(child)?);
-                }
-                ElementName::OPENDOCUMENT__CONFIG__CONFIG_ITEM_SET => {
-                    print = Some(Print::try_from(child)?);
-                }
-                _ => continue,
-            }
-        }
+        let (caret_position, print) = children! {element;
+            opt HANCOM__APP__CARET_POSITION, CaretPosition;
+            opt OPENDOCUMENT__CONFIG__CONFIG_ITEM_SET, Print;
+        };
 
         Ok(Self {
             caret_position,
@@ -66,28 +56,11 @@ impl TryFrom<AnyElement> for CaretPosition {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__APP__CARET_POSITION)?;
 
-        let mut list_id_ref = None;
-        let mut paragraph_id_ref = None;
-        let mut position = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "listIDRef" => list_id_ref = Some(IdRef(value)),
-                "paraIDRef" => paragraph_id_ref = Some(IdRef(value)),
-                "pos" => position = Some(value.parse()?),
-                _ => {}
-            }
-        }
-
-        let (list_id_ref, paragraph_id_ref, position) =
-            match (list_id_ref, paragraph_id_ref, position) {
-                (Some(list_id_ref), Some(paragraph_id_ref), Some(position)) => {
-                    (list_id_ref, paragraph_id_ref, position)
-                }
-                (None, _, _) => missing_attribute!("listIDRef"),
-                (_, None, _) => missing_attribute!("paraIDRef"),
-                (_, _, None) => missing_attribute!("pos"),
-            };
+        let (list_id_ref, paragraph_id_ref, position) = attributes!(element, "CaretPosition";
+            "listIDRef" as list_id_ref => one IdRef,
+            "paraIDRef" as paragraph_id_ref => one IdRef,
+            "pos" as position => one u32,
+        );
 
         Ok(Self {
             list_id_ref,
@@ -117,25 +90,19 @@ impl TryFrom<AnyElement> for Print {
         for child in element.children {
             child.expect(ElementName::OPENDOCUMENT__CONFIG__CONFIG_ITEM)?;
 
-            let mut name = None;
-            let mut ty = None;
+            let (name, r#type) = attributes!(child, "config-item";
+                "name" as name => one (string),
+                "type" as ty => one (string),
+            );
 
-            for (key, value) in child.attributes {
-                match key.as_str() {
-                    "name" => name = Some(value),
-                    "type" => ty = Some(value),
-                    _ => {}
-                }
-            }
-
-            let (name, ty, value) = match (name, ty, child.text) {
-                (Some(name), Some(ty), Some(value)) => (name, ty, value),
-                _ => continue,
+            let value = match child.text {
+                Some(value) => value,
+                None => continue,
             };
 
             items.push(Item {
                 name,
-                r#type: ty.to_owned(),
+                r#type,
                 value,
             });
         }
