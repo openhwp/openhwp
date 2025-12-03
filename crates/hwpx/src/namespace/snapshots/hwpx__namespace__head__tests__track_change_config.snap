@@ -1,0 +1,18 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: track_change_config
+---
+TrackChangeConfig {
+    flag: 3,
+    track_change_encryption: Some(
+        TrackChangeEncryption {
+            derivation_key: DerivationKey {
+                algorithm: "SHA-256",
+                size: 32,
+                count: 1000,
+                salt: "c29tZXNhbHQ=",
+            },
+            hash: "dGVzdGhhc2g=",
+        },
+    ),
+}

@@ -1,0 +1,16 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: tab_definition
+---
+TabDefType {
+    id: 1,
+    auto_tab_left: false,
+    auto_tab_right: false,
+    tab: Some(
+        TabItem {
+            position: 108,
+            type: Right,
+            leader: Dash,
+        },
+    ),
+}

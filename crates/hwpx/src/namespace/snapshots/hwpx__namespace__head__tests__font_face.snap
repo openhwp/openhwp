@@ -1,0 +1,32 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: font_face
+---
+FontFaceType {
+    language: Hangul,
+    fonts: NonEmpty {
+        head: Font {
+            id: 0,
+            face: "돋움체",
+            type: Ttf,
+            embedded: false,
+            binary_item_id_ref: None,
+            subset: None,
+            type_info: Some(
+                TypeInfo {
+                    family_type: Gothic,
+                    serif_style: None,
+                    weight: 6,
+                    proportion: 9,
+                    contrast: 0,
+                    stroke_variation: 1,
+                    arm_style: true,
+                    letter_form: true,
+                    midline: true,
+                    x_height: 1,
+                },
+            ),
+        },
+        tail: [],
+    },
+}

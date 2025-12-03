@@ -1,0 +1,101 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: border_fill
+---
+BorderFillType {
+    id: 1,
+    effect_3d: false,
+    shadow: false,
+    center_line: None,
+    break_cell_separate_line: false,
+    slash: Some(
+        Slash {
+            type: None,
+            crooked: false,
+            counter: false,
+        },
+    ),
+    back_slash: Some(
+        Slash {
+            type: None,
+            crooked: false,
+            counter: false,
+        },
+    ),
+    left_border: Some(
+        BorderType {
+            type: None,
+            width: _0_1,
+            color: RgbColor(
+                Some(
+                    (
+                        0,
+                        0,
+                        0,
+                    ),
+                ),
+            ),
+        },
+    ),
+    right_border: Some(
+        BorderType {
+            type: None,
+            width: _0_1,
+            color: RgbColor(
+                Some(
+                    (
+                        0,
+                        0,
+                        0,
+                    ),
+                ),
+            ),
+        },
+    ),
+    top_border: Some(
+        BorderType {
+            type: None,
+            width: _0_1,
+            color: RgbColor(
+                Some(
+                    (
+                        0,
+                        0,
+                        0,
+                    ),
+                ),
+            ),
+        },
+    ),
+    bottom_border: Some(
+        BorderType {
+            type: None,
+            width: _0_1,
+            color: RgbColor(
+                Some(
+                    (
+                        0,
+                        0,
+                        0,
+                    ),
+                ),
+            ),
+        },
+    ),
+    diagonal: Some(
+        BorderType {
+            type: Solid,
+            width: _0_1,
+            color: RgbColor(
+                Some(
+                    (
+                        0,
+                        0,
+                        0,
+                    ),
+                ),
+            ),
+        },
+    ),
+    fill_brush: None,
+}

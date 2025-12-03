@@ -1,0 +1,31 @@
+---
+source: crates/hwpx/src/namespace/version.rs
+expression: version
+---
+Version {
+    target_application: None,
+    major: Some(
+        5,
+    ),
+    minor: Some(
+        1,
+    ),
+    micro: Some(
+        0,
+    ),
+    build: Some(
+        1,
+    ),
+    os: Some(
+        1,
+    ),
+    xml_version: Some(
+        "1.2",
+    ),
+    application: Some(
+        "Hancom Office Hangul",
+    ),
+    app_version: Some(
+        "10, 0, 0, 9139 WIN32LEWindows_8",
+    ),
+}

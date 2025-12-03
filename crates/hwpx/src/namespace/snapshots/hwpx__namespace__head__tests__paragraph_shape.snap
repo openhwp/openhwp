@@ -1,0 +1,87 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: paragraph_shape
+---
+ParaShapeType {
+    id: 0,
+    tab_pr_id_ref: Some(
+        0,
+    ),
+    condense: 0,
+    font_line_height: false,
+    snap_to_grid: true,
+    suppress_line_numbers: false,
+    checked: false,
+    align: ParagraphAlignType {
+        horizontal: Justify,
+        vertical: Baseline,
+    },
+    heading: ParagraphHeading {
+        type: None,
+        id_ref: Some(
+            0,
+        ),
+        level: 0,
+    },
+    break_setting: ParagraphBreakSetting {
+        break_latin_word: KeepWord,
+        break_non_latin_word: KeepWord,
+        widow_orphan: false,
+        keep_with_next: false,
+        keep_lines: false,
+        page_break_before: false,
+        line_wrap: BREAK,
+    },
+    margin: ParagraphMargin {
+        indent: HWPValue {
+            value: 0,
+            unit: Some(
+                HwpUnit,
+            ),
+        },
+        left: HWPValue {
+            value: 0,
+            unit: Some(
+                HwpUnit,
+            ),
+        },
+        right: HWPValue {
+            value: 0,
+            unit: Some(
+                HwpUnit,
+            ),
+        },
+        previous: HWPValue {
+            value: 0,
+            unit: Some(
+                HwpUnit,
+            ),
+        },
+        next: HWPValue {
+            value: 0,
+            unit: Some(
+                HwpUnit,
+            ),
+        },
+    },
+    line_spacing: ParagraphLineSpacing {
+        type: Percent,
+        value: 160,
+        unit: HwpUnit,
+    },
+    border: ParagraphBorder {
+        border_fill_id_ref: Some(
+            2,
+        ),
+        offset_left: 0,
+        offset_right: 0,
+        offset_top: 0,
+        offset_bottom: 0,
+        connect: false,
+        ignore_margin: false,
+    },
+    auto_spacing: ParagraphAutoSpacing {
+        e_asian_eng: false,
+        e_asian_num: false,
+    },
+}

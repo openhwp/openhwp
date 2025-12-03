@@ -1,0 +1,63 @@
+---
+source: crates/hwpx/src/namespace/app.rs
+expression: setting
+---
+Setting {
+    caret_position: Some(
+        CaretPosition {
+            list_id_ref: IdRef(
+                "0",
+            ),
+            paragraph_id_ref: IdRef(
+                "6",
+            ),
+            position: 18,
+        },
+    ),
+    print: Some(
+        Print {
+            items: [
+                Item {
+                    name: "PrintAutoFootNote",
+                    type: "boolean",
+                    value: "false",
+                },
+                Item {
+                    name: "PrintAutoHeadNote",
+                    type: "boolean",
+                    value: "false",
+                },
+                Item {
+                    name: "PrintMethod",
+                    type: "short",
+                    value: "0",
+                },
+                Item {
+                    name: "OverlapSize",
+                    type: "short",
+                    value: "0",
+                },
+                Item {
+                    name: "PrintCropMark",
+                    type: "short",
+                    value: "0",
+                },
+                Item {
+                    name: "BinderHoleType",
+                    type: "short",
+                    value: "0",
+                },
+                Item {
+                    name: "ZoomX",
+                    type: "short",
+                    value: "100",
+                },
+                Item {
+                    name: "ZoomY",
+                    type: "short",
+                    value: "100",
+                },
+            ],
+        },
+    ),
+}

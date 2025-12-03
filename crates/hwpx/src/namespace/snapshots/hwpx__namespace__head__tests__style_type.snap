@@ -1,0 +1,25 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: style_type
+---
+StyleType {
+    id: 0,
+    type: Para,
+    name: "바탕글",
+    eng_name: Some(
+        "Normal",
+    ),
+    para_pr_id_ref: Some(
+        0,
+    ),
+    char_pr_id_ref: Some(
+        0,
+    ),
+    next_style_id_ref: Some(
+        0,
+    ),
+    lang_id: Some(
+        1042,
+    ),
+    lock_form: false,
+}

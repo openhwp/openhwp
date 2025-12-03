@@ -1,0 +1,123 @@
+---
+source: crates/hwpx/src/namespace/content.rs
+expression: package
+---
+Package {
+    metadata: Some(
+        Metadata {
+            title: Some(
+                "1",
+            ),
+            language: Some(
+                "ko",
+            ),
+            meta: [
+                Meta {
+                    name: "creator",
+                    content: "text",
+                    text: Some(
+                        "user",
+                    ),
+                },
+                Meta {
+                    name: "subject",
+                    content: "text",
+                    text: None,
+                },
+                Meta {
+                    name: "description",
+                    content: "text",
+                    text: None,
+                },
+                Meta {
+                    name: "CreatedDate",
+                    content: "text",
+                    text: Some(
+                        "2025-11-19T02:32:55Z",
+                    ),
+                },
+                Meta {
+                    name: "ModifiedDate",
+                    content: "text",
+                    text: Some(
+                        "2025-11-23T07:46:18Z",
+                    ),
+                },
+                Meta {
+                    name: "date",
+                    content: "text",
+                    text: Some(
+                        "2025년 11월 19일 수요일 오전 11:32:55",
+                    ),
+                },
+                Meta {
+                    name: "keyword",
+                    content: "text",
+                    text: None,
+                },
+            ],
+        },
+    ),
+    manifest: Some(
+        Manifest {
+            items: [
+                Item {
+                    id: "header",
+                    href: "Contents/header.xml",
+                    media_type: Xml,
+                    embedded: false,
+                },
+                Item {
+                    id: "image1",
+                    href: "BinData/image1.jpg",
+                    media_type: Jpeg,
+                    embedded: true,
+                },
+                Item {
+                    id: "image2",
+                    href: "BinData/image2.png",
+                    media_type: Png,
+                    embedded: true,
+                },
+                Item {
+                    id: "image3",
+                    href: "BinData/image3.jpg",
+                    media_type: Jpeg,
+                    embedded: true,
+                },
+                Item {
+                    id: "image4",
+                    href: "BinData/image4.jpg",
+                    media_type: Jpeg,
+                    embedded: true,
+                },
+                Item {
+                    id: "section0",
+                    href: "Contents/section0.xml",
+                    media_type: Xml,
+                    embedded: false,
+                },
+                Item {
+                    id: "settings",
+                    href: "settings.xml",
+                    media_type: Xml,
+                    embedded: false,
+                },
+            ],
+        },
+    ),
+    spine: Some(
+        Spine {
+            item_refs: [
+                ItemRef {
+                    id_ref: "header",
+                    linear: false,
+                },
+                ItemRef {
+                    id_ref: "section0",
+                    linear: true,
+                },
+            ],
+        },
+    ),
+}

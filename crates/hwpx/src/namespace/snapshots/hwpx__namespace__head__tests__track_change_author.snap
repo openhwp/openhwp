@@ -1,0 +1,24 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: track_change_author
+---
+TrackChangeAuthor {
+    name: Some(
+        "Alice",
+    ),
+    mark: Some(
+        true,
+    ),
+    color: Some(
+        RgbColor(
+            Some(
+                (
+                    255,
+                    0,
+                    0,
+                ),
+            ),
+        ),
+    ),
+    id: 1,
+}

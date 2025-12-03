@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["crates/openhwp_parser"]
+members = ["crates/*"]
 
 [workspace.dependencies]
 aes = "0.8.4"
 anyhow = "1.0.100"
-cfb = "0.11.0"
-flate2 = "1.0.30"
-insta = "1.43.2"
-thiserror = "2.0.16"
+cfb = "0.12.1"
+flate2 = "1.1.5"
+insta = "1.44.2"
+thiserror = "2.0.17"

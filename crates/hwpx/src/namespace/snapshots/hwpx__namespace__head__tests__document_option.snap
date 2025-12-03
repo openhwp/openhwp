@@ -1,0 +1,20 @@
+---
+source: crates/hwpx/src/namespace/head.rs
+expression: document_option
+---
+DocumentOption {
+    link_info: Some(
+        LinkInfo {
+            path: "C:\\Documents\\",
+            page_inherit: true,
+            footnote_inherit: false,
+        },
+    ),
+    license_mark: Some(
+        LicenseMark {
+            type: 2,
+            flag: 1,
+            lang: 0,
+        },
+    ),
+}
