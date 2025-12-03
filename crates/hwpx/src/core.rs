@@ -2845,7 +2845,7 @@ impl std::str::FromStr for NoteLineLength {
 
 /// 번호 매기기 형식
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NumberingKind {
+pub enum FootNoteNumberingKind {
     /// "CONTINUOUS"
     ///
     /// 앞 구역에 이어서
@@ -2860,15 +2860,15 @@ pub enum NumberingKind {
     OnPage,
 }
 
-impl Hancom for NumberingKind {
+impl Hancom for FootNoteNumberingKind {
     //
 }
 
-impl Arbitrary for NumberingKind {
-    const NAME: &'static str = "$NumberingKind";
+impl Arbitrary for FootNoteNumberingKind {
+    const NAME: &'static str = "$FootNoteNumberingKind";
 }
 
-impl Enumeration for NumberingKind {
+impl Enumeration for FootNoteNumberingKind {
     fn enumeration(&self) -> &'static str {
         match self {
             Self::Continuous => "CONTINUOUS",
@@ -2878,7 +2878,7 @@ impl Enumeration for NumberingKind {
     }
 }
 
-impl std::str::FromStr for NumberingKind {
+impl std::str::FromStr for FootNoteNumberingKind {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -2886,6 +2886,138 @@ impl std::str::FromStr for NumberingKind {
             "CONTINUOUS" => Ok(Self::Continuous),
             "ON_SECTION" => Ok(Self::OnSection),
             "ON_PAGE" => Ok(Self::OnPage),
+            _ => invalid_variant!(Self::NAME, s),
+        }
+    }
+}
+
+/// 한 페이지 내에서 각주를 다단에 어떻게 위치시킬지를 표시한다
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FootNotePlaceKind {
+    /// "EACH_COLUMN"
+    ///
+    /// 각 단마다 따로 배열
+    EachColumn,
+    /// "MERGED_COLUMN"
+    ///
+    /// 통단으로 배열
+    MergedColumn,
+    /// "RIGHT_MOST_COLUMN"
+    ///
+    /// 가장 오른쪽 단에 배열
+    RightMostColumn,
+}
+
+impl Hancom for FootNotePlaceKind {
+    //
+}
+
+impl Arbitrary for FootNotePlaceKind {
+    const NAME: &'static str = "$FootNotePlaceKind";
+}
+
+impl Enumeration for FootNotePlaceKind {
+    fn enumeration(&self) -> &'static str {
+        match self {
+            Self::EachColumn => "EACH_COLUMN",
+            Self::MergedColumn => "MERGED_COLUMN",
+            Self::RightMostColumn => "RIGHT_MOST_COLUMN",
+        }
+    }
+}
+
+impl std::str::FromStr for FootNotePlaceKind {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "EACH_COLUMN" => Ok(Self::EachColumn),
+            "MERGED_COLUMN" => Ok(Self::MergedColumn),
+            "RIGHT_MOST_COLUMN" => Ok(Self::RightMostColumn),
+            _ => invalid_variant!(Self::NAME, s),
+        }
+    }
+}
+
+/// 번호 매기기 형식
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EndNoteNumberingKind {
+    /// "CONTINUOUS"
+    ///
+    /// 앞 구역에 이어서
+    Continuous,
+    /// "ON_SECTION"
+    ///
+    /// 현재 구역부터 새로 시작
+    OnSection,
+}
+
+impl Hancom for EndNoteNumberingKind {
+    //
+}
+
+impl Arbitrary for EndNoteNumberingKind {
+    const NAME: &'static str = "$EndNoteNumberingKind";
+}
+
+impl Enumeration for EndNoteNumberingKind {
+    fn enumeration(&self) -> &'static str {
+        match self {
+            Self::Continuous => "CONTINUOUS",
+            Self::OnSection => "ON_SECTION",
+        }
+    }
+}
+
+impl std::str::FromStr for EndNoteNumberingKind {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "CONTINUOUS" => Ok(Self::Continuous),
+            "ON_SECTION" => Ok(Self::OnSection),
+            _ => invalid_variant!(Self::NAME, s),
+        }
+    }
+}
+
+/// 한 페이지 내에서 미주를 다단에 어떻게 위치시킬지를 표시한다
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EndNotePlaceKind {
+    /// "END_OF_DOCUMENT"
+    ///
+    /// 문서의 마지막
+    EndOfDocument,
+    /// "END_OF_SECTION"
+    ///
+    /// 구역의 마지막
+    EndOfSection,
+}
+
+impl Hancom for EndNotePlaceKind {
+    //
+}
+
+impl Arbitrary for EndNotePlaceKind {
+    const NAME: &'static str = "$EndNotePlaceKind";
+}
+
+impl Enumeration for EndNotePlaceKind {
+    fn enumeration(&self) -> &'static str {
+        match self {
+            Self::EndOfDocument => "END_OF_DOCUMENT",
+            Self::EndOfSection => "END_OF_SECTION",
+        }
+    }
+}
+
+impl std::str::FromStr for EndNotePlaceKind {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "END_OF_DOCUMENT" => Ok(Self::EndOfDocument),
+            "END_OF_SECTION" => Ok(Self::EndOfSection),
             _ => invalid_variant!(Self::NAME, s),
         }
     }

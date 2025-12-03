@@ -3,8 +3,9 @@
 
 use crate::{
     core::{
+        EndNoteNumberingKind, EndNotePlaceKind, FootNoteNumberingKind, FootNotePlaceKind,
         GutterKind, HWPUnit, LandscapeKind, LineType2, LineWidth, NoteLineLength, NumberType2,
-        NumberingKind, PageStartKind, RgbColorType, TextDirectionKind, VisibilityValue,
+        PageStartKind, RgbColorType, TextDirectionKind, VisibilityValue,
     },
     xs,
 };
@@ -552,45 +553,6 @@ pub struct PageProperties {
 }
 
 /// ```xml
-/// <footNotePr>
-///   <autoNumFormat>...</autoNumFormat>
-///   <noteLine>...</noteLine>
-///   <noteSpacing>...</noteSpacing>
-///   <numbering>...</numbering>
-///   <placement>...</placement>
-/// </footNotePr>
-/// ```
-///
-/// 각주 모양
-#[derive(Debug)]
-pub struct FootNoteShapeType {
-    /// ```xml
-    /// <autoNumFormat>...</autoNumFormat>
-    /// ```
-    pub auto_number_format: AutoNumberFormat,
-    /// ```xml
-    /// <noteLine>...</noteLine>
-    /// ```
-    pub note_line: NoteLine,
-    /// ```xml
-    /// <noteSpacing>...</noteSpacing>
-    /// ```
-    pub note_spacing: NoteSpacing,
-    /// ```xml
-    /// <numbering>...</numbering>
-    /// ```
-    ///
-    /// 각주 번호 매기기
-    pub numbering: Option<Numbering>,
-    /// ```xml
-    /// <placement>...</placement>
-    /// ```
-    ///
-    /// 각주 위치
-    pub placement: Option<()>,
-}
-
-/// ```xml
 /// <autoNumFormat
 ///   type="{hc:NumberType2; default="DIGIT"}"
 ///   userChar="{xs:string}"
@@ -699,23 +661,167 @@ pub struct NoteSpacing {
 }
 
 /// ```xml
+/// <footNotePr>
+///   <autoNumFormat>...</autoNumFormat>
+///   <noteLine>...</noteLine>
+///   <noteSpacing>...</noteSpacing>
+///   <numbering>...</numbering>
+///   <placement>...</placement>
+/// </footNotePr>
+/// ```
+///
+/// 각주 모양
+#[derive(Debug)]
+pub struct FootNoteShapeType {
+    /// ```xml
+    /// <autoNumFormat>...</autoNumFormat>
+    /// ```
+    pub auto_number_format: AutoNumberFormat,
+    /// ```xml
+    /// <noteLine>...</noteLine>
+    /// ```
+    pub note_line: NoteLine,
+    /// ```xml
+    /// <noteSpacing>...</noteSpacing>
+    /// ```
+    pub note_spacing: NoteSpacing,
+    /// ```xml
+    /// <numbering>...</numbering>
+    /// ```
+    ///
+    /// 각주 번호 매기기
+    pub numbering: FootNoteNumbering,
+    /// ```xml
+    /// <placement>...</placement>
+    /// ```
+    ///
+    /// 각주 위치
+    pub placement: FootNotePlacement,
+}
+
+/// ```xml
 /// <numbering
-///   type="{$NumberingKind; default="CONTINUOUS"}"
+///   type="{$FootNoteNumberingKind; default="CONTINUOUS"}"
 ///   newNum="{xs:positiveInteger; default="1"}"
 /// />
 /// ```
 #[derive(Debug)]
-pub struct Numbering {
+pub struct FootNoteNumbering {
     /// ```xml
-    /// type="{$NumberingKind; default="CONTINUOUS"}"
+    /// type="{$FootNoteNumberingKind; default="CONTINUOUS"}"
     /// ```
     ///
     /// 각주 번호 매기기 방식
-    pub r#type: NumberingKind,
+    pub r#type: FootNoteNumberingKind,
     /// ```xml
     /// newNum="{xs:positiveInteger; default="1"}"
     /// ```
     ///
     /// 새 번호
     pub new_number: xs::PositiveInteger32,
+}
+
+/// ```xml
+/// <placement
+///   place="{$FootNotePlaceKind; default="EACH_COLUMN"}"
+///   beneathText="{xs:boolean; default="false"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct FootNotePlacement {
+    /// ```xml
+    /// place="{$FootNotePlaceKind; default="EACH_COLUMN"}"
+    /// ```
+    ///
+    /// 한 페이지 내에서 각주를 다단에 어떻게 위치시킬지를 표시한다
+    pub place: FootNotePlaceKind,
+    /// ```xml
+    /// beneathText="{xs:boolean; default="false"}"
+    /// ```
+    ///
+    /// 텍스트에 이어 바로 출력할지 여부
+    pub beneath_text: xs::Boolean,
+}
+
+/// ```xml
+/// <endNotePr>
+///   <autoNumFormat>...</autoNumFormat>
+///   <noteLine>...</noteLine>
+///   <noteSpacing>...</noteSpacing>
+///   <numbering>...</numbering>
+///   <placement>...</placement>
+/// </endNotePr>
+/// ```
+///
+/// 미주 모양
+#[derive(Debug)]
+pub struct EndNoteShapeType {
+    /// ```xml
+    /// <autoNumFormat>...</autoNumFormat>
+    /// ```
+    pub auto_number_format: AutoNumberFormat,
+    /// ```xml
+    /// <noteLine>...</noteLine>
+    /// ```
+    pub note_line: NoteLine,
+    /// ```xml
+    /// <noteSpacing>...</noteSpacing>
+    /// ```
+    pub note_spacing: NoteSpacing,
+    /// ```xml
+    /// <numbering>...</numbering>
+    /// ```
+    ///
+    /// 각주 번호 매기기
+    pub numbering: EndNoteNumbering,
+    /// ```xml
+    /// <placement>...</placement>
+    /// ```
+    ///
+    /// 각주 위치
+    pub placement: EndNotePlacement,
+}
+
+/// ```xml
+/// <numbering
+///   type="{$EndNoteNumberingKind; default="CONTINUOUS"}"
+///   newNum="{xs:positiveInteger; default="1"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct EndNoteNumbering {
+    /// ```xml
+    /// type="{$EndNoteNumberingKind; default="CONTINUOUS"}"
+    /// ```
+    ///
+    /// 각주 번호 매기기 방식
+    pub r#type: EndNoteNumberingKind,
+    /// ```xml
+    /// newNum="{xs:positiveInteger; default="1"}"
+    /// ```
+    ///
+    /// 시작 번호. type 이 ON_SECTION일 때만 사용한다.
+    pub new_number: xs::PositiveInteger32,
+}
+
+/// ```xml
+/// <placement
+///   place="{$EndNotePlaceKind; default="END_OF_DOCUMENT"}"
+///   beneathText="{xs:boolean; default="false"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct EndNotePlacement {
+    /// ```xml
+    /// place="{$EndNotePlaceKind; default="END_OF_DOCUMENT"}"
+    /// ```
+    ///
+    /// 한 페이지 내에서 미주를 다단에 어떻게 위치시킬지를 표시한다
+    pub place: EndNotePlaceKind,
+    /// ```xml
+    /// beneathText="{xs:boolean; default="false"}"
+    /// ```
+    ///
+    /// 텍스트에 이어 바로 출력할지 여부
+    pub beneath_text: xs::Boolean,
 }
