@@ -7,7 +7,7 @@ MemoShapeType {
     width: 2000,
     line_width: _0_25,
     line_type: Solid,
-    line_color: RgbColor(
+    line_color: RgbColorType(
         Some(
             (
                 255,
@@ -16,7 +16,7 @@ MemoShapeType {
             ),
         ),
     ),
-    fill_color: RgbColor(
+    fill_color: RgbColorType(
         Some(
             (
                 255,
@@ -25,7 +25,7 @@ MemoShapeType {
             ),
         ),
     ),
-    active_color: RgbColor(
+    active_color: RgbColorType(
         Some(
             (
                 0,

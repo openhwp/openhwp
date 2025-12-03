@@ -26,7 +26,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -41,7 +41,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -56,7 +56,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -71,7 +71,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -86,7 +86,7 @@ BorderFillType {
         BorderType {
             type: Solid,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -100,10 +100,10 @@ BorderFillType {
     fill_brush: Some(
         WinBrush(
             WinBrush {
-                face_color: RgbColor(
+                face_color: RgbColorType(
                     None,
                 ),
-                hatch_color: RgbColor(
+                hatch_color: RgbColorType(
                     Some(
                         (
                             0,

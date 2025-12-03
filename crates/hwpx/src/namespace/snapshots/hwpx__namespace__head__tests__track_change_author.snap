@@ -10,7 +10,7 @@ TrackChangeAuthor {
         true,
     ),
     color: Some(
-        RgbColor(
+        RgbColorType(
             Some(
                 (
                     255,

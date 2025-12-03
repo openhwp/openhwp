@@ -26,7 +26,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -41,7 +41,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -56,7 +56,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -71,7 +71,7 @@ BorderFillType {
         BorderType {
             type: None,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -86,7 +86,7 @@ BorderFillType {
         BorderType {
             type: Solid,
             width: _0_1,
-            color: RgbColor(
+            color: RgbColorType(
                 Some(
                     (
                         0,
@@ -110,7 +110,7 @@ BorderFillType {
                 alpha: 0.0,
                 colors: [
                     GradationColor {
-                        value: RgbColor(
+                        value: RgbColorType(
                             Some(
                                 (
                                     255,
@@ -121,7 +121,7 @@ BorderFillType {
                         ),
                     },
                     GradationColor {
-                        value: RgbColor(
+                        value: RgbColorType(
                             Some(
                                 (
                                     0,

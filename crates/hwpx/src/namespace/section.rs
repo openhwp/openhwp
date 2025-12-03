@@ -1,8 +1,12 @@
 //! namespace: http://www.hancom.co.kr/hwpml/2011/section
 //! filename: Contents/section{[0-9]+}.xml
 
-use crate::core::{
-    GutterKind, HWPUnit, LandscapeKind, PageStartKind, TextDirectionKind, VisibilityValue,
+use crate::{
+    core::{
+        GutterKind, HWPUnit, LandscapeKind, LineType2, LineWidth, NoteLineLength, NumberType2,
+        NumberingKind, PageStartKind, RgbColorType, TextDirectionKind, VisibilityValue,
+    },
+    xs,
 };
 use nonempty::NonEmpty;
 
@@ -36,31 +40,31 @@ pub struct Paragraph {
     /// ```xml
     /// id="{xs:nonNegativeInteger}"
     /// ```
-    pub id: u32,
+    pub id: xs::NonNegativeInteger32,
     /// ```xml
     /// paraPrIDRef="{xs:nonNegativeInteger}"
     /// ```
-    pub para_pr_id_ref: u32,
+    pub para_pr_id_ref: xs::NonNegativeInteger32,
     /// ```xml
     /// styleIDRef="{xs:nonNegativeInteger}"
     /// ```
-    pub style_id_ref: Option<u32>,
+    pub style_id_ref: Option<xs::NonNegativeInteger32>,
     /// ```xml
     /// pageBreak="{xs:boolean; default="false"}"
     /// ```
-    pub page_break: bool,
+    pub page_break: xs::Boolean,
     /// ```xml
     /// columnBreak="{xs:boolean; default="false"}"
     /// ```
-    pub column_break: bool,
+    pub column_break: xs::Boolean,
     /// ```xml
     /// merged="{xs:boolean; default="false"}"
     /// ```
-    pub merged: bool,
+    pub merged: xs::Boolean,
     /// ```xml
     /// paraTcId="{xs:nonNegativeInteger}"
     /// ```
-    pub para_tc_id: Option<u32>,
+    pub para_tc_id: Option<xs::NonNegativeInteger32>,
     /// ```xml
     /// <run
     ///   charPrIDRef="{xs:nonNegativeInteger}"
@@ -81,11 +85,11 @@ pub struct Run {
     /// ```xml
     /// charPrIDRef="{xs:nonNegativeInteger}"
     /// ```
-    pub char_pr_id_ref: u32,
+    pub char_pr_id_ref: xs::NonNegativeInteger32,
     /// ```xml
     /// charTcId="{xs:nonNegativeInteger}"
     /// ```
-    pub char_tc_id: Option<u32>,
+    pub char_tc_id: Option<xs::NonNegativeInteger32>,
     /// ```xml
     /// ...
     /// ```
@@ -222,7 +226,7 @@ pub struct SectionDefinitionType {
     /// ```xml
     /// id="{xs:nonNegativeInteger}"
     /// ```
-    pub id: u32,
+    pub id: xs::NonNegativeInteger32,
     /// ```xml
     /// textDirection="{$TextDirectionKind; default="HORIZONTAL"}"
     /// ```
@@ -234,13 +238,13 @@ pub struct SectionDefinitionType {
     /// ```
     ///
     /// 동일한 페이지에서 서로 다른 단 사이의 간격
-    pub space_columns: i32,
+    pub space_columns: xs::Integer32,
     /// ```xml
     /// tabStopVal="{xs:integer; default="0"}"
     /// ```
     ///
     /// 기본 탭 간격
-    pub tab_stop_val: i32,
+    pub tab_stop_val: xs::Integer32,
     /// ```xml
     /// tabStopUnit="{$HWPUnit; default="HWPUNIT"}"
     /// ```
@@ -252,25 +256,25 @@ pub struct SectionDefinitionType {
     /// ```
     ///
     /// 개요 번호 모양 아이디 참조 값
-    pub outline_shape_id_ref: Option<u32>,
+    pub outline_shape_id_ref: Option<xs::NonNegativeInteger32>,
     /// ```xml
     /// memoShapeIDRef="{xs:nonNegativeInteger}"
     /// ```
     ///
     /// 구역 내에서 사용되는 메모의 모양을 설정하기 위한 아이디 참조 값
-    pub memo_shape_id_ref: Option<u32>,
+    pub memo_shape_id_ref: Option<xs::NonNegativeInteger32>,
     /// ```xml
     /// textVerticalWidthHead="{xs:boolean; default="false"}"
     /// ```
     ///
     /// 머리말/꼬리말 세로 쓰기 여부
-    pub text_vertical_width_head: bool,
+    pub text_vertical_width_head: xs::Boolean,
     /// ```xml
     /// masterPageCnt="{xs:nonNegativeInteger; default="0"}"
     /// ```
     ///
     /// 확장 바탕쪽 개수
-    pub master_page_count: u32,
+    pub master_page_count: xs::NonNegativeInteger32,
     /// ```xml
     /// <startNum>...</startNum>
     /// ```
@@ -306,7 +310,7 @@ pub struct SectionDefinitionType {
     /// ```
     ///
     /// 각주 모양
-    pub footnote_properties: Option<FootnoteProperties>,
+    pub footnote_properties: Option<FootNoteShapeType>,
     /// ```xml
     /// <endNotePr>...</endNotePr>
     /// ```
@@ -357,25 +361,25 @@ pub struct StartNumber {
     /// ```
     ///
     /// 쪽 시작 번호
-    pub page: u32,
+    pub page: xs::NonNegativeInteger32,
     /// ```xml
     /// pic="{xs:nonNegativeInteger; default="0"}"
     /// ```
     ///
     /// 그림 시작 번호
-    pub picture: u32,
+    pub picture: xs::NonNegativeInteger32,
     /// ```xml
     /// tbl="{xs:nonNegativeInteger; default="0"}"
     /// ```
     ///
     /// 표 시작 번호
-    pub table: u32,
+    pub table: xs::NonNegativeInteger32,
     /// ```xml
     /// equation="{xs:nonNegativeInteger; default="0"}"
     /// ```
     ///
     /// 수식 시작 번호
-    pub equation: u32,
+    pub equation: xs::NonNegativeInteger32,
 }
 
 /// ```xml
@@ -394,19 +398,19 @@ pub struct Grid {
     /// ```
     ///
     /// 줄 격자 간격
-    pub line_grid: u32,
+    pub line_grid: xs::NonNegativeInteger32,
     /// ```xml
     /// charGrid="{xs:nonNegativeInteger; default="0"}"
     /// ```
     ///
     /// 글자 격자 간격
-    pub char_grid: u32,
+    pub char_grid: xs::NonNegativeInteger32,
     /// ```xml
     /// wonggojiFormat="{xs:boolean; default="0"}"
     /// ```
     ///
     /// 원고지 모드 여부
-    pub wonggoji_format: bool,
+    pub wonggoji_format: xs::Boolean,
 }
 
 /// ```xml
@@ -429,19 +433,19 @@ pub struct Visibility {
     /// ```
     ///
     /// 첫 쪽에만 머리말 감추기 여부
-    pub hide_first_header: bool,
+    pub hide_first_header: xs::Boolean,
     /// ```xml
     /// hideFirstFooter="{xs:boolean; default="false"}"
     /// ```
     ///
     /// 첫 쪽에만 꼬리말 감추기 여부
-    pub hide_first_footer: bool,
+    pub hide_first_footer: xs::Boolean,
     /// ```xml
     /// hideFirstMasterPage="{xs:boolean; default="false"}"
     /// ```
     ///
     /// 첫 쪽에만 바탕쪽 감추기 여부
-    pub hide_first_master_page: bool,
+    pub hide_first_master_page: xs::Boolean,
     /// ```xml
     /// border="{hp:VisibilityValue}"
     /// ```
@@ -456,19 +460,19 @@ pub struct Visibility {
     /// ```
     ///
     /// 첫 쪽에만 쪽번호 감추기 여부
-    pub hide_first_page_number: bool,
+    pub hide_first_page_number: xs::Boolean,
     /// ```xml
     /// hideFirstEmptyLines="{xs:boolean; default="false"}"
     /// ```
     ///
     /// 첫 쪽에만 번줄 감추기 여부
-    pub hide_first_empty_lines: bool,
+    pub hide_first_empty_lines: xs::Boolean,
     /// ```xml
     /// showLineNumbers="{xs:boolean; default="false"}"
     /// ```
     ///
     /// 줄 번호 표시 여부
-    pub show_line_numbers: bool,
+    pub show_line_numbers: xs::Boolean,
 }
 
 /// ```xml
@@ -488,25 +492,25 @@ pub struct LineNumberShape {
     /// ```
     ///
     /// 줄 번호 방식
-    pub restart_type: u32,
+    pub restart_type: xs::NonNegativeInteger32,
     /// ```xml
     /// countBy="{xs:unsignedInt}"
     /// ```
     ///
     /// 줄 번호 표시 간격
-    pub count_by: u32,
+    pub count_by: xs::NonNegativeInteger32,
     /// ```xml
     /// distance="{xs:unsignedInt}"
     /// ```
     ///
     /// 본문과의 줄 번호 위치
-    pub distance: u32,
+    pub distance: xs::NonNegativeInteger32,
     /// ```xml
     /// startNumber="{xs:unsignedInt}"
     /// ```
     ///
     /// 줄 번호 시작 번호
-    pub start_number: u32,
+    pub start_number: xs::NonNegativeInteger32,
 }
 
 /// ```xml
@@ -532,13 +536,13 @@ pub struct PageProperties {
     /// ```
     ///
     /// 용지 가로 크기. 단위는 HWPUNIT.
-    pub width: u32,
+    pub width: xs::PositiveInteger32,
     /// ```xml
     /// height="{xs:positiveInteger; default="84188"}"
     /// ```
     ///
     /// 용지 세로 크기. 단위는 HWPUNIT.
-    pub height: u32,
+    pub height: xs::PositiveInteger32,
     /// ```xml
     /// gutterType="{$GutterTypeKind; default="LEFT_ONLY"}"
     /// ```
@@ -549,6 +553,9 @@ pub struct PageProperties {
 
 /// ```xml
 /// <footNotePr>
+///   <autoNumFormat>...</autoNumFormat>
+///   <noteLine>...</noteLine>
+///   <noteSpacing>...</noteSpacing>
 ///   <numbering>...</numbering>
 ///   <placement>...</placement>
 /// </footNotePr>
@@ -556,13 +563,159 @@ pub struct PageProperties {
 ///
 /// 각주 모양
 #[derive(Debug)]
-pub struct FootnoteProperties {
+pub struct FootNoteShapeType {
+    /// ```xml
+    /// <autoNumFormat>...</autoNumFormat>
+    /// ```
+    pub auto_number_format: AutoNumberFormat,
+    /// ```xml
+    /// <noteLine>...</noteLine>
+    /// ```
+    pub note_line: NoteLine,
+    /// ```xml
+    /// <noteSpacing>...</noteSpacing>
+    /// ```
+    pub note_spacing: NoteSpacing,
     /// ```xml
     /// <numbering>...</numbering>
     /// ```
-    pub numbering: (),
+    ///
+    /// 각주 번호 매기기
+    pub numbering: Option<Numbering>,
     /// ```xml
     /// <placement>...</placement>
     /// ```
-    pub placement: (),
+    ///
+    /// 각주 위치
+    pub placement: Option<()>,
+}
+
+/// ```xml
+/// <autoNumFormat
+///   type="{hc:NumberType2; default="DIGIT"}"
+///   userChar="{xs:string}"
+///   prefixChar="{xs:string}"
+///   suffixChar="{xs:string}"
+///   supscript="{xs:boolean; default="false"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct AutoNumberFormat {
+    /// ```xml
+    /// type="{hc:NumberType2; default="DIGIT"}"
+    /// ```
+    ///
+    /// 번호 모양 종류
+    pub number_type: NumberType2,
+    /// ```xml
+    /// userChar="{xs:string}"
+    /// ```
+    ///
+    /// 사용자 기호
+    pub user_char: Option<xs::String>,
+    /// ```xml
+    /// prefixChar="{xs:string}"
+    /// ```
+    ///
+    /// 앞 장식 문자
+    pub prefix_char: Option<xs::String>,
+    /// ```xml
+    /// suffixChar="{xs:string}"
+    /// ```
+    ///
+    /// 뒤 장식 문자
+    pub suffix_char: Option<xs::String>,
+    /// ```xml
+    /// supscript="{xs:boolean; default="false"}"
+    /// ```
+    ///
+    /// 각주/미주 내용 중 번호 코드의 모양을 위첨자 형식으로 할지 여부
+    pub superscript: xs::Boolean,
+}
+
+/// ```xml
+/// <noteLine
+///   length="{xs:integer; default="0"}"
+///   type="{hc:LineType2; default="SOLID"}"
+///   width="{hc:LineWidth; default="0.12 mm"}"
+///   color="{hc:RGBColorType; default="#000000"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct NoteLine {
+    /// ```xml
+    /// length="{$NoteLineLength; default="0"}"
+    /// ```
+    ///
+    /// 구분선 길이, 0(구분선 없음), -1 (5 cm), -2 (2 cm), -3 (단 크기의 1/3), -4 (단 크기), 그 외 (HWPUNIT 단위의 사용자 지정 길이)
+    pub length: NoteLineLength,
+    /// ```xml
+    /// type="{hc:LineType2; default="SOLID"}"
+    /// ```
+    ///
+    /// 구분선 종류.
+    pub line_type: LineType2,
+    /// ```xml
+    /// width="{hc:LineWidth; default="0.12 mm"}"
+    /// ```
+    ///
+    /// 구분선 굵기. 단위는 mm.
+    pub width: LineWidth,
+    /// ```xml
+    /// color="{hc:RGBColorType; default="#000000"}"
+    /// ```
+    ///
+    /// 구분선 색.
+    pub color: RgbColorType,
+}
+
+/// ```xml
+/// <noteSpacing
+///   betweenNotes="{xs:nonNegativeInteger; default="850"}"
+///   belowLine="{xs:nonNegativeInteger; default="567"}"
+///   aboveLine="{xs:nonNegativeInteger; default="567"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct NoteSpacing {
+    /// ```xml
+    /// betweenNotes="{xs:nonNegativeInteger; default="850"}"
+    /// ```
+    ///
+    /// 주석 사이 여백
+    pub between_notes: xs::NonNegativeInteger32,
+    /// ```xml
+    /// belowLine="{xs:nonNegativeInteger; default="567"}"
+    /// ```
+    ///
+    /// 구분선 아래 여백.
+    pub below_line: xs::NonNegativeInteger32,
+    /// ```xml
+    /// aboveLine="{xs:nonNegativeInteger; default="567"}"
+    /// ```
+    ///
+    /// 구분선 위 여백.
+    pub above_line: xs::NonNegativeInteger32,
+}
+
+/// ```xml
+/// <numbering
+///   type="{$NumberingKind; default="CONTINUOUS"}"
+///   newNum="{xs:positiveInteger; default="1"}"
+/// />
+/// ```
+#[derive(Debug)]
+pub struct Numbering {
+    /// ```xml
+    /// type="{$NumberingKind; default="CONTINUOUS"}"
+    /// ```
+    ///
+    /// 각주 번호 매기기 방식
+    pub r#type: NumberingKind,
+    /// ```xml
+    /// newNum="{xs:positiveInteger; default="1"}"
+    /// ```
+    ///
+    /// 새 번호
+    pub new_number: xs::PositiveInteger32,
 }

@@ -636,7 +636,7 @@ impl Enumeration for HWPUnit {
 }
 
 impl std::str::FromStr for HWPUnit {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -1128,7 +1128,7 @@ impl Enumeration for LineSpacingKind {
 }
 
 impl std::str::FromStr for LineSpacingKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -1519,7 +1519,7 @@ impl Enumeration for LineWrapKind {
 }
 
 impl std::str::FromStr for LineWrapKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -1629,7 +1629,7 @@ impl Enumeration for MemoKind {
 }
 
 impl std::str::FromStr for MemoKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2109,17 +2109,17 @@ impl std::str::FromStr for ParagraphVerticalAlignKind {
 ///
 /// "#RRGGBB" 형식의 문자열 또는 "none"
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RgbColor(pub Option<(u8, u8, u8)>);
+pub struct RgbColorType(pub Option<(u8, u8, u8)>);
 
-impl Hancom for RgbColor {
+impl Hancom for RgbColorType {
     //
 }
 
-impl Core for RgbColor {
+impl Core for RgbColorType {
     const NAME: &'static str = "RGBColorType";
 }
 
-impl std::str::FromStr for RgbColor {
+impl std::str::FromStr for RgbColorType {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -2272,7 +2272,7 @@ impl Enumeration for StyleKind {
 }
 
 impl std::str::FromStr for StyleKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2440,7 +2440,7 @@ impl Enumeration for TargetProgram {
 }
 
 impl std::str::FromStr for TargetProgram {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2484,7 +2484,7 @@ impl Enumeration for TextDirectionKind {
 }
 
 impl std::str::FromStr for TextDirectionKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2523,7 +2523,7 @@ impl Enumeration for TextOffsetKind {
 }
 
 impl std::str::FromStr for TextOffsetKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2701,7 +2701,7 @@ impl Enumeration for VisibilityValue {
 }
 
 impl std::str::FromStr for VisibilityValue {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2740,7 +2740,7 @@ impl Enumeration for LandscapeKind {
 }
 
 impl std::str::FromStr for LandscapeKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2781,7 +2781,7 @@ impl Enumeration for GutterKind {
 }
 
 impl std::str::FromStr for GutterKind {
-    type Err = crate::error::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -2793,17 +2793,111 @@ impl std::str::FromStr for GutterKind {
     }
 }
 
+/// 구분선 길이, 0(구분선 없음), -1 (5 cm), -2 (2 cm), -3 (단 크기의 1/3), -4 (단 크기), 그 외 (HWPUNIT 단위의 사용자 지정 길이)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NoteLineLength {
+    /// "0"
+    ///
+    /// 구분선 없음
+    None,
+    /// "-1"
+    ///
+    /// 5 cm
+    _5cm,
+    /// "-2"
+    ///
+    /// 2 cm
+    _2cm,
+    /// "-3"
+    ///
+    /// 단 크기의 1/3
+    OneThird,
+    /// "-4"
+    ///
+    /// 단 크기
+    Full,
+    ///
+    Custom(u32),
+}
+
+impl Hancom for NoteLineLength {
+    //
+}
+
+impl Arbitrary for NoteLineLength {
+    const NAME: &'static str = "$NoteLineLength";
+}
+
+impl std::str::FromStr for NoteLineLength {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "0" => Ok(Self::None),
+            "-1" => Ok(Self::_5cm),
+            "-2" => Ok(Self::_2cm),
+            "-3" => Ok(Self::OneThird),
+            "-4" => Ok(Self::Full),
+            _ => Ok(Self::Custom(s.parse()?)),
+        }
+    }
+}
+
+/// 번호 매기기 형식
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NumberingKind {
+    /// "CONTINUOUS"
+    ///
+    /// 앞 구역에 이어서
+    Continuous,
+    /// "ON_SECTION"
+    ///
+    /// 현재 구역부터 새로 시작
+    OnSection,
+    /// "ON_PAGE"
+    ///
+    /// 쪽마다 새로 시작. 각주 전용.
+    OnPage,
+}
+
+impl Hancom for NumberingKind {
+    //
+}
+
+impl Arbitrary for NumberingKind {
+    const NAME: &'static str = "$NumberingKind";
+}
+
+impl Enumeration for NumberingKind {
+    fn enumeration(&self) -> &'static str {
+        match self {
+            Self::Continuous => "CONTINUOUS",
+            Self::OnSection => "ON_SECTION",
+            Self::OnPage => "ON_PAGE",
+        }
+    }
+}
+
+impl std::str::FromStr for NumberingKind {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "CONTINUOUS" => Ok(Self::Continuous),
+            "ON_SECTION" => Ok(Self::OnSection),
+            "ON_PAGE" => Ok(Self::OnPage),
+            _ => invalid_variant!(Self::NAME, s),
+        }
+    }
+}
+
 #[macro_export]
 macro_rules! boolean {
     ($value:expr, $attribute:expr) => {
         match $value {
             "true" | "1" => true.into(),
             "false" | "0" => false.into(),
-            _ => unknown!(
-                "Invalid value for <{}
-            >",
-                $attribute
-            ),
+            _ => unknown!("Invalid value for <{}>", $attribute),
         }
     };
 }

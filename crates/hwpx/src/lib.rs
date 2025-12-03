@@ -11,6 +11,7 @@ pub mod any_element;
 pub mod core;
 
 pub mod namespace;
+pub mod xs;
 
 pub trait Hancom {
     //
