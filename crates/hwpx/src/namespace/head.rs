@@ -3,17 +3,7 @@
 
 use crate::{
     any_element::{AnyElement, ElementName},
-    arbitrary::{
-        BreakLatinWordKind, BreakNonLatinWordKind, CenterLine, FamilyType, FontKind, GradationKind,
-        HatchStyle, ImageBrushMode, ImageEffect, Language, LineSpacingKind, LineWrapKind,
-        MemoKind, ParagraphHeadingKind, ParagraphHorizontalAlignKind,
-        ParagraphVerticalAlignKind, ShadowKind, SlashKind, StyleKind, SymbolMark,
-        TabItemKind, TargetProgram, TextOffsetKind, UnderlineKind,
-    },
-    core::{
-        HWPUnit, HWPValue, LayoutCompatibilityKind, LineType1, LineType2, LineWidth,
-        NumberType1, RgbColorType, TrackChangeKind,
-    },
+    arbitrary, core,
     error::Error,
     xs,
 };
@@ -358,7 +348,7 @@ pub struct FontFaceType {
     /// ```
     ///
     /// 언어(한글, 영어, 한자, 일어, 기타, 심볼, 사용자)
-    pub language: Language,
+    pub language: arbitrary::Language,
     /// ```xml
     /// <font ...>...</font>
     /// ```
@@ -374,7 +364,7 @@ impl TryFrom<AnyElement> for FontFaceType {
         element.expect(ElementName::HANCOM__HEAD__FONT_FACE)?;
 
         let language = attributes!(element, "fontFace";
-            "lang" as language => one Language,
+            "lang" as language => one arbitrary::Language,
         );
 
         let fonts = children! {
@@ -421,7 +411,7 @@ pub struct Font {
     /// ```
     ///
     /// 글꼴의 유형(rep: 대표글꼴, ttf: 트루타입글꼴, hft: 한/글 전용 글꼴)
-    pub r#type: FontKind,
+    pub r#type: arbitrary::FontKind,
     /// ```xml
     /// isEmbedded="{xs:boolean; default="false"}"
     /// ```
@@ -449,7 +439,7 @@ impl TryFrom<AnyElement> for Font {
         let (id, face, r#type, embedded, binary_item_id_ref) = attributes!(element, "font";
             "id" as id => one xs::NonNegativeInteger32,
             "face" as face => one (string),
-            "type" as r#type => one FontKind,
+            "type" as r#type => one arbitrary::FontKind,
             "embedded" as embedded => default false; boolean,
             "binaryItemIDRef" as binary_item_id_ref => opt (string),
         );
@@ -494,7 +484,7 @@ pub struct SubsetFont {
     /// ```
     ///
     /// 글꼴의 유형
-    pub r#type: FontKind,
+    pub r#type: arbitrary::FontKind,
     /// ```xml
     /// isEmbedded="{xs:boolean; default="false"}"
     /// ```
@@ -513,7 +503,7 @@ impl TryFrom<AnyElement> for SubsetFont {
 
         let (face, r#type, embedded, binary_item_id_ref) = attributes!(element, "substFont";
             "face" as face => one (string),
-            "type" as r#type => one FontKind,
+            "type" as r#type => one arbitrary::FontKind,
             "embedded" as embedded => default false; boolean,
             "binaryItemIDRef" as binary_item_id_ref => opt (string),
         );
@@ -550,7 +540,7 @@ pub struct TypeInfo {
     /// ```
     ///
     /// 글꼴 계열
-    pub family_type: FamilyType,
+    pub family_type: arbitrary::FamilyType,
     /// ```xml
     /// serifStyle="{xs:string}"
     /// ```
@@ -625,7 +615,7 @@ impl TryFrom<AnyElement> for TypeInfo {
             midline,
             x_height,
         ) = attributes!(element, "typeInfo";
-            "familyType" as family_type => one FamilyType,
+            "familyType" as family_type => one arbitrary::FamilyType,
             "serifStyle" as serif_style => opt (string),
             "weight" as weight => one xs::Integer32,
             "proportion" as proportion => one xs::Integer32,
@@ -698,7 +688,7 @@ pub struct BorderFillType {
     /// ```
     ///
     /// 중심선 종류
-    pub center_line: CenterLine,
+    pub center_line: arbitrary::CenterLine,
     /// ```xml
     /// breakCellSeparateLine="{xs:boolean; default="false"}"
     /// ```
@@ -756,7 +746,7 @@ impl TryFrom<AnyElement> for BorderFillType {
             "id" as id => one xs::NonNegativeInteger32,
             "effect3D" as effect_3d => default false; boolean,
             "shadow" as shadow => default false; boolean,
-            "centerLine" as center_line => one CenterLine,
+            "centerLine" as center_line => one arbitrary::CenterLine,
             "breakCellSeparateLine" as break_cell_separate_line => default false; boolean,
         );
 
@@ -810,7 +800,7 @@ pub struct Slash {
     /// ```xml
     /// type="{$SlashKind}"
     /// ```
-    pub r#type: SlashKind,
+    pub r#type: arbitrary::SlashKind,
     /// ```xml
     /// Crooked="{xs:boolean}"
     /// ```
@@ -826,7 +816,7 @@ impl TryFrom<AnyElement> for Slash {
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         let (r#type, crooked, counter) = attributes!(element, "slash";
-            "type" as r#type => one SlashKind,
+            "type" as r#type => one arbitrary::SlashKind,
             "Crooked" as crooked => one (boolean),
             "isCounter" as counter => one (boolean),
         );
@@ -854,19 +844,19 @@ pub struct BorderType {
     /// ```
     ///
     /// 테두리선 종류
-    pub r#type: LineType2,
+    pub r#type: core::LineType2,
     /// ```xml
     /// width="{hc:LineWidth}"
     /// ```
     ///
     /// 테두리선 굵기
-    pub width: LineWidth,
+    pub width: core::LineWidth,
     /// ```xml
     /// color="{hc:RGBColorType}"
     /// ```
     ///
     /// 테두리선 색상
-    pub color: RgbColorType,
+    pub color: core::RgbColorType,
 }
 
 impl TryFrom<AnyElement> for BorderType {
@@ -874,9 +864,9 @@ impl TryFrom<AnyElement> for BorderType {
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         let (r#type, width, color) = attributes!(element, "border";
-            "type" as r#type => one LineType2,
-            "width" as width => one LineWidth,
-            "color" as color => one RgbColorType,
+            "type" as r#type => one core::LineType2,
+            "width" as width => one core::LineWidth,
+            "color" as color => one core::RgbColorType,
         );
 
         Ok(Self {
@@ -936,19 +926,19 @@ pub struct WinBrush {
     /// ```
     ///
     /// 면 색
-    pub face_color: RgbColorType,
+    pub face_color: core::RgbColorType,
     /// ```xml
     /// hatchColor="{hc:RGBColorType; default="#000000"}"
     /// ```
     ///
     /// 무늬 색
-    pub hatch_color: RgbColorType,
+    pub hatch_color: core::RgbColorType,
     /// ```xml
     /// hatchStyle="{xs:string}"
     /// ```
     ///
     /// 무늬 종류
-    pub hatch_style: Option<HatchStyle>,
+    pub hatch_style: Option<arbitrary::HatchStyle>,
     /// ```xml
     /// alpha="{xs:float}"
     /// ```
@@ -962,9 +952,9 @@ impl TryFrom<AnyElement> for WinBrush {
         element.expect(ElementName::HANCOM__CORE__WIN_BRUSH)?;
 
         let (face_color, hatch_color, hatch_style, alpha) = attributes!(element, "winBrush";
-            "faceColor" as face_color => one RgbColorType,
-            "hatchColor" as hatch_color => one RgbColorType,
-            "hatchStyle" as hatch_style => opt HatchStyle,
+            "faceColor" as face_color => one core::RgbColorType,
+            "hatchColor" as hatch_color => one core::RgbColorType,
+            "hatchStyle" as hatch_style => opt arbitrary::HatchStyle,
             "alpha" as alpha => one xs::Float32,
         );
 
@@ -1000,7 +990,7 @@ pub struct Gradation {
     /// ```
     ///
     /// 그러데이션 유형
-    pub r#type: GradationKind,
+    pub r#type: arbitrary::GradationKind,
     /// ```xml
     /// angle="{xs:integer; default="90"}"
     /// ```
@@ -1056,7 +1046,7 @@ impl TryFrom<AnyElement> for Gradation {
         element.expect(ElementName::HANCOM__CORE__GRADATION)?;
 
         let (r#type, angle, center_x, center_y, step, color_number, step_center, alpha) = attributes!(element, "gradation";
-            "type" as r#type => one GradationKind,
+            "type" as r#type => one arbitrary::GradationKind,
             "angle" as angle => default 90,
             "centerX" as center_x => one xs::Integer32,
             "centerY" as center_y => one xs::Integer32,
@@ -1096,7 +1086,7 @@ pub struct GradationColor {
     /// ```
     ///
     /// 색상 값
-    pub value: RgbColorType,
+    pub value: core::RgbColorType,
 }
 
 impl TryFrom<AnyElement> for GradationColor {
@@ -1106,7 +1096,7 @@ impl TryFrom<AnyElement> for GradationColor {
         element.expect(ElementName::HANCOM__HEAD__COLOR)?;
 
         let value = attributes!(element, "color";
-            "value" as value => one RgbColorType,
+            "value" as value => one core::RgbColorType,
         );
 
         Ok(Self { value })
@@ -1129,7 +1119,7 @@ pub struct ImageBrush {
     /// ```
     ///
     /// 채우기 유형
-    pub mode: ImageBrushMode,
+    pub mode: arbitrary::ImageBrushMode,
     /// ```xml
     /// <img ...>...</img>
     /// ```
@@ -1143,7 +1133,7 @@ impl TryFrom<AnyElement> for ImageBrush {
         element.expect(ElementName::HANCOM__CORE__IMAGE_BRUSH)?;
 
         let mode = attributes!(element, "imageBrush";
-            "mode" as mode => one ImageBrushMode,
+            "mode" as mode => one arbitrary::ImageBrushMode,
         );
 
         let image = children!(element;
@@ -1190,7 +1180,7 @@ pub struct ImageType {
     /// ```
     ///
     /// 효과
-    pub effect: ImageEffect,
+    pub effect: arbitrary::ImageEffect,
     /// ```xml
     /// alpha="{xs:float}"
     /// ```
@@ -1207,7 +1197,7 @@ impl TryFrom<AnyElement> for ImageType {
             "binaryItemIDRef" as binary_id_ref => one (string),
             "bright" as bright => default 0,
             "contrast" as contrast => default 0,
-            "effect" as effect => default ImageEffect::RealPicture,
+            "effect" as effect => default arbitrary::ImageEffect::RealPicture,
             "alpha" as alpha => one xs::Float32,
         );
 
@@ -1270,13 +1260,13 @@ pub struct CharShapeType {
     /// ```
     ///
     /// 글자색
-    pub text_color: RgbColorType,
+    pub text_color: core::RgbColorType,
     /// ```xml
     /// shadeColor="{hc:RGBColorType; default="#FFFFFF"}"
     /// ```
     ///
     /// 음영색
-    pub shade_color: RgbColorType,
+    pub shade_color: core::RgbColorType,
     /// ```xml
     /// useFontSpace="{xs:boolean; default="false"}"
     /// ```
@@ -1294,7 +1284,7 @@ pub struct CharShapeType {
     /// ```
     ///
     /// 강조점 종류
-    pub symbol_mark: SymbolMark,
+    pub symbol_mark: arbitrary::SymbolMark,
     /// ```xml
     /// borderFillIDRef="{xs:nonNegativeInteger}"
     /// ```
@@ -1422,11 +1412,11 @@ impl TryFrom<AnyElement> for CharShapeType {
 
         let mut id = None;
         let mut height = 1000;
-        let mut text_color = RgbColorType(Some((0, 0, 0)));
-        let mut shade_color = RgbColorType(Some((255, 255, 255)));
+        let mut text_color = core::RgbColorType(Some((0, 0, 0)));
+        let mut shade_color = core::RgbColorType(Some((255, 255, 255)));
         let mut use_font_space = false;
         let mut use_kerning = false;
-        let mut symbol_mark = SymbolMark::None;
+        let mut symbol_mark = arbitrary::SymbolMark::None;
         let mut border_fill_id_ref = None;
         let mut font_ref = None;
         let mut ratio = None;
@@ -1902,15 +1892,15 @@ pub struct Underline {
     /// ```xml
     /// type="{$UnderlineKind}"
     /// ```
-    pub r#type: UnderlineKind,
+    pub r#type: arbitrary::UnderlineKind,
     /// ```xml
     /// shape="{hc:LineType2}"
     /// ```
-    pub shape: LineType2,
+    pub shape: core::LineType2,
     /// ```xml
     /// color="{hc:RGBColorType}"
     /// ```
-    pub color: RgbColorType,
+    pub color: core::RgbColorType,
 }
 
 impl TryFrom<AnyElement> for Underline {
@@ -1920,9 +1910,9 @@ impl TryFrom<AnyElement> for Underline {
         element.expect(ElementName::HANCOM__HEAD__UNDERLINE)?;
 
         let (r#type, shape, color) = attributes!(element, "underline";
-            "type" as r#type => one UnderlineKind,
-            "shape" as shape => one LineType2,
-            "color" as color => one RgbColorType,
+            "type" as r#type => one arbitrary::UnderlineKind,
+            "shape" as shape => one core::LineType2,
+            "color" as color => one core::RgbColorType,
         );
 
         Ok(Self {
@@ -1945,11 +1935,11 @@ pub struct Strikeout {
     /// ```xml
     /// shape="{hc:LineType2}"
     /// ```
-    pub shape: LineType2,
+    pub shape: core::LineType2,
     /// ```xml
     /// color="{hc:RGBColorType}"
     /// ```
-    pub color: RgbColorType,
+    pub color: core::RgbColorType,
 }
 
 impl TryFrom<AnyElement> for Strikeout {
@@ -1959,8 +1949,8 @@ impl TryFrom<AnyElement> for Strikeout {
         element.expect(ElementName::HANCOM__HEAD__STRIKEOUT)?;
 
         let (shape, color) = attributes!(element, "strikeout";
-            "shape" as shape => one LineType2,
-            "color" as color => one RgbColorType,
+            "shape" as shape => one core::LineType2,
+            "color" as color => one core::RgbColorType,
         );
 
         Ok(Self { shape, color })
@@ -1978,7 +1968,7 @@ pub struct Outline {
     /// ```xml
     /// type="{hc:LineType1}"
     /// ```
-    pub r#type: LineType1,
+    pub r#type: core::LineType1,
 }
 
 impl TryFrom<AnyElement> for Outline {
@@ -1988,7 +1978,7 @@ impl TryFrom<AnyElement> for Outline {
         element.expect(ElementName::HANCOM__HEAD__OUTLINE)?;
 
         let r#type = attributes!(element, "outline";
-            "type" as r#type => one LineType1,
+            "type" as r#type => one core::LineType1,
         );
 
         Ok(Self { r#type })
@@ -2011,13 +2001,13 @@ pub struct Shadow {
     /// ```
     ///
     /// 그림자 종류
-    pub r#type: ShadowKind,
+    pub r#type: arbitrary::ShadowKind,
     /// ```xml
     /// color="{hc:RGBColorType}"
     /// ```
     ///
     /// 그림자 색
-    pub color: RgbColorType,
+    pub color: core::RgbColorType,
     /// ```xml
     /// offsetX="{xs:integer; >= -100; <= 100}"
     /// ```
@@ -2039,8 +2029,8 @@ impl TryFrom<AnyElement> for Shadow {
         element.expect(ElementName::HANCOM__HEAD__SHADOW)?;
 
         let (r#type, color, offset_x, offset_y) = attributes!(element, "shadow";
-            "type" as r#type => one ShadowKind,
-            "color" as color => one RgbColorType,
+            "type" as r#type => one arbitrary::ShadowKind,
+            "color" as color => one core::RgbColorType,
             "offsetX" as offset_x => one xs::Integer8,
             "offsetY" as offset_y => one xs::Integer8,
         );
@@ -2132,13 +2122,13 @@ pub struct TabItem {
     /// ```
     ///
     /// 탭의 종류
-    pub r#type: TabItemKind,
+    pub r#type: arbitrary::TabItemKind,
     /// ```xml
     /// leader="{hc:LineType2}"
     /// ```
     ///
     /// 채움 종류
-    pub leader: LineType2,
+    pub leader: core::LineType2,
 }
 
 impl TryFrom<AnyElement> for TabItem {
@@ -2149,8 +2139,8 @@ impl TryFrom<AnyElement> for TabItem {
 
         let (position, r#type, leader) = attributes!(element, "tabItem";
             "pos" as position => one xs::Integer32,
-            "type" as r#type => one TabItemKind,
-            "leader" as leader => one LineType2,
+            "type" as r#type => one arbitrary::TabItemKind,
+            "leader" as leader => one core::LineType2,
         );
 
         Ok(Self {
@@ -2431,13 +2421,13 @@ pub struct ParagraphAlignType {
     /// ```
     ///
     /// 수평 정렬
-    pub horizontal: ParagraphHorizontalAlignKind,
+    pub horizontal: arbitrary::ParagraphHorizontalAlignKind,
     /// ```xml
     /// vertical="{$ParagraphVerticalAlignKind}"
     /// ```
     ///
     /// 수직 정렬
-    pub vertical: ParagraphVerticalAlignKind,
+    pub vertical: arbitrary::ParagraphVerticalAlignKind,
 }
 
 impl TryFrom<AnyElement> for ParagraphAlignType {
@@ -2447,8 +2437,8 @@ impl TryFrom<AnyElement> for ParagraphAlignType {
         element.expect(ElementName::HANCOM__HEAD__ALIGN)?;
 
         let (horizontal, vertical) = attributes!(element, "align";
-            "horizontal" as horizontal => one ParagraphHorizontalAlignKind,
-            "vertical" as vertical => one ParagraphVerticalAlignKind,
+            "horizontal" as horizontal => one arbitrary::ParagraphHorizontalAlignKind,
+            "vertical" as vertical => one arbitrary::ParagraphVerticalAlignKind,
         );
 
         Ok(Self {
@@ -2474,7 +2464,7 @@ pub struct ParagraphHeading {
     /// ```
     ///
     /// 문단 머리 유형
-    pub r#type: ParagraphHeadingKind,
+    pub r#type: arbitrary::ParagraphHeadingKind,
     /// ```xml
     /// idRef="{xs:nonNegativeInteger}"
     /// ```
@@ -2496,7 +2486,7 @@ impl TryFrom<AnyElement> for ParagraphHeading {
         element.expect(ElementName::HANCOM__HEAD__HEADING)?;
 
         let (r#type, id_ref, level) = attributes!(element, "heading";
-            "type" as r#type => one ParagraphHeadingKind,
+            "type" as r#type => one arbitrary::ParagraphHeadingKind,
             "idRef" as id_ref => opt xs::NonNegativeInteger32,
             "level" as level => one xs::NonNegativeInteger32,
         );
@@ -2529,13 +2519,13 @@ pub struct ParagraphBreakSetting {
     /// ```
     ///
     /// 라틴 문자의 줄나눔 단위
-    pub break_latin_word: BreakLatinWordKind,
+    pub break_latin_word: arbitrary::BreakLatinWordKind,
     /// ```xml
     /// breakNonLatinWord="{$BreakNonLatinWordKind}"
     /// ```
     ///
     /// 라틴 문자 이외의 문자의 줄나눔 단위
-    pub break_non_latin_word: BreakNonLatinWordKind,
+    pub break_non_latin_word: arbitrary::BreakNonLatinWordKind,
     /// ```xml
     /// widowOrphan="{xs:boolean}"
     /// ```
@@ -2565,7 +2555,7 @@ pub struct ParagraphBreakSetting {
     /// ```
     ///
     /// 한 줄로 입력 사용 시의 형식
-    pub line_wrap: LineWrapKind,
+    pub line_wrap: arbitrary::LineWrapKind,
 }
 
 impl TryFrom<AnyElement> for ParagraphBreakSetting {
@@ -2583,13 +2573,13 @@ impl TryFrom<AnyElement> for ParagraphBreakSetting {
             page_break_before,
             line_wrap,
         ) = attributes!(element, "breakSetting";
-            "breakLatinWord" as break_latin_word => one BreakLatinWordKind,
-            "breakNonLatinWord" as break_non_latin_word => one BreakNonLatinWordKind,
+            "breakLatinWord" as break_latin_word => one arbitrary::BreakLatinWordKind,
+            "breakNonLatinWord" as break_non_latin_word => one arbitrary::BreakNonLatinWordKind,
             "widowOrphan" as widow_orphan => one (boolean),
             "keepWithNext" as keep_with_next => one (boolean),
             "keepLines" as keep_lines => one (boolean),
             "pageBreakBefore" as page_break_before => one (boolean),
-            "lineWrap" as line_wrap => one LineWrapKind,
+            "lineWrap" as line_wrap => one arbitrary::LineWrapKind,
         );
 
         Ok(Self {
@@ -2627,7 +2617,7 @@ pub struct ParagraphMargin {
     /// n이 0이면 : 보통.
     ///
     /// n이 0보다 작으면 내어쓰기 n.
-    pub indent: HWPValue,
+    pub indent: core::HWPValue,
     /// ```xml
     /// <left value="{xs:integer}" unit="{hc:HWPUNIT}" />
     /// ```
@@ -2635,25 +2625,25 @@ pub struct ParagraphMargin {
     /// 왼쪽 여백
     ///
     /// 단위를 표기하지 않으면 hwpunit이고 표기하면 표기한 단위로.
-    pub left: HWPValue,
+    pub left: core::HWPValue,
     /// ```xml
     /// <right value="{xs:integer}" unit="{hc:HWPUNIT}" />
     /// ```
     ///
     /// 오른쪽 여백
-    pub right: HWPValue,
+    pub right: core::HWPValue,
     /// ```xml
     /// <prev value="{xs:integer}" unit="{hc:HWPUNIT}" />
     /// ```
     ///
     /// 문단 간격 위
-    pub previous: HWPValue,
+    pub previous: core::HWPValue,
     /// ```xml
     /// <next value="{xs:integer}" unit="{hc:HWPUNIT}" />
     /// ```
     ///
     /// 문단 간격 아래
-    pub next: HWPValue,
+    pub next: core::HWPValue,
 }
 
 impl TryFrom<AnyElement> for ParagraphMargin {
@@ -2663,11 +2653,11 @@ impl TryFrom<AnyElement> for ParagraphMargin {
         element.expect(ElementName::HANCOM__HEAD__MARGIN)?;
 
         let (indent, left, right, previous, next) = children!(element;
-            one HANCOM__CORE__INDENT, HWPValue;
-            one HANCOM__CORE__LEFT, HWPValue;
-            one HANCOM__CORE__RIGHT, HWPValue;
-            one HANCOM__CORE__PREVIOUS, HWPValue;
-            one HANCOM__CORE__NEXT, HWPValue;
+            one HANCOM__CORE__INDENT, core::HWPValue;
+            one HANCOM__CORE__LEFT, core::HWPValue;
+            one HANCOM__CORE__RIGHT, core::HWPValue;
+            one HANCOM__CORE__PREVIOUS, core::HWPValue;
+            one HANCOM__CORE__NEXT, core::HWPValue;
         );
 
         Ok(Self {
@@ -2696,7 +2686,7 @@ pub struct ParagraphLineSpacing {
     /// ```
     ///
     /// 줄 간격 종류
-    pub r#type: LineSpacingKind,
+    pub r#type: arbitrary::LineSpacingKind,
     /// ```xml
     /// value="{xs:integer}"
     /// ```
@@ -2710,7 +2700,7 @@ pub struct ParagraphLineSpacing {
     /// ```
     ///
     /// 줄 간격 값의 단위
-    pub unit: HWPUnit,
+    pub unit: core::HWPUnit,
 }
 
 impl TryFrom<AnyElement> for ParagraphLineSpacing {
@@ -2720,9 +2710,9 @@ impl TryFrom<AnyElement> for ParagraphLineSpacing {
         element.expect(ElementName::HANCOM__HEAD__LINE_SPACING)?;
 
         let (r#type, value, unit) = attributes!(element, "lineSpacing";
-            "type" as r#type => one LineSpacingKind,
+            "type" as r#type => one arbitrary::LineSpacingKind,
             "value" as value => one xs::Integer16,
-            "unit" as unit => one HWPUnit,
+            "unit" as unit => one core::HWPUnit,
         );
 
         Ok(Self {
@@ -2916,7 +2906,7 @@ pub struct ParagraphHeadType {
     /// ```
     ///
     /// 정렬 방식
-    pub align: ParagraphHorizontalAlignKind,
+    pub align: arbitrary::ParagraphHorizontalAlignKind,
     /// ```xml
     /// useInstWidth="{xs:boolean; default="true"}"
     /// ```
@@ -2940,7 +2930,7 @@ pub struct ParagraphHeadType {
     /// ```
     ///
     /// 텍스트 오프셋 유형
-    pub text_offset_type: TextOffsetKind,
+    pub text_offset_type: arbitrary::TextOffsetKind,
     /// ```xml
     /// textOffset="{xs:integer; default="50"}"
     /// ```
@@ -2952,7 +2942,7 @@ pub struct ParagraphHeadType {
     /// ```
     ///
     /// 번호 형식
-    pub number_format: NumberType1,
+    pub number_format: core::NumberType1,
     /// ```xml
     /// charPrIDRef="{xs:nonNegativeInteger}"
     /// ```
@@ -2992,13 +2982,13 @@ impl TryFrom<AnyElement> for ParagraphHeadType {
         ) = attributes!(element, "paraHead";
             "start" as start => default 1u32,
             "level" as level => one xs::PositiveInteger32,
-            "align" as align => default ParagraphHorizontalAlignKind::Left,
+            "align" as align => default arbitrary::ParagraphHorizontalAlignKind::Left,
             "useInsetWidth" as use_inset_width => default true; boolean,
             "autoIndent" as auto_indent => default true; boolean,
             "widthAdjust" as width_adjust => default 0,
-            "textOffsetType" as text_offset_type => default TextOffsetKind::Percent,
+            "textOffsetType" as text_offset_type => default arbitrary::TextOffsetKind::Percent,
             "textOffset" as text_offset => default 50,
-            "numFormat" as number_format => default NumberType1::Digit,
+            "numFormat" as number_format => default core::NumberType1::Digit,
             "charPrIDRef" as char_pr_id_ref => opt xs::NonNegativeInteger32,
             "checkable" as checkable => opt (boolean),
         );
@@ -3137,7 +3127,7 @@ pub struct StyleType {
     /// ```
     ///
     /// 스타일 종류
-    pub r#type: StyleKind,
+    pub r#type: arbitrary::StyleKind,
     /// ```xml
     /// name="{xs:string}"
     /// ```
@@ -3208,7 +3198,7 @@ impl TryFrom<AnyElement> for StyleType {
             lock_form,
         ) = attributes!(element, "style";
             "id" as id => one xs::NonNegativeInteger32,
-            "type" as r#type => one StyleKind,
+            "type" as r#type => one arbitrary::StyleKind,
             "name" as name => one (string),
             "engName" as eng_name => opt (string),
             "paraPrIDRef" as para_pr_id_ref => opt xs::NonNegativeInteger32,
@@ -3265,37 +3255,37 @@ pub struct MemoShapeType {
     /// ```
     ///
     /// 메모 아이콘 테두리 선 굵기
-    pub line_width: LineWidth,
+    pub line_width: core::LineWidth,
     /// ```xml
     /// lineType="{hc:LineType2}"
     /// ```
     ///
     /// 메모 아이콘 테두리 선 종류
-    pub line_type: LineType2,
+    pub line_type: core::LineType2,
     /// ```xml
     /// lineColor="{hc:RGBColorType}"
     /// ```
     ///
     /// 메모 아이콘 테두리 색
-    pub line_color: RgbColorType,
+    pub line_color: core::RgbColorType,
     /// ```xml
     /// fillColor="{hc:RGBColorType}"
     /// ```
     ///
     /// 메모 아이콘 채우기 색
-    pub fill_color: RgbColorType,
+    pub fill_color: core::RgbColorType,
     /// ```xml
     /// activeColor="{hc:RGBColorType}"
     /// ```
     ///
     /// 메모 아이콘 활성화 색
-    pub active_color: RgbColorType,
+    pub active_color: core::RgbColorType,
     /// ```xml
     /// memoType="{$MemoKind}"
     /// ```
     ///
     /// 메모 아이콘 종류
-    pub memo_type: MemoKind,
+    pub memo_type: arbitrary::MemoKind,
 }
 
 impl TryFrom<AnyElement> for MemoShapeType {
@@ -3307,12 +3297,12 @@ impl TryFrom<AnyElement> for MemoShapeType {
         let (id, width, line_width, line_type, line_color, fill_color, active_color, memo_type) = attributes!(element, "memoShape";
             "id" as id => one xs::NonNegativeInteger32,
             "width" as width => one xs::NonNegativeInteger32,
-            "lineWidth" as line_width => one LineWidth,
-            "lineType" as line_type => one LineType2,
-            "lineColor" as line_color => one RgbColorType,
-            "fillColor" as fill_color => one RgbColorType,
-            "activeColor" as active_color => one RgbColorType,
-            "memoType" as memo_type => one MemoKind,
+            "lineWidth" as line_width => one core::LineWidth,
+            "lineType" as line_type => one core::LineType2,
+            "lineColor" as line_color => one core::RgbColorType,
+            "fillColor" as fill_color => one core::RgbColorType,
+            "activeColor" as active_color => one core::RgbColorType,
+            "memoType" as memo_type => one arbitrary::MemoKind,
         );
 
         Ok(Self {
@@ -3348,7 +3338,7 @@ pub struct TrackChange {
     /// ```
     ///
     /// 변경 추적 종류
-    pub r#type: TrackChangeKind,
+    pub r#type: core::TrackChangeKind,
     /// ```xml
     /// date="{xs:dateTime}"
     /// ```
@@ -3394,7 +3384,7 @@ impl TryFrom<AnyElement> for TrackChange {
         element.expect(ElementName::HANCOM__HEAD__TRACK_CHANGE)?;
 
         let (r#type, date, author_id, char_shape_id, para_shape_id, hide, id) = attributes!(element, "trackChange";
-            "type" as r#type => one TrackChangeKind,
+            "type" as r#type => one core::TrackChangeKind,
             "date" as date => one (string),
             "authorID" as author_id => one xs::NonNegativeInteger32,
             "charPrIDRef" as char_shape_id => opt xs::NonNegativeInteger32,
@@ -3438,7 +3428,7 @@ pub struct TrackChangeAuthor {
     /// ```xml
     /// color="{hc:RGBColorType}"
     /// ```
-    pub color: Option<RgbColorType>,
+    pub color: Option<core::RgbColorType>,
     /// ```xml
     /// id="{xs:nonNegativeInteger}"
     /// ```
@@ -3454,7 +3444,7 @@ impl TryFrom<AnyElement> for TrackChangeAuthor {
         let (name, mark, color, id) = attributes!(element, "trackChangeAuthor";
             "name" as name => opt (string),
             "mark" as mark => opt (boolean),
-            "color" as color => opt RgbColorType,
+            "color" as color => opt core::RgbColorType,
             "id" as id => one xs::NonNegativeInteger32,
         );
 
@@ -3516,7 +3506,7 @@ pub struct CompatibleDocument {
     /// ```xml
     /// targetProgram="{$TargetProgram}"
     /// ```
-    pub target_program: TargetProgram,
+    pub target_program: arbitrary::TargetProgram,
     /// ```xml
     /// <layoutCompatibility>...</layoutCompatibility>
     /// ```
@@ -3530,19 +3520,12 @@ impl TryFrom<AnyElement> for CompatibleDocument {
         element.expect(ElementName::HANCOM__HEAD__COMPATIBLE_DOCUMENT)?;
 
         let target_program = attributes!(element, "compatibleDocument";
-            "targetProgram" as target_program => one TargetProgram,
+            "targetProgram" as target_program => one arbitrary::TargetProgram,
         );
 
-        let mut layout_compatibility = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__LAYOUT_COMPATIBILITY => {
-                    layout_compatibility = Some(child.try_into()?)
-                }
-                _ => continue,
-            }
-        }
+        let layout_compatibility = children! {element;
+            opt HANCOM__HEAD__LAYOUT_COMPATIBILITY, LayoutCompatibility;
+        };
 
         let layout_compatibility = layout_compatibility.unwrap_or_default();
 
@@ -3608,7 +3591,7 @@ impl TryFrom<AnyElement> for CompatibleDocument {
 /// ```
 #[derive(Debug, Default)]
 pub struct LayoutCompatibility {
-    pub set: FxHashSet<LayoutCompatibilityKind>,
+    pub set: FxHashSet<core::LayoutCompatibilityKind>,
 }
 
 impl TryFrom<AnyElement> for LayoutCompatibility {
@@ -3620,7 +3603,7 @@ impl TryFrom<AnyElement> for LayoutCompatibility {
         let set = element
             .children
             .into_iter()
-            .filter_map(|child| LayoutCompatibilityKind::from_element_name(child.name))
+            .filter_map(|child| core::LayoutCompatibilityKind::from_element_name(child.name))
             .collect();
 
         Ok(Self { set })

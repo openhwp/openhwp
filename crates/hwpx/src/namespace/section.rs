@@ -1,14 +1,7 @@
 //! namespace: http://www.hancom.co.kr/hwpml/2011/section
 //! filename: Contents/section{[0-9]+}.xml
 
-use crate::{
-    arbitrary::{
-        EndNoteNumberingKind, EndNotePlaceKind, FootNoteNumberingKind, FootNotePlaceKind,
-        GutterKind, LandscapeKind, NoteLineLength, PageStartKind, TextDirectionKind, VisibilityValue,
-    },
-    core::{HWPUnit, LineType2, LineWidth, NumberType2, RgbColorType},
-    xs,
-};
+use crate::{arbitrary, core, xs};
 use nonempty::NonEmpty;
 
 /// ```xml
@@ -233,7 +226,7 @@ pub struct SectionDefinitionType {
     /// ```
     ///
     /// 텍스트 방향
-    pub text_direction: TextDirectionKind,
+    pub text_direction: arbitrary::TextDirectionKind,
     /// ```xml
     /// spaceColumns="{xs:integer; default="0"}"
     /// ```
@@ -251,7 +244,7 @@ pub struct SectionDefinitionType {
     /// ```
     ///
     /// 기본 탭 간격 단위
-    pub tab_stop_unit: HWPUnit,
+    pub tab_stop_unit: core::HWPUnit,
     /// ```xml
     /// outlineShapeIDRef="{xs:nonNegativeInteger}"
     /// ```
@@ -356,7 +349,7 @@ pub struct StartNumber {
     /// ```
     ///
     /// 구역 나눔으로 새 페이지가 생길 때 페이지 번호 적용 옵션
-    pub page_starts_on: PageStartKind,
+    pub page_starts_on: arbitrary::PageStartKind,
     /// ```xml
     /// page="{xs:nonNegativeInteger; default="0"}"
     /// ```
@@ -450,12 +443,12 @@ pub struct Visibility {
     /// ```xml
     /// border="{hp:VisibilityValue}"
     /// ```
-    pub border: VisibilityValue,
+    pub border: arbitrary::VisibilityValue,
     /// ```xml
     /// fill="{hp:VisibilityValue}"
     /// ```
     ///
-    pub fill: VisibilityValue,
+    pub fill: arbitrary::VisibilityValue,
     /// ```xml
     /// hideFirstPageNumber="{xs:boolean; default="false"}"
     /// ```
@@ -531,7 +524,7 @@ pub struct PageProperties {
     /// ```
     ///
     /// 용지 방향
-    pub landscape: LandscapeKind,
+    pub landscape: arbitrary::LandscapeKind,
     /// ```xml
     /// width="{xs:positiveInteger; default="59528"}"
     /// ```
@@ -549,7 +542,7 @@ pub struct PageProperties {
     /// ```
     ///
     /// 제책 방법
-    pub gutter_type: GutterKind,
+    pub gutter_type: arbitrary::GutterKind,
 }
 
 /// ```xml
@@ -568,7 +561,7 @@ pub struct AutoNumberFormat {
     /// ```
     ///
     /// 번호 모양 종류
-    pub number_type: NumberType2,
+    pub number_type: core::NumberType2,
     /// ```xml
     /// userChar="{xs:string}"
     /// ```
@@ -610,25 +603,25 @@ pub struct NoteLine {
     /// ```
     ///
     /// 구분선 길이, 0(구분선 없음), -1 (5 cm), -2 (2 cm), -3 (단 크기의 1/3), -4 (단 크기), 그 외 (HWPUNIT 단위의 사용자 지정 길이)
-    pub length: NoteLineLength,
+    pub length: arbitrary::NoteLineLength,
     /// ```xml
     /// type="{hc:LineType2; default="SOLID"}"
     /// ```
     ///
     /// 구분선 종류.
-    pub line_type: LineType2,
+    pub line_type: core::LineType2,
     /// ```xml
     /// width="{hc:LineWidth; default="0.12 mm"}"
     /// ```
     ///
     /// 구분선 굵기. 단위는 mm.
-    pub width: LineWidth,
+    pub width: core::LineWidth,
     /// ```xml
     /// color="{hc:RGBColorType; default="#000000"}"
     /// ```
     ///
     /// 구분선 색.
-    pub color: RgbColorType,
+    pub color: core::RgbColorType,
 }
 
 /// ```xml
@@ -712,7 +705,7 @@ pub struct FootNoteNumbering {
     /// ```
     ///
     /// 각주 번호 매기기 방식
-    pub r#type: FootNoteNumberingKind,
+    pub r#type: arbitrary::FootNoteNumberingKind,
     /// ```xml
     /// newNum="{xs:positiveInteger; default="1"}"
     /// ```
@@ -734,7 +727,7 @@ pub struct FootNotePlacement {
     /// ```
     ///
     /// 한 페이지 내에서 각주를 다단에 어떻게 위치시킬지를 표시한다
-    pub place: FootNotePlaceKind,
+    pub place: arbitrary::FootNotePlaceKind,
     /// ```xml
     /// beneathText="{xs:boolean; default="false"}"
     /// ```
@@ -795,7 +788,7 @@ pub struct EndNoteNumbering {
     /// ```
     ///
     /// 각주 번호 매기기 방식
-    pub r#type: EndNoteNumberingKind,
+    pub r#type: arbitrary::EndNoteNumberingKind,
     /// ```xml
     /// newNum="{xs:positiveInteger; default="1"}"
     /// ```
@@ -817,7 +810,7 @@ pub struct EndNotePlacement {
     /// ```
     ///
     /// 한 페이지 내에서 미주를 다단에 어떻게 위치시킬지를 표시한다
-    pub place: EndNotePlaceKind,
+    pub place: arbitrary::EndNotePlaceKind,
     /// ```xml
     /// beneathText="{xs:boolean; default="false"}"
     /// ```

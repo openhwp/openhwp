@@ -3,7 +3,7 @@
 
 use crate::{
     any_element::{AnyElement, ElementName},
-    arbitrary::MediaType,
+    arbitrary,
     error::Error,
 };
 
@@ -136,7 +136,7 @@ impl TryFrom<AnyElement> for Spine {
 pub struct Item {
     pub id: String,
     pub href: String,
-    pub media_type: MediaType,
+    pub media_type: arbitrary::MediaType,
     pub embedded: bool,
 }
 
@@ -149,7 +149,7 @@ impl TryFrom<AnyElement> for Item {
         let (id, href, media_type, embedded) = attributes!(element, "item";
             "id" as id => one (string),
             "href" as href => one (string),
-            "media-type" as media_type => one MediaType,
+            "media-type" as media_type => one arbitrary::MediaType,
             "isEmbeded" as embedded => default false; boolean,
         );
 
@@ -166,7 +166,7 @@ impl TryFrom<AnyElement> for Item {
 pub struct Setting {
     pub id: String,
     pub href: String,
-    pub media_type: MediaType,
+    pub media_type: arbitrary::MediaType,
 }
 
 #[derive(Debug)]
@@ -359,7 +359,7 @@ impl Manifest {
         self.items.iter().find(|item| item.href == href)
     }
 
-    pub fn find_all_by_media_type(&self, media_type: MediaType) -> Vec<&Item> {
+    pub fn find_all_by_media_type(&self, media_type: arbitrary::MediaType) -> Vec<&Item> {
         self.items
             .iter()
             .filter(|item| item.media_type == media_type)
