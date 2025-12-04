@@ -1410,14 +1410,26 @@ impl TryFrom<AnyElement> for CharShapeType {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::HANCOM__HEAD__CHARACTER_PROPERTY)?;
 
-        let mut id = None;
-        let mut height = 1000;
-        let mut text_color = core::RgbColorType(Some((0, 0, 0)));
-        let mut shade_color = core::RgbColorType(Some((255, 255, 255)));
-        let mut use_font_space = false;
-        let mut use_kerning = false;
-        let mut symbol_mark = arbitrary::SymbolMark::None;
-        let mut border_fill_id_ref = None;
+        let (
+            id,
+            height,
+            text_color,
+            shade_color,
+            use_font_space,
+            use_kerning,
+            symbol_mark,
+            border_fill_id_ref,
+        ) = attributes!(element, "charPr";
+            "id" as id => one xs::NonNegativeInteger32,
+            "height" as height => default 1000,
+            "textColor" as text_color => default core::RgbColorType(Some((0, 0, 0))),
+            "shadeColor" as shade_color => default core::RgbColorType(Some((255, 255, 255))),
+            "useFontSpace" as use_font_space => default false; boolean,
+            "useKerning" as use_kerning => default false; boolean,
+            "symMark" as symbol_mark => default arbitrary::SymbolMark::None,
+            "borderFillIDRef" as border_fill_id_ref => opt xs::NonNegativeInteger32,
+        );
+
         let mut font_ref = None;
         let mut ratio = None;
         let mut spacing = None;
@@ -1433,22 +1445,6 @@ impl TryFrom<AnyElement> for CharShapeType {
         let mut engrave = false;
         let mut superscript = false;
         let mut subscript = false;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value.parse()?),
-                "height" => height = value.parse()?,
-                "textColor" => text_color = value.parse()?,
-                "shadeColor" => shade_color = value.parse()?,
-                "useFontSpace" => {
-                    use_font_space = boolean!(value.as_str(), "<charPr useFontSpace>")
-                }
-                "useKerning" => use_kerning = boolean!(value.as_str(), "<charPr useKerning>"),
-                "symMark" => symbol_mark = value.parse()?,
-                "borderFillIDRef" => border_fill_id_ref = Some(value.parse()?),
-                _ => continue,
-            }
-        }
 
         for child in element.children {
             match child.name {
@@ -1471,22 +1467,16 @@ impl TryFrom<AnyElement> for CharShapeType {
             }
         }
 
-        let (id, font_ref, ratio, spacing, relative_size, offset) =
-            match (id, font_ref, ratio, spacing, relative_size, offset) {
-                (
-                    Some(id),
-                    Some(font_ref),
-                    Some(ratio),
-                    Some(spacing),
-                    Some(relative_size),
-                    Some(offset),
-                ) => (id, font_ref, ratio, spacing, relative_size, offset),
-                (None, _, _, _, _, _) => missing_attribute!("<charPr id>"),
-                (_, None, _, _, _, _) => missing_element!("<fontRef>"),
-                (_, _, None, _, _, _) => missing_element!("<ratio>"),
-                (_, _, _, None, _, _) => missing_element!("<spacing>"),
-                (_, _, _, _, None, _) => missing_element!("<relSz>"),
-                (_, _, _, _, _, None) => missing_element!("<offset>"),
+        let (font_ref, ratio, spacing, relative_size, offset) =
+            match (font_ref, ratio, spacing, relative_size, offset) {
+                (Some(font_ref), Some(ratio), Some(spacing), Some(relative_size), Some(offset)) => {
+                    (font_ref, ratio, spacing, relative_size, offset)
+                }
+                (None, _, _, _, _) => missing_element!("<fontRef>"),
+                (_, None, _, _, _) => missing_element!("<ratio>"),
+                (_, _, None, _, _) => missing_element!("<spacing>"),
+                (_, _, _, None, _) => missing_element!("<relSz>"),
+                (_, _, _, _, None) => missing_element!("<offset>"),
             };
 
         Ok(Self {
@@ -2331,61 +2321,15 @@ impl TryFrom<AnyElement> for ParaShapeType {
             "checked" as checked => default false; boolean,
         );
 
-        let mut align = None;
-        let mut heading = None;
-        let mut break_setting = None;
-        let mut margin = None;
-        let mut line_spacing = None;
-        let mut border = None;
-        let mut auto_spacing = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__HEAD__ALIGN => align = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__HEADING => heading = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__BREAK_SETTING => break_setting = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__MARGIN => margin = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__LINE_SPACING => line_spacing = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__BORDER => border = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__AUTO_SPACING => auto_spacing = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let (align, heading, break_setting, margin, line_spacing, border, auto_spacing) = match (
-            align,
-            heading,
-            break_setting,
-            margin,
-            line_spacing,
-            border,
-            auto_spacing,
-        ) {
-            (
-                Some(align),
-                Some(heading),
-                Some(break_setting),
-                Some(margin),
-                Some(line_spacing),
-                Some(border),
-                Some(auto_spacing),
-            ) => (
-                align,
-                heading,
-                break_setting,
-                margin,
-                line_spacing,
-                border,
-                auto_spacing,
-            ),
-            (None, _, _, _, _, _, _) => missing_element!("<align>"),
-            (_, None, _, _, _, _, _) => missing_element!("<heading>"),
-            (_, _, None, _, _, _, _) => missing_element!("<breakSetting>"),
-            (_, _, _, None, _, _, _) => missing_element!("<margin>"),
-            (_, _, _, _, None, _, _) => missing_element!("<lineSpacing>"),
-            (_, _, _, _, _, None, _) => missing_element!("<border>"),
-            (_, _, _, _, _, _, None) => missing_element!("<autoSpacing>"),
-        };
+        let (align, heading, break_setting, auto_spacing, margin, line_spacing, border) = children!(element;
+            one HANCOM__HEAD__ALIGN, ParagraphAlignType;
+            one HANCOM__HEAD__HEADING, ParagraphHeading;
+            one HANCOM__HEAD__BREAK_SETTING, ParagraphBreakSetting;
+            one HANCOM__HEAD__AUTO_SPACING, ParagraphAutoSpacing;
+            one HANCOM__HEAD__MARGIN, ParagraphMargin;
+            one HANCOM__HEAD__LINE_SPACING, ParagraphLineSpacing;
+            one HANCOM__HEAD__BORDER, ParagraphBorder
+        );
 
         Ok(Self {
             id,
@@ -3072,21 +3016,10 @@ impl TryFrom<AnyElement> for BulletType {
             "useImage" as use_image => one (boolean),
         );
 
-        let mut image = None;
-        let mut head = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::HANCOM__CORE__IMAGE => image = Some(child.try_into()?),
-                ElementName::HANCOM__HEAD__PARAGRAPH_HEAD => head = Some(child.try_into()?),
-                _ => continue,
-            }
-        }
-
-        let head = match head {
-            Some(head) => head,
-            None => missing_element!("<paraHead>"),
-        };
+        let (image, head) = children!(element;
+            opt HANCOM__CORE__IMAGE, ImageType;
+            one HANCOM__HEAD__PARAGRAPH_HEAD, ParagraphHeadType
+        );
 
         Ok(Self {
             id,
