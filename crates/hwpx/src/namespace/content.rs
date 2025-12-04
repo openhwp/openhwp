@@ -6,7 +6,6 @@ use crate::{
     core::MediaType,
     error::Error,
 };
-use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Package {
@@ -15,69 +14,17 @@ pub struct Package {
     pub spine: Option<Spine>,
 }
 
-#[derive(Debug)]
-pub struct Metadata {
-    pub title: Option<String>,
-    pub language: Option<String>,
-    pub meta: Vec<Meta>,
-}
-
-#[derive(Debug)]
-pub struct Manifest {
-    pub items: Vec<Item>,
-}
-
-#[derive(Debug)]
-pub struct Spine {
-    pub item_refs: Vec<ItemRef>,
-}
-
-#[derive(Debug)]
-pub struct Meta {
-    pub name: String,
-    pub content: String,
-    pub text: Option<String>,
-}
-
-#[derive(Debug)]
-pub struct Item {
-    pub id: String,
-    pub href: String,
-    pub media_type: MediaType,
-    pub embedded: bool,
-}
-
-#[derive(Debug)]
-pub struct Setting {
-    pub id: String,
-    pub href: String,
-    pub media_type: MediaType,
-}
-
-#[derive(Debug)]
-pub struct ItemRef {
-    pub id_ref: String,
-    pub linear: bool,
-}
-
 impl TryFrom<AnyElement> for Package {
     type Error = Error;
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::OPENDOCUMENT__OPF__PACKAGE)?;
 
-        let mut metadata = None;
-        let mut manifest = None;
-        let mut spine = None;
-
-        for child in element.children {
-            match child.name {
-                ElementName::OPENDOCUMENT__OPF__METADATA => metadata = Some(child.try_into()?),
-                ElementName::OPENDOCUMENT__OPF__MANIFEST => manifest = Some(child.try_into()?),
-                ElementName::OPENDOCUMENT__OPF__SPINE => spine = Some(child.try_into()?),
-                _ => unknown!("Unknown package element: {:?}", child.name),
-            }
-        }
+        let (metadata, manifest, spine) = children!(element;
+            opt OPENDOCUMENT__OPF__METADATA, Metadata;
+            opt OPENDOCUMENT__OPF__MANIFEST, Manifest;
+            opt OPENDOCUMENT__OPF__SPINE, Spine
+        );
 
         Ok(Self {
             metadata,
@@ -85,6 +32,13 @@ impl TryFrom<AnyElement> for Package {
             spine,
         })
     }
+}
+
+#[derive(Debug)]
+pub struct Metadata {
+    pub title: Option<String>,
+    pub language: Option<String>,
+    pub meta: Vec<Meta>,
 }
 
 impl TryFrom<AnyElement> for Metadata {
@@ -101,25 +55,7 @@ impl TryFrom<AnyElement> for Metadata {
             match child.name {
                 ElementName::OPENDOCUMENT__OPF__TITLE => title = child.text,
                 ElementName::OPENDOCUMENT__OPF__LANGUAGE => language = child.text,
-                ElementName::OPENDOCUMENT__OPF__META => {
-                    let Some((_, name)) = child.attributes.iter().find(|(key, _)| key == "name")
-                    else {
-                        continue;
-                    };
-                    let Some((_, content)) =
-                        child.attributes.iter().find(|(key, _)| key == "content")
-                    else {
-                        continue;
-                    };
-                    if let Some("") = child.text.as_deref() {
-                        continue;
-                    }
-                    meta.push(Meta {
-                        name: name.to_owned(),
-                        content: content.to_owned(),
-                        text: child.text,
-                    });
-                }
+                ElementName::OPENDOCUMENT__OPF__META => meta.push(Meta::try_from(child)?),
                 _ => unknown!("Unknown metadata element: {:?}", child.name),
             }
         }
@@ -132,20 +68,54 @@ impl TryFrom<AnyElement> for Metadata {
     }
 }
 
+#[derive(Debug)]
+pub struct Meta {
+    pub name: String,
+    pub content: String,
+    pub text: Option<String>,
+}
+
+impl TryFrom<AnyElement> for Meta {
+    type Error = Error;
+
+    fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
+        element.expect(ElementName::OPENDOCUMENT__OPF__META)?;
+
+        let (name, content) = attributes!(element, "meta";
+            "name" as name => one (string),
+            "content" as content => one (string),
+        );
+
+        Ok(Self {
+            name,
+            content,
+            text: element.text,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct Manifest {
+    pub items: Vec<Item>,
+}
+
 impl TryFrom<AnyElement> for Manifest {
     type Error = Error;
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::OPENDOCUMENT__OPF__MANIFEST)?;
 
-        let mut items = vec![];
-
-        for child in element.children {
-            items.push(child.try_into()?);
-        }
+        let items = children!(element;
+            many OPENDOCUMENT__OPF__ITEM, Item
+        );
 
         Ok(Self { items })
     }
+}
+
+#[derive(Debug)]
+pub struct Spine {
+    pub item_refs: Vec<ItemRef>,
 }
 
 impl TryFrom<AnyElement> for Spine {
@@ -154,14 +124,20 @@ impl TryFrom<AnyElement> for Spine {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::OPENDOCUMENT__OPF__SPINE)?;
 
-        let mut item_refs = Vec::new();
-
-        for child in element.children {
-            item_refs.push(child.try_into()?);
-        }
+        let item_refs = children!(element;
+            many OPENDOCUMENT__OPF__ITEM_REFERENCE, ItemRef
+        );
 
         Ok(Self { item_refs })
     }
+}
+
+#[derive(Debug)]
+pub struct Item {
+    pub id: String,
+    pub href: String,
+    pub media_type: MediaType,
+    pub embedded: bool,
 }
 
 impl TryFrom<AnyElement> for Item {
@@ -170,31 +146,12 @@ impl TryFrom<AnyElement> for Item {
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::OPENDOCUMENT__OPF__ITEM)?;
 
-        let mut id = None;
-        let mut href = None;
-        let mut media_type = None;
-        let mut embedded = false;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "id" => id = Some(value),
-                "href" => href = Some(value),
-                "media-type" => media_type = Some(MediaType::from_str(&value)?),
-                "isEmbeded" => match value.as_str() {
-                    "1" => embedded = true,
-                    "0" => embedded = false,
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-
-        let (id, href, media_type) = match (id, href, media_type) {
-            (Some(id), Some(href), Some(media_type)) => (id, href, media_type),
-            (None, _, _) => missing_attribute!("id"),
-            (_, None, _) => missing_attribute!("href"),
-            (_, _, None) => missing_attribute!("media-type"),
-        };
+        let (id, href, media_type, embedded) = attributes!(element, "item";
+            "id" as id => one (string),
+            "href" as href => one (string),
+            "media-type" as media_type => one MediaType,
+            "isEmbeded" as embedded => default false; boolean,
+        );
 
         Ok(Self {
             id,
@@ -205,32 +162,29 @@ impl TryFrom<AnyElement> for Item {
     }
 }
 
+#[derive(Debug)]
+pub struct Setting {
+    pub id: String,
+    pub href: String,
+    pub media_type: MediaType,
+}
+
+#[derive(Debug)]
+pub struct ItemRef {
+    pub id_ref: String,
+    pub linear: bool,
+}
+
 impl TryFrom<AnyElement> for ItemRef {
     type Error = Error;
 
     fn try_from(element: AnyElement) -> Result<Self, Self::Error> {
         element.expect(ElementName::OPENDOCUMENT__OPF__ITEM_REFERENCE)?;
 
-        let mut id_ref = None;
-        let mut linear = None;
-
-        for (key, value) in element.attributes {
-            match key.as_str() {
-                "idref" => id_ref = Some(value),
-                "linear" => match value.as_str() {
-                    "yes" => linear = Some(true),
-                    "no" => linear = Some(false),
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-
-        let (id_ref, linear) = match (id_ref, linear) {
-            (Some(id_ref), Some(linear)) => (id_ref, linear),
-            (None, _) => missing_attribute!("idref"),
-            (_, None) => missing_attribute!("linear"),
-        };
+        let (id_ref, linear) = attributes!(element, "itemref";
+            "idref" as id_ref => one (string),
+            "linear" as linear => one (boolean),
+        );
 
         Ok(Self { id_ref, linear })
     }

@@ -3035,8 +3035,8 @@ impl std::str::FromStr for EndNotePlaceKind {
 macro_rules! boolean {
     ($value:expr, $attribute:expr) => {
         match $value {
-            "true" | "1" => true.into(),
-            "false" | "0" => false.into(),
+            "true" | "1" | "yes" => true.into(),
+            "false" | "0" | "no" => false.into(),
             _ => unknown!("Invalid value for <{}>", $attribute),
         }
     };
