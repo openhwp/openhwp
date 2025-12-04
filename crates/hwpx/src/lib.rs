@@ -10,6 +10,7 @@ pub mod any_element;
 #[macro_use]
 pub mod core;
 
+pub mod arbitrary;
 pub mod namespace;
 pub mod xs;
 

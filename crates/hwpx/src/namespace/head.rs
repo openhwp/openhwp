@@ -3,13 +3,16 @@
 
 use crate::{
     any_element::{AnyElement, ElementName},
-    core::{
+    arbitrary::{
         BreakLatinWordKind, BreakNonLatinWordKind, CenterLine, FamilyType, FontKind, GradationKind,
-        HWPUnit, HWPValue, HatchStyle, ImageBrushMode, ImageEffect, Language,
-        LayoutCompatibilityKind, LineSpacingKind, LineType1, LineType2, LineWidth, LineWrapKind,
-        MemoKind, NumberType1, ParagraphHeadingKind, ParagraphHorizontalAlignKind,
-        ParagraphVerticalAlignKind, RgbColorType, ShadowKind, SlashKind, StyleKind, SymbolMark,
-        TabItemKind, TargetProgram, TextOffsetKind, TrackChangeKind, UnderlineKind,
+        HatchStyle, ImageBrushMode, ImageEffect, Language, LineSpacingKind, LineWrapKind,
+        MemoKind, ParagraphHeadingKind, ParagraphHorizontalAlignKind,
+        ParagraphVerticalAlignKind, ShadowKind, SlashKind, StyleKind, SymbolMark,
+        TabItemKind, TargetProgram, TextOffsetKind, UnderlineKind,
+    },
+    core::{
+        HWPUnit, HWPValue, LayoutCompatibilityKind, LineType1, LineType2, LineWidth,
+        NumberType1, RgbColorType, TrackChangeKind,
     },
     error::Error,
     xs,

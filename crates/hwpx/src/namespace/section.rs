@@ -2,11 +2,11 @@
 //! filename: Contents/section{[0-9]+}.xml
 
 use crate::{
-    core::{
+    arbitrary::{
         EndNoteNumberingKind, EndNotePlaceKind, FootNoteNumberingKind, FootNotePlaceKind,
-        GutterKind, HWPUnit, LandscapeKind, LineType2, LineWidth, NoteLineLength, NumberType2,
-        PageStartKind, RgbColorType, TextDirectionKind, VisibilityValue,
+        GutterKind, LandscapeKind, NoteLineLength, PageStartKind, TextDirectionKind, VisibilityValue,
     },
+    core::{HWPUnit, LineType2, LineWidth, NumberType2, RgbColorType},
     xs,
 };
 use nonempty::NonEmpty;

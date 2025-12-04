@@ -3,7 +3,7 @@
 
 use crate::{
     any_element::{AnyElement, ElementName},
-    core::MediaType,
+    arbitrary::MediaType,
     error::Error,
 };
 
