@@ -1,0 +1,16 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: paragraph
+---
+run:
+  - $value:
+      - t:
+          $value:
+            - $text: Sample Title
+    "@charPrIDRef": 39
+"@id": 2147483648
+"@paraPrIDRef": 39
+"@styleIDRef": 0
+"@pageBreak": false
+"@columnBreak": false
+"@merged": false

@@ -1,11 +1,12 @@
 [package]
 name = "hwpx"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "HWPX types and serialization/deserialization code"
 
 [dependencies]
-fxhash = "0.2.1"
-insta = "1.44.3"
-nonempty = "0.12.0"
-quick-xml = "0.38.4"
-thiserror = "2.0.17"
+serde.workspace = true
+quick-xml.workspace = true
+
+[dev-dependencies]
+insta.workspace = true

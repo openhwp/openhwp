@@ -1,0 +1,13 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: sec_def
+---
+"@id": ""
+"@textDirection": HORIZONTAL
+"@spaceColumns": 1134
+"@tabStopVal": 4000
+"@tabStopUnit": HWPUNIT
+"@outlineShapeIDRef": 1
+"@memoShapeIDRef": 1
+"@textVerticalWidthHead": false
+"@masterPageCnt": 0

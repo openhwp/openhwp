@@ -1,0 +1,7 @@
+---
+source: crates/hwpx/tests/compatible_document_tests.rs
+expression: variants
+---
+- HWP201X
+- HWP200X
+- MS_WORD

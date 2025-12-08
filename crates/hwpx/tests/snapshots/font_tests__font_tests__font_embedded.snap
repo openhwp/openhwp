@@ -1,0 +1,9 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+"@id": 3
+"@face": Embedded Font
+"@type": TTF
+"@isEmbedded": true
+"@binaryItemIDRef": BIN0001

@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: variants
+---
+- NONE
+- VERTICAL
+- HORIZONTAL
+- CROSS

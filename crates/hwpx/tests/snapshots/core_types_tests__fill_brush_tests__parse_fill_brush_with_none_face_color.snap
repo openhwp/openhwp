@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/core_types_tests.rs
+expression: fill_brush
+---
+winBrush:
+  "@faceColor": none
+  "@hatchColor": "#000000"
+  "@alpha": 0

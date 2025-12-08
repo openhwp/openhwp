@@ -1,0 +1,12 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: variants
+---
+- FCAT_UNKNOWN
+- FCAT_MYUNGJO
+- FCAT_GOTHIC
+- FCAT_SSERIF
+- FCAT_BRUSHSCRIPT
+- FCAT_DECORATIVE
+- FCAT_NONRECTMJ
+- FCAT_NONRECTGT

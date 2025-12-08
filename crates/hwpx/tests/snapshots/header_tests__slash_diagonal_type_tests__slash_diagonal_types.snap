@@ -1,0 +1,9 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: variants
+---
+- NONE
+- CENTER
+- CENTER_BELOW
+- CENTER_ABOVE
+- ALL

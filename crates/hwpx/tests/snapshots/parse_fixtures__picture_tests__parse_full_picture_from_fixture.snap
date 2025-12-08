@@ -1,0 +1,96 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: picture
+---
+sz:
+  "@width": 9749
+  "@widthRelTo": ABSOLUTE
+  "@height": 2567
+  "@heightRelTo": ABSOLUTE
+  "@protect": false
+pos:
+  "@treatAsChar": true
+  "@affectLSpacing": false
+  "@flowWithText": true
+  "@allowOverlap": false
+  "@holdAnchorAndSO": false
+  "@vertRelTo": PARA
+  "@horzRelTo": PARA
+  "@vertAlign": TOP
+  "@horzAlign": LEFT
+  "@vertOffset": 0
+  "@horzOffset": 0
+outMargin:
+  "@left": 0
+  "@right": 0
+  "@top": 0
+  "@bottom": 0
+shapeComment: "This is an image.\nOriginal name: sample_logo.jpg\nOriginal size: 598x114 pixels"
+offset:
+  "@x": 4294937695
+  "@y": 4294967295
+orgSz:
+  "@width": 59880
+  "@height": 11400
+curSz:
+  "@width": 9749
+  "@height": 2567
+flip:
+  "@horizontal": false
+  "@vertical": false
+rotationInfo:
+  "@angle": 0
+  "@centerX": 4874
+  "@centerY": 1283
+  "@rotateimage": false
+renderingInfo:
+  transMatrix:
+    "@e1": 1
+    "@e2": 0
+    "@e3": -29601
+    "@e4": 0
+    "@e5": 1
+    "@e6": -1
+imgRect:
+  pt0:
+    "@x": 0
+    "@y": 0
+  pt1:
+    "@x": 59880
+    "@y": 0
+  pt2:
+    "@x": 59880
+    "@y": 11400
+  pt3:
+    "@x": 0
+    "@y": 11400
+imgClip:
+  "@left": 524
+  "@right": 15726
+  "@top": 0
+  "@bottom": 3960
+effects: {}
+inMargin:
+  "@left": 0
+  "@right": 0
+  "@top": 0
+  "@bottom": 0
+imgDim:
+  "@dimwidth": 16260
+  "@dimheight": 3960
+img:
+  "@binaryItemIDRef": image1
+  "@bright": 0
+  "@contrast": 0
+  "@effect": REAL_PIC
+  "@alpha": 0
+"@id": 1475691556
+"@zOrder": 3
+"@numberingType": PICTURE
+"@textWrap": TOP_AND_BOTTOM
+"@textFlow": BOTH_SIDES
+"@lock": false
+"@href": ""
+"@groupLevel": 0
+"@instid": 401949733
+"@reverse": false

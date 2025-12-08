@@ -1,0 +1,5 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: xml
+---
+<BeginNumber page="1" footnote="1" endnote="1" pic="1" tbl="1" equation="1"/>

@@ -1,7 +1,0 @@
----
-source: crates/hwpx/src/namespace/head.rs
-expression: meta_tag
----
-MetaTag {
-    text: "This is a meta tag.",
-}

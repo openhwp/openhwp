@@ -1,0 +1,10 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: list
+---
+borderFill:
+  - "@id": 1
+    "@threeD": false
+    "@shadow": false
+    "@breakCellSeparateLine": false
+"@itemCnt": 1

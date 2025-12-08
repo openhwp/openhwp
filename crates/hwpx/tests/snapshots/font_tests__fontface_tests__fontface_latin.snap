@@ -1,0 +1,15 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: fontface
+---
+font:
+  - "@id": 0
+    "@face": Sample Sans
+    "@type": TTF
+    "@isEmbedded": false
+  - "@id": 1
+    "@face": Sample Serif
+    "@type": TTF
+    "@isEmbedded": false
+"@lang": LATIN
+"@fontCnt": 2

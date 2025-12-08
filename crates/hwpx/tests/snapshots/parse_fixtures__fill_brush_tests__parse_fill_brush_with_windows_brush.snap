@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: fill_brush
+---
+winBrush:
+  "@faceColor": "#FFFFFF"
+  "@hatchColor": "#000000"
+  "@alpha": 0

@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+"@id": 0
+"@face": Test Gothic
+"@type": TTF
+"@isEmbedded": false

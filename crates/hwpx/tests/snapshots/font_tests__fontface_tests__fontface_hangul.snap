@@ -1,0 +1,11 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: fontface
+---
+font:
+  - "@id": 0
+    "@face": Sample Korean Font
+    "@type": TTF
+    "@isEmbedded": false
+"@lang": HANGUL
+"@fontCnt": 1

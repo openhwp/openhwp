@@ -1,0 +1,5 @@
+---
+source: crates/hwpx/tests/core_enums_tests.rs
+expression: gt
+---
+LINEAR

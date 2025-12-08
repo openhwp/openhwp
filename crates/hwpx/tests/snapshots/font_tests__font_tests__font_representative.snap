@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+"@id": 4
+"@face": Representative Font
+"@type": REP
+"@isEmbedded": false

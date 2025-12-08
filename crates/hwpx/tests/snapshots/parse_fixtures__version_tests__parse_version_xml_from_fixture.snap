@@ -1,0 +1,13 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: version
+---
+"@tagetApplication": WORDPROCESSOR
+"@major": 5
+"@minor": 1
+"@micro": 1
+"@buildNumber": 0
+"@os": 1
+"@xmlVersion": "1.5"
+"@application": Hancom Office Hangul
+"@appVersion": "12, 0, 0, 3650 WIN32LEWindows_10"

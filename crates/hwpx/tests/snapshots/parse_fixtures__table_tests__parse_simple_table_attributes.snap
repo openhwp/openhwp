@@ -1,0 +1,45 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: table
+---
+sz:
+  "@width": 47697
+  "@widthRelTo": ABSOLUTE
+  "@height": 2994
+  "@heightRelTo": ABSOLUTE
+  "@protect": false
+pos:
+  "@treatAsChar": true
+  "@affectLSpacing": false
+  "@flowWithText": true
+  "@allowOverlap": false
+  "@holdAnchorAndSO": false
+  "@vertRelTo": PARA
+  "@horzRelTo": PARA
+  "@vertAlign": TOP
+  "@horzAlign": LEFT
+  "@vertOffset": 0
+  "@horzOffset": 0
+outMargin:
+  "@left": 283
+  "@right": 283
+  "@top": 283
+  "@bottom": 283
+inMargin:
+  "@left": 141
+  "@right": 141
+  "@top": 141
+  "@bottom": 141
+"@id": 1854889781
+"@zOrder": 2
+"@numberingType": TABLE
+"@textWrap": TOP_AND_BOTTOM
+"@textFlow": BOTH_SIDES
+"@lock": false
+"@pageBreak": CELL
+"@repeatHeader": true
+"@noAdjust": true
+"@rowCnt": 1
+"@colCnt": 3
+"@cellSpacing": 0
+"@borderFillIDRef": 2

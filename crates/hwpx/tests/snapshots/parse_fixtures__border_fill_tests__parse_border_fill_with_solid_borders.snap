@@ -1,0 +1,37 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: border_fill
+---
+slash:
+  "@type": NONE
+  "@Crooked": false
+  "@isCounter": false
+backSlash:
+  "@type": NONE
+  "@Crooked": false
+  "@isCounter": false
+leftBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+rightBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+topBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+bottomBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+diagonal:
+  "@type": SOLID
+  "@width": 0.1 mm
+  "@color": "#000000"
+"@id": 2
+"@threeD": false
+"@shadow": false
+"@centerLine": NONE
+"@breakCellSeparateLine": false

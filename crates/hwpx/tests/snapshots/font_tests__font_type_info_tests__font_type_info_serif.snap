@@ -1,0 +1,14 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: info
+---
+"@familyType": FCAT_MYUNGJO
+"@serifStyle": Cove
+"@weight": DemiBold
+"@proportion": EvenWidth
+"@contrast": MediumLow
+"@strokeVariation": GradualDiagonal
+"@armStyle": StraightArmsSingleSerif
+"@letterform": NormalSquare
+"@midline": Any
+"@xHeight": ConstantLarge

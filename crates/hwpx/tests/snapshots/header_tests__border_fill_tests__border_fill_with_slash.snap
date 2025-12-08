@@ -1,0 +1,16 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: bf
+---
+slash:
+  "@type": CENTER
+  "@Crooked": false
+  "@isCounter": false
+backSlash:
+  "@type": CENTER
+  "@Crooked": false
+  "@isCounter": true
+"@id": 5
+"@threeD": false
+"@shadow": false
+"@breakCellSeparateLine": false

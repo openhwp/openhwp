@@ -1,0 +1,7 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: border
+---
+"@type": DOT
+"@width": 0.3 mm
+"@color": "#0000FF"

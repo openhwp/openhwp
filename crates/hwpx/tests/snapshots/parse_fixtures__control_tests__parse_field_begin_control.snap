@@ -1,0 +1,22 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: control
+---
+$value:
+  - fieldBegin:
+      parameters:
+        $value:
+          - integerParam:
+              $text: 9
+              "@name": Prop
+        "@cnt": 4
+        "@name": ""
+      metaTag:
+        $text: "{\"name\":\"#content\"}"
+      "@id": 1999385510
+      "@type": CLICK_HERE
+      "@name": content
+      "@editable": true
+      "@dirty": true
+      "@zorder": -1
+      "@fieldid": 627272811

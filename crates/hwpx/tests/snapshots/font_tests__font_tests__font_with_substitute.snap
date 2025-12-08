@@ -1,0 +1,12 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+substFont:
+  "@face": Fallback Font
+  "@type": TTF
+  "@isEmbedded": false
+"@id": 2
+"@face": Primary Font
+"@type": TTF
+"@isEmbedded": false

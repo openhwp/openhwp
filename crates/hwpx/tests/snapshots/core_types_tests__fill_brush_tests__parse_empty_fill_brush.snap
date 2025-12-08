@@ -1,0 +1,5 @@
+---
+source: crates/hwpx/tests/core_types_tests.rs
+expression: fill_brush
+---
+{}

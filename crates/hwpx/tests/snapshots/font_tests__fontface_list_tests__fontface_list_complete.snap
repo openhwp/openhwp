@@ -1,0 +1,63 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: list
+---
+fontface:
+  - font:
+      - "@id": 0
+        "@face": Sample Gothic
+        "@type": TTF
+        "@isEmbedded": false
+      - "@id": 1
+        "@face": Sample Myungjo
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": HANGUL
+    "@fontCnt": 2
+  - font:
+      - "@id": 0
+        "@face": Sample Sans
+        "@type": TTF
+        "@isEmbedded": false
+      - "@id": 1
+        "@face": Sample Serif
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": LATIN
+    "@fontCnt": 2
+  - font:
+      - "@id": 0
+        "@face": Sample CJK
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": HANJA
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample Japanese
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": JAPANESE
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample Other
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": OTHER
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample Symbols
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": SYMBOL
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample User Font
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": USER
+    "@fontCnt": 1
+"@itemCnt": 7

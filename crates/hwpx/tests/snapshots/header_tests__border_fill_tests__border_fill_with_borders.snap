@@ -1,0 +1,24 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: bf
+---
+leftBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+rightBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+topBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+bottomBorder:
+  "@type": SOLID
+  "@width": 0.12 mm
+  "@color": "#000000"
+"@id": 4
+"@threeD": false
+"@shadow": false
+"@breakCellSeparateLine": false

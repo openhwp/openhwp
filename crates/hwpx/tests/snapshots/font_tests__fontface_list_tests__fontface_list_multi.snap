@@ -1,0 +1,27 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: list
+---
+fontface:
+  - font:
+      - "@id": 0
+        "@face": Sample Korean
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": HANGUL
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample Latin
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": LATIN
+    "@fontCnt": 1
+  - font:
+      - "@id": 0
+        "@face": Sample Hanja
+        "@type": TTF
+        "@isEmbedded": false
+    "@lang": HANJA
+    "@fontCnt": 1
+"@itemCnt": 3

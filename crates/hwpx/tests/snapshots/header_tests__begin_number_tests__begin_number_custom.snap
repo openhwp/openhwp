@@ -1,0 +1,10 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: begin
+---
+"@page": 5
+"@footnote": 3
+"@endnote": 2
+"@pic": 10
+"@tbl": 7
+"@equation": 4

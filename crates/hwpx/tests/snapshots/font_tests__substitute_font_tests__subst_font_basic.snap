@@ -1,0 +1,7 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: subst
+---
+"@face": Sample Sans
+"@type": TTF
+"@isEmbedded": false

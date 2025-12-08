@@ -1,0 +1,99 @@
+---
+source: crates/hwpx/tests/parse_fixtures.rs
+expression: rect
+---
+sz:
+  "@width": 48899
+  "@widthRelTo": ABSOLUTE
+  "@height": 4905
+  "@heightRelTo": ABSOLUTE
+  "@protect": false
+pos:
+  "@treatAsChar": true
+  "@affectLSpacing": false
+  "@flowWithText": false
+  "@allowOverlap": true
+  "@holdAnchorAndSO": false
+  "@vertRelTo": PARA
+  "@horzRelTo": PARA
+  "@vertAlign": TOP
+  "@horzAlign": LEFT
+  "@vertOffset": 0
+  "@horzOffset": 0
+outMargin:
+  "@left": 0
+  "@right": 0
+  "@top": 0
+  "@bottom": 0
+shapeComment: This is a rectangle.
+offset:
+  "@x": 612
+  "@y": 4294966253
+orgSz:
+  "@width": 48150
+  "@height": 3825
+curSz:
+  "@width": 48899
+  "@height": 4905
+flip:
+  "@horizontal": false
+  "@vertical": false
+rotationInfo:
+  "@angle": 0
+  "@centerX": 24449
+  "@centerY": 2452
+  "@rotateimage": false
+renderingInfo:
+  transMatrix:
+    "@e1": 1
+    "@e2": 0
+    "@e3": 612
+    "@e4": 0
+    "@e5": 1
+    "@e6": -1043
+lineShape:
+  "@color": "#000000"
+  "@width": 33
+  "@style": NONE
+  "@endCap": FLAT
+  "@headStyle": NORMAL
+  "@tailStyle": NORMAL
+  "@headfill": true
+  "@tailfill": true
+  "@headSz": SMALL_SMALL
+  "@tailSz": SMALL_SMALL
+  "@outlineStyle": NORMAL
+  "@alpha": 0
+fillBrush:
+  winBrush:
+    "@faceColor": "#FFFFFF"
+    "@hatchColor": "#000000"
+    "@alpha": 0
+shadow:
+  "@type": NONE
+  "@color": "#B2B2B2"
+  "@offsetX": 0
+  "@offsetY": 0
+  "@alpha": 0
+pt0:
+  "@x": 0
+  "@y": 0
+pt1:
+  "@x": 48150
+  "@y": 0
+pt2:
+  "@x": 48150
+  "@y": 3825
+pt3:
+  "@x": 0
+  "@y": 3825
+"@id": 1712398788
+"@zOrder": 4
+"@numberingType": PICTURE
+"@textWrap": TOP_AND_BOTTOM
+"@textFlow": BOTH_SIDES
+"@lock": false
+"@href": ""
+"@groupLevel": 0
+"@instid": 638656965
+"@ratio": 0

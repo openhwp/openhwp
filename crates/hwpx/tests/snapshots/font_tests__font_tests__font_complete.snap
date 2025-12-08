@@ -1,0 +1,23 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+substFont:
+  "@face": Substitute Complete
+  "@type": TTF
+  "@isEmbedded": false
+typeInfo:
+  "@familyType": FCAT_GOTHIC
+  "@weight": DemiBold
+  "@proportion": EvenWidth
+  "@contrast": MediumLow
+  "@strokeVariation": GradualDiagonal
+  "@armStyle": StraightArmsSingleSerif
+  "@letterform": NormalSquare
+  "@midline": StandardPointed
+  "@xHeight": ConstantLarge
+"@id": 5
+"@face": Complete Font
+"@type": TTF
+"@isEmbedded": true
+"@binaryItemIDRef": BIN0002

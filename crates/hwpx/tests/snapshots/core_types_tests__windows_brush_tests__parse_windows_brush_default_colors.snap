@@ -1,0 +1,6 @@
+---
+source: crates/hwpx/tests/core_types_tests.rs
+expression: brush
+---
+"@faceColor": "#FFFFFF"
+"@hatchColor": "#000000"

@@ -1,0 +1,8 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: subst
+---
+"@face": Test Serif
+"@type": TTF
+"@isEmbedded": true
+"@binaryItemIDRef": FONT01

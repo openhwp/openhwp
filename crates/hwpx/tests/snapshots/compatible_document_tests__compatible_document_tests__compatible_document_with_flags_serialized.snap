@@ -1,0 +1,5 @@
+---
+source: crates/hwpx/tests/compatible_document_tests.rs
+expression: xml
+---
+<compatibleDocument targetProgram="MS_WORD"><layoutCompatibility><applyFontWeightToBold/></layoutCompatibility></compatibleDocument>

@@ -1,0 +1,13 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: info
+---
+"@familyType": FCAT_GOTHIC
+"@weight": Medium
+"@proportion": Modern
+"@contrast": Low
+"@strokeVariation": NoVariation
+"@armStyle": Any
+"@letterform": Any
+"@midline": Any
+"@xHeight": ConstantStandard

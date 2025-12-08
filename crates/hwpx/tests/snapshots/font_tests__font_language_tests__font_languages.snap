@@ -1,0 +1,11 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: variants
+---
+- HANGUL
+- LATIN
+- HANJA
+- JAPANESE
+- OTHER
+- SYMBOL
+- USER

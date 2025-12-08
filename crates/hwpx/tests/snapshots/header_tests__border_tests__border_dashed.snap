@@ -1,0 +1,7 @@
+---
+source: crates/hwpx/tests/header_tests.rs
+expression: border
+---
+"@type": DASH
+"@width": 0.4 mm
+"@color": "#FF0000"

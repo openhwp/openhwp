@@ -1,0 +1,5 @@
+---
+source: crates/hwpx/tests/compatible_document_tests.rs
+expression: xml
+---
+<compatibleDocument targetProgram="HWP201X"><layoutCompatibility/></compatibleDocument>

@@ -1,0 +1,18 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: font
+---
+typeInfo:
+  "@familyType": FCAT_MYUNGJO
+  "@weight": Medium
+  "@proportion": Modern
+  "@contrast": Low
+  "@strokeVariation": NoVariation
+  "@armStyle": Any
+  "@letterform": Any
+  "@midline": Any
+  "@xHeight": ConstantStandard
+"@id": 1
+"@face": Sample Serif
+"@type": TTF
+"@isEmbedded": false

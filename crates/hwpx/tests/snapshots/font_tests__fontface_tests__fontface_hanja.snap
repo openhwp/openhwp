@@ -1,0 +1,11 @@
+---
+source: crates/hwpx/tests/font_tests.rs
+expression: fontface
+---
+font:
+  - "@id": 0
+    "@face": Sample CJK Font
+    "@type": TTF
+    "@isEmbedded": false
+"@lang": HANJA
+"@fontCnt": 1
