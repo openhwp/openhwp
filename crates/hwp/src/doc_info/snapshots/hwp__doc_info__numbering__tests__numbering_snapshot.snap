@@ -1,0 +1,106 @@
+---
+source: src/doc_info/numbering.rs
+expression: numbering
+---
+Numbering {
+    levels: [
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^1.",
+            start_number: 1,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^2.",
+            start_number: 2,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^3.",
+            start_number: 3,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^4.",
+            start_number: 4,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^5.",
+            start_number: 5,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^6.",
+            start_number: 6,
+        },
+        NumberingLevel {
+            head_info: ParagraphHeadInfo {
+                properties: 0,
+                width_correction: HwpUnit16(
+                    0,
+                ),
+                text_distance: HwpUnit16(
+                    0,
+                ),
+                character_shape_id: 0,
+            },
+            format: "^7.",
+            start_number: 7,
+        },
+    ],
+}

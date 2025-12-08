@@ -1,0 +1,39 @@
+---
+source: src/body/table.rs
+expression: table
+---
+Table {
+    properties: TableProperties {
+        properties: 0,
+        row_count: 2,
+        column_count: 3,
+        cell_spacing: HwpUnit16(
+            100,
+        ),
+        padding: TablePadding {
+            left: HwpUnit16(
+                50,
+            ),
+            right: HwpUnit16(
+                50,
+            ),
+            top: HwpUnit16(
+                50,
+            ),
+            bottom: HwpUnit16(
+                50,
+            ),
+        },
+        row_sizes: [
+            HwpUnit16(
+                500,
+            ),
+            HwpUnit16(
+                600,
+            ),
+        ],
+        border_fill_id: 1,
+        zones: [],
+    },
+    cells: [],
+}

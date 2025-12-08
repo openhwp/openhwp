@@ -1,0 +1,73 @@
+---
+source: src/doc_info/character_shape.rs
+expression: shape
+---
+CharacterShape {
+    font_ids: [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+    ],
+    width_ratios: [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+    ],
+    spacings: [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ],
+    relative_sizes: [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+    ],
+    positions: [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ],
+    base_size: 1000,
+    properties: 3,
+    shadow_offset_x: 1,
+    shadow_offset_y: 1,
+    text_color: ColorReference {
+        value: 0x000000,
+        rgb: (0, 0, 0),
+    },
+    underline_color: ColorReference {
+        value: 0x000000,
+        rgb: (0, 0, 0),
+    },
+    shade_color: ColorReference {
+        value: 0xFFFFFF,
+        rgb: (255, 255, 255),
+    },
+    shadow_color: ColorReference {
+        value: 0x808080,
+        rgb: (128, 128, 128),
+    },
+    border_fill_id: None,
+    strikethrough_color: None,
+}

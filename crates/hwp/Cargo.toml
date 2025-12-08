@@ -1,19 +1,22 @@
 [package]
-name = "hwpx"
+name = "hwp"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Danuel <me@danuel.io>"]
-description = "A Rust library for parsing and generating HWPX (KS X 6101:2024) documents"
+description = "A Rust library for parsing HWP 5.0 document files"
 license = "MIT"
 repository = "https://github.com/openhwp/openhwp"
 homepage = "https://github.com/openhwp/openhwp"
 readme = "README.md"
-keywords = ["hwpx", "hangul", "document", "xml", "korean"]
+keywords = ["hwp", "hangul", "document", "parser", "korean"]
 categories = ["parsing", "encoding"]
 
 [dependencies]
-serde.workspace = true
-quick-xml.workspace = true
+cfb.workspace = true
+miniz_oxide.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
+
+[features]
+default = []

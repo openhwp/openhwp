@@ -3,11 +3,8 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
-aes = "0.8.4"
-anyhow = "1.0.100"
 cfb = "0.12.1"
-flate2 = "1.1.5"
 insta = { version = "1.44.3", features = ["yaml"] }
-thiserror = "2.0.17"
+miniz_oxide = "0.8.8"
 serde = { version = "1.0.228", features = ["derive"] }
 quick-xml = { version = "0.38.4", features = ["serialize", "overlapped-lists"] }
