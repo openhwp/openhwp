@@ -184,7 +184,7 @@ impl Default for LanguageRatio {
 /// [AI 생성] 언어별 자간
 ///
 /// 원본: `spacing` 요소의 익명 타입. 스크립트별 자간(%)을 지정합니다.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename = "spacing")]
 pub struct LanguageSpacing {
     /// [AI 생성] 한글 자간 (-50 ~ 50%) (`hangul` 속성)
@@ -216,19 +216,6 @@ pub struct LanguageSpacing {
     pub user: i8,
 }
 
-impl Default for LanguageSpacing {
-    fn default() -> Self {
-        Self {
-            hangul: 0,
-            latin: 0,
-            hanja: 0,
-            japanese: 0,
-            other: 0,
-            symbol: 0,
-            user: 0,
-        }
-    }
-}
 
 /// [AI 생성] 언어별 상대 크기
 ///
@@ -282,7 +269,7 @@ impl Default for LanguageRelativeSize {
 /// [AI 생성] 언어별 오프셋
 ///
 /// 원본: `offset` 요소의 익명 타입. 스크립트별 수직 오프셋(%)을 지정합니다.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename = "offset")]
 pub struct LanguageOffset {
     /// [AI 생성] 한글 오프셋 (-100 ~ 100%) (`hangul` 속성)
@@ -314,19 +301,6 @@ pub struct LanguageOffset {
     pub user: i8,
 }
 
-impl Default for LanguageOffset {
-    fn default() -> Self {
-        Self {
-            hangul: 0,
-            latin: 0,
-            hanja: 0,
-            japanese: 0,
-            other: 0,
-            symbol: 0,
-            user: 0,
-        }
-    }
-}
 
 /// [AI 생성] 밑줄 정보
 ///

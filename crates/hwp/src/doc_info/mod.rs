@@ -11,6 +11,7 @@
 mod binary_data;
 mod border_fill;
 mod bullet;
+mod char_shape_props;
 mod character_shape;
 mod compatible_document;
 mod distribute_doc_data;
@@ -27,29 +28,35 @@ mod tab_definition;
 mod track_change;
 
 // 공개 API - HWP 스펙에 정의된 타입들
+pub use primitive::{BorderLineStyle, UnderlineShape};
 pub use binary_data::BinaryData;
 pub use border_fill::{
-    BorderFill, BorderLineStyle, BorderLineThickness, DiagonalType, FillInfo, FillType,
-    GradientFill, GradientType, ImageFill, ImageFillType, ImageInfo, PatternFill, PatternType,
+    BorderFill, BorderLineThickness, DiagonalType, FillInfo, FillType, GradientFill, GradientType,
+    ImageFill, ImageFillType, ImageInfo, PatternFill, PatternType,
 };
 pub use bullet::Bullet;
+pub use char_shape_props::{CharShapeFlags, CharShapePropsBuilder};
 pub use character_shape::{
     CharacterShape, EmphasisType, LanguageType, OutlineType, ShadowType, StrikethroughShape,
-    UnderlinePosition, UnderlineShape,
+    UnderlinePosition,
 };
 pub use compatible_document::CompatibleDocument;
+pub use distribute_doc_data::DistributeDocData;
+pub use document_data::DocumentData;
 pub use document_properties::DocumentProperties;
-pub use face_name::FaceName;
+pub use face_name::{AlternateFontType, FaceName};
+pub use forbidden_char::ForbiddenChar;
 pub use id_mappings::IdMappings;
 pub use layout_compatibility::LayoutCompatibility;
 pub use numbering::{Numbering, NumberingLevel, ParagraphHeadAlignment, ParagraphHeadInfo};
-pub use paragraph_shape::ParagraphShape;
+pub use paragraph_shape::{
+    Alignment, BreakLatinWord, BreakNonLatinWord, LineSpacingType, ParagraphShape,
+    VerticalAlignment,
+};
+pub use primitive::StyleType;
 pub use style::Style;
 pub use tab_definition::TabDefinition;
 pub use track_change::{TrackChangeAuthor, TrackChangeContent, TrackChangeInfo};
-pub use distribute_doc_data::DistributeDocData;
-pub use document_data::DocumentData;
-pub use forbidden_char::ForbiddenChar;
 
 use crate::error::Result;
 use crate::primitive::{RecordHeader, RecordTagId};
@@ -220,12 +227,10 @@ impl DocInfo {
                         .push(TrackChangeContent::from_reader(&mut record_reader)?);
                 }
                 Some(RecordTagId::DocumentData) => {
-                    doc_info.document_data =
-                        Some(DocumentData::from_reader(&mut record_reader)?);
+                    doc_info.document_data = Some(DocumentData::from_reader(&mut record_reader)?);
                 }
                 Some(RecordTagId::ForbiddenCharacter) => {
-                    doc_info.forbidden_char =
-                        Some(ForbiddenChar::from_reader(&mut record_reader)?);
+                    doc_info.forbidden_char = Some(ForbiddenChar::from_reader(&mut record_reader)?);
                 }
                 Some(RecordTagId::DistributeDocumentData) => {
                     doc_info.distribute_doc_data =

@@ -1,7 +1,7 @@
 [package]
 name = "hwpx"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Danuel <me@danuel.io>"]
 description = "A Rust library for parsing and generating HWPX (KS X 6101:2024) documents"
 license = "MIT"
@@ -14,6 +14,8 @@ categories = ["parsing", "encoding"]
 [dependencies]
 serde.workspace = true
 quick-xml.workspace = true
+ir = { path = "../ir" }
+primitive = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 insta.workspace = true

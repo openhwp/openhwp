@@ -110,30 +110,16 @@ impl VerticalAlignment {
     }
 }
 
-/// Paragraph heading type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum HeadingType {
-    /// No heading.
-    #[default]
-    None,
-    /// Outline heading.
-    Outline,
-    /// Number heading.
-    Number,
-    /// Bullet heading.
-    Bullet,
-}
+pub use primitive::HeadingType;
 
-impl HeadingType {
-    /// Creates from raw value.
-    pub const fn from_raw(value: u32) -> Self {
-        match (value >> 23) & 0x03 {
-            0 => Self::None,
-            1 => Self::Outline,
-            2 => Self::Number,
-            3 => Self::Bullet,
-            _ => Self::None,
-        }
+/// HeadingType raw 값 파싱 헬퍼
+pub const fn heading_type_from_raw(value: u32) -> HeadingType {
+    match (value >> 23) & 0x03 {
+        0 => HeadingType::None,
+        1 => HeadingType::Outline,
+        2 => HeadingType::Number,
+        3 => HeadingType::Bullet,
+        _ => HeadingType::None,
     }
 }
 
@@ -323,7 +309,7 @@ impl ParagraphShape {
     /// Returns the heading type.
     #[inline]
     pub const fn heading_type(&self) -> HeadingType {
-        HeadingType::from_raw(self.properties1)
+        heading_type_from_raw(self.properties1)
     }
 
     /// Returns the heading level (1-7).
@@ -336,6 +322,12 @@ impl ParagraphShape {
     #[inline]
     pub const fn is_border_connected(&self) -> bool {
         (self.properties1 & (1 << 28)) != 0
+    }
+
+    /// Returns whether paragraph margin is ignored.
+    #[inline]
+    pub const fn is_margin_ignored(&self) -> bool {
+        (self.properties1 & (1 << 29)) != 0
     }
 
     /// Returns the left margin in HWP units.
@@ -419,6 +411,39 @@ impl ParagraphShape {
     pub const fn properties2(&self) -> Option<u32> {
         self.properties2
     }
+
+    /// Returns whether snap to grid is enabled (bit 8 of properties1).
+    #[inline]
+    pub const fn snap_to_grid(&self) -> bool {
+        (self.properties1 & (1 << 8)) != 0
+    }
+
+    /// Returns whether line numbers are suppressed (bit 0-1 of properties2).
+    /// Only valid for version 5.0.1.7+.
+    #[inline]
+    pub fn suppress_line_numbers(&self) -> bool {
+        self.properties2.is_some_and(|p| (p & 0x03) != 0)
+    }
+
+    /// Returns whether auto line height based on font is enabled (bit 22 of properties1).
+    #[inline]
+    pub const fn auto_line_height(&self) -> bool {
+        (self.properties1 & (1 << 22)) != 0
+    }
+
+    /// Returns whether auto spacing between East Asian and English is enabled (bit 4 of properties2).
+    /// Only valid for version 5.0.1.7+.
+    #[inline]
+    pub fn auto_spacing_east_asian_english(&self) -> bool {
+        self.properties2.is_some_and(|p| (p & (1 << 4)) != 0)
+    }
+
+    /// Returns whether auto spacing between East Asian and numbers is enabled (bit 5 of properties2).
+    /// Only valid for version 5.0.1.7+.
+    #[inline]
+    pub fn auto_spacing_east_asian_number(&self) -> bool {
+        self.properties2.is_some_and(|p| (p & (1 << 5)) != 0)
+    }
 }
 
 #[cfg(test)]
@@ -435,12 +460,12 @@ mod tests {
 
     #[test]
     fn test_heading_type() {
-        assert_eq!(HeadingType::from_raw(0), HeadingType::None);
+        assert_eq!(heading_type_from_raw(0), HeadingType::None);
         // Bits 24-23 = 01 for Outline (bit 23 set)
-        assert_eq!(HeadingType::from_raw(1 << 23), HeadingType::Outline);
+        assert_eq!(heading_type_from_raw(1 << 23), HeadingType::Outline);
         // Bits 24-23 = 10 for Number (bit 24 set)
-        assert_eq!(HeadingType::from_raw(2 << 23), HeadingType::Number);
+        assert_eq!(heading_type_from_raw(2 << 23), HeadingType::Number);
         // Bits 24-23 = 11 for Bullet (both bits set)
-        assert_eq!(HeadingType::from_raw(3 << 23), HeadingType::Bullet);
+        assert_eq!(heading_type_from_raw(3 << 23), HeadingType::Bullet);
     }
 }

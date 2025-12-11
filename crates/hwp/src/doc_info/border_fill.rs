@@ -5,73 +5,7 @@
 use crate::error::Result;
 use crate::primitive::ColorReference;
 use crate::util::ByteReader;
-
-/// Border line style.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[repr(u8)]
-pub enum BorderLineStyle {
-    /// Solid line.
-    #[default]
-    Solid = 0,
-    /// Long dashes.
-    LongDash = 1,
-    /// Short dashes.
-    Dash = 2,
-    /// Dash-dot.
-    DashDot = 3,
-    /// Dash-dot-dot.
-    DashDotDot = 4,
-    /// Long dash (alternate).
-    LongDashAlt = 5,
-    /// Circle pattern.
-    Circle = 6,
-    /// Double line.
-    Double = 7,
-    /// Thin then thick.
-    ThinThick = 8,
-    /// Thick then thin.
-    ThickThin = 9,
-    /// Thin-thick-thin.
-    ThinThickThin = 10,
-    /// Wave.
-    Wave = 11,
-    /// Double wave.
-    DoubleWave = 12,
-    /// Thick 3D.
-    Thick3D = 13,
-    /// Thick 3D reversed.
-    Thick3DReversed = 14,
-    /// Single 3D.
-    Single3D = 15,
-    /// Single 3D reversed.
-    Single3DReversed = 16,
-}
-
-impl BorderLineStyle {
-    /// Creates from raw value.
-    pub const fn from_raw(value: u8) -> Self {
-        match value {
-            0 => Self::Solid,
-            1 => Self::LongDash,
-            2 => Self::Dash,
-            3 => Self::DashDot,
-            4 => Self::DashDotDot,
-            5 => Self::LongDashAlt,
-            6 => Self::Circle,
-            7 => Self::Double,
-            8 => Self::ThinThick,
-            9 => Self::ThickThin,
-            10 => Self::ThinThickThin,
-            11 => Self::Wave,
-            12 => Self::DoubleWave,
-            13 => Self::Thick3D,
-            14 => Self::Thick3DReversed,
-            15 => Self::Single3D,
-            16 => Self::Single3DReversed,
-            _ => Self::Solid,
-        }
-    }
-}
+use primitive::BorderLineStyle;
 
 /// Border line thickness.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -290,8 +224,9 @@ pub struct ImageFill {
 }
 
 /// Fill information.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum FillInfo {
+    #[default]
     None,
     Pattern(PatternFill),
     Gradient(GradientFill),

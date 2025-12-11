@@ -176,19 +176,19 @@ mod optional_rgb_color_tests {
 
     #[test]
     fn optional_rgb_color_from_str_none() {
-        let color = OptionalRgbColor::from_str("none").unwrap();
+        let color = OptionalRgbColor::parse("none").unwrap();
         assert_eq!(color.value(), None);
     }
 
     #[test]
     fn optional_rgb_color_from_str_none_uppercase() {
-        let color = OptionalRgbColor::from_str("NONE").unwrap();
+        let color = OptionalRgbColor::parse("NONE").unwrap();
         assert_eq!(color.value(), None);
     }
 
     #[test]
     fn optional_rgb_color_from_str_hex() {
-        let color = OptionalRgbColor::from_str("#FF0000").unwrap();
+        let color = OptionalRgbColor::parse("#FF0000").unwrap();
         assert_eq!(color.value(), Some(RgbColor::RED));
     }
 

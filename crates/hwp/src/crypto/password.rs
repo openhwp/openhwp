@@ -77,12 +77,6 @@ impl PasswordDecryptor {
         }
     }
 
-    /// Returns the encryption version.
-    #[inline]
-    #[allow(dead_code)]
-    pub const fn version(&self) -> EncryptionVersion {
-        self.version
-    }
 }
 
 /// Derives decryption key for modern encryption (HWP 7.0+).

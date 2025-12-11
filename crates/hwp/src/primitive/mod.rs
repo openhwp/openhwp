@@ -5,10 +5,10 @@
 
 mod color;
 mod record;
+mod spacing;
 mod unit;
-mod version;
 
 pub use color::ColorReference;
 pub use record::{RecordHeader, RecordTagId};
-pub use unit::{HwpUnit, HwpUnit16, SignedHwpUnit};
-pub use version::Version;
+pub use spacing::{CellPadding, TablePadding};
+pub use unit::HwpUnit16;

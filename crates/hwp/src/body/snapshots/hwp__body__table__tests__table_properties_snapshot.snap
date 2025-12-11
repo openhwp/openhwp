@@ -1,5 +1,5 @@
 ---
-source: src/body/table.rs
+source: crates/hwp/src/body/table.rs
 expression: table
 ---
 Table {
@@ -10,7 +10,7 @@ Table {
         cell_spacing: HwpUnit16(
             100,
         ),
-        padding: TablePadding {
+        padding: Spacing {
             left: HwpUnit16(
                 50,
             ),

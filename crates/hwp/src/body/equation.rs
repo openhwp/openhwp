@@ -4,8 +4,8 @@
 //! LaTeX for representing mathematical formulas.
 
 use crate::error::Result;
-use crate::primitive::HwpUnit;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 /// Equation line mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

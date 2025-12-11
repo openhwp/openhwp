@@ -14,10 +14,10 @@ use crate::doc_options::{DocOptions, DrmLicense, LinkDoc};
 use crate::error::{Error, Result};
 use crate::header::FileHeader;
 use crate::preview::{PreviewImage, PreviewText};
-use crate::primitive::Version;
 use crate::script::{ScriptHeader, ScriptSource, ScriptVersion, Scripts};
 use crate::summary::SummaryInfo;
 use crate::util::decompress_stream;
+use primitive::Version;
 
 /// An HWP 5.0 document.
 ///
@@ -582,6 +582,48 @@ impl HwpDocument {
             .as_ref()
             .map(|o| o.has_links())
             .unwrap_or(false)
+    }
+
+    // === Style Information API ===
+
+    /// Returns the font face names.
+    pub fn font_faces(&self) -> &[crate::doc_info::FaceName] {
+        &self.doc_info.face_names
+    }
+
+    /// Returns the character shapes.
+    pub fn character_shapes(&self) -> &[crate::doc_info::CharacterShape] {
+        &self.doc_info.character_shapes
+    }
+
+    /// Returns the paragraph shapes.
+    pub fn paragraph_shapes(&self) -> &[crate::doc_info::ParagraphShape] {
+        &self.doc_info.paragraph_shapes
+    }
+
+    /// Returns the border fills.
+    pub fn border_fills(&self) -> &[crate::doc_info::BorderFill] {
+        &self.doc_info.border_fills
+    }
+
+    /// Returns the styles.
+    pub fn styles(&self) -> &[crate::doc_info::Style] {
+        &self.doc_info.styles
+    }
+
+    /// Returns the tab definitions.
+    pub fn tab_definitions(&self) -> &[crate::doc_info::TabDefinition] {
+        &self.doc_info.tab_definitions
+    }
+
+    /// Returns the numbering definitions.
+    pub fn numberings(&self) -> &[crate::doc_info::Numbering] {
+        &self.doc_info.numberings
+    }
+
+    /// Returns the bullet definitions.
+    pub fn bullets(&self) -> &[crate::doc_info::Bullet] {
+        &self.doc_info.bullets
     }
 }
 

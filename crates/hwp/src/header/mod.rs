@@ -5,5 +5,5 @@
 mod file_header;
 mod properties;
 
-pub use file_header::FileHeader;
+pub use file_header::{FileHeader, FILE_HEADER_SIZE, HWP_SIGNATURE};
 pub(crate) use properties::EncryptionVersion;

@@ -182,11 +182,7 @@ pub enum RecordTagId {
     ShapeComponentUnknown = 0x073,
 }
 
-#[allow(dead_code)]
 impl RecordTagId {
-    /// Base value for HWP internal tags.
-    pub const HWPTAG_BEGIN: u16 = 0x010;
-
     /// Tries to convert a u16 value to a RecordTagId.
     pub fn from_u16(value: u16) -> Option<Self> {
         match value {
@@ -347,23 +343,6 @@ impl RecordHeader {
         }
     }
 
-    /// Returns the total header size in bytes (4 or 8).
-    #[inline]
-    #[allow(dead_code)]
-    pub const fn header_size(&self) -> usize {
-        if self.extended_size.is_some() {
-            8
-        } else {
-            4
-        }
-    }
-
-    /// Creates from little-endian bytes.
-    #[inline]
-    #[allow(dead_code)]
-    pub fn from_le_bytes(bytes: [u8; 4]) -> Self {
-        Self::new(u32::from_le_bytes(bytes))
-    }
 }
 
 impl fmt::Debug for RecordHeader {
@@ -380,6 +359,17 @@ impl fmt::Debug for RecordHeader {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    impl RecordHeader {
+        /// Returns the total header size in bytes (4 or 8).
+        const fn header_size(&self) -> usize {
+            if self.extended_size.is_some() {
+                8
+            } else {
+                4
+            }
+        }
+    }
 
     #[test]
     fn test_record_header_parsing() {

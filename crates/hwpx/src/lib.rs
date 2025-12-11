@@ -37,19 +37,24 @@
 //!
 //! - [`core`]: 공통 속성, 열거형, 타입
 //! - [`header`]: 문서 헤더 (글꼴, 스타일, 문단 모양 등)
-//! - [`paragraph`]: 본문 (문단, 표, 그림, 컨트롤 등)
-//! - [`master_page`]: 바탕쪽
+//! - `paragraph`: 본문 (문단, 표, 그림, 컨트롤 등)
+//! - `master_page`: 바탕쪽
 //! - [`history`]: 변경 이력
 //! - [`version`]: 버전 정보
 
+#![deny(clippy::all)]
 #![deny(missing_docs)]
 
+pub mod convert;
 pub mod core;
+pub mod document;
 pub mod header;
 pub mod history;
 pub mod master_page;
 pub mod paragraph;
 pub mod version;
+
+pub use document::Document;
 
 #[inline]
 /// 문자열 HWPX/XML을 지정 타입으로 역직렬화합니다. `quick_xml::de`를 래핑합니다.

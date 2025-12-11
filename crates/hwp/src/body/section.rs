@@ -14,7 +14,7 @@ use super::control::{Control, ControlContent, ControlId, ControlType};
 use super::control_data::ControlData;
 use super::equation::Equation;
 use super::field::{Field, FieldType};
-use super::footnote::{Endnote, Footnote, FootnoteShape};
+use super::footnote::{Endnote, EndnoteShape, Footnote, FootnoteShape};
 use super::form_object::FormObject;
 use super::hyperlink::Hyperlink;
 use super::page::{PageBorderFill, PageDefinition};
@@ -25,10 +25,11 @@ use super::paragraph::{
     CharacterShapeReference, LineSegment, Paragraph, ParagraphText, RangeTag,
 };
 use super::parse_record_header;
-use super::picture::{OleObject, Picture};
+use super::picture::{ImageFlip, OleObject, Picture, PictureProperties};
+use super::section_definition::{ColumnDefinition, SectionDefinition};
 use super::shape::{
-    ArcShape, CurveShape, EllipseShape, LineShape, PolygonShape, RectangleShape, Shape,
-    ShapeElementProperties, ShapeType,
+    ArcShape, CurveShape, DrawingObjectCommon, EllipseShape, LineShape, PolygonShape,
+    RectangleShape, Shape, ShapeElementProperties, ShapeType,
 };
 use super::table::{Table, TableCell};
 use super::text_art::TextArt;
@@ -64,6 +65,11 @@ enum ParsingContext {
         /// Expected number of paragraphs.
         paragraph_count: u16,
     },
+    /// Inside a shape (for shapes with text).
+    Shape {
+        /// Expected number of paragraphs.
+        paragraph_count: u16,
+    },
 }
 
 impl ParsingContext {
@@ -75,6 +81,7 @@ impl ParsingContext {
             Self::HeaderFooter { paragraph_count } => Some(*paragraph_count),
             Self::FootnoteEndnote { paragraph_count } => Some(*paragraph_count),
             Self::TextBox { paragraph_count } => Some(*paragraph_count),
+            Self::Shape { paragraph_count } => Some(*paragraph_count),
         }
     }
 }
@@ -91,6 +98,8 @@ pub struct Section {
     page_definition: Option<PageDefinition>,
     /// Footnote shape settings.
     footnote_shape: Option<FootnoteShape>,
+    /// Endnote shape settings.
+    endnote_shape: Option<EndnoteShape>,
     /// Page border and fill settings.
     page_border_fill: Option<PageBorderFill>,
     /// Memos (annotations) in this section.
@@ -239,6 +248,24 @@ impl Section {
                             };
                             ctrl.set_content(ControlContent::Endnote(Endnote::new(number)));
                         }
+                        ControlType::SectionDefinition => {
+                            // Parse section definition from control data
+                            if !control_data.is_empty() {
+                                let mut data_reader = ByteReader::new(&control_data);
+                                if let Ok(secd) = SectionDefinition::from_reader(&mut data_reader) {
+                                    ctrl.set_content(ControlContent::SectionDefinition(secd));
+                                }
+                            }
+                        }
+                        ControlType::ColumnDefinition => {
+                            // Parse column definition from control data
+                            if !control_data.is_empty() {
+                                let mut data_reader = ByteReader::new(&control_data);
+                                if let Ok(cold) = ColumnDefinition::from_reader(&mut data_reader) {
+                                    ctrl.set_content(ControlContent::ColumnDefinition(cold));
+                                }
+                            }
+                        }
                         _ => {}
                     }
 
@@ -251,7 +278,7 @@ impl Section {
                         let para_count = list_header.paragraph_count();
 
                         // Determine context type based on current control
-                        if let Some(ref ctrl) = current_control {
+                        if let Some(ref mut ctrl) = current_control {
                             match ctrl.control_type() {
                                 ControlType::Table => {
                                     // This is a table cell - read cell properties after ListHeader
@@ -283,6 +310,17 @@ impl Section {
                                     nested_paragraphs.push(Vec::new());
                                     cell_paragraph_counts.push(0);
                                 }
+                                ControlType::DrawingObject => {
+                                    // Shape with text content
+                                    if let Some(shape) = ctrl.as_shape_mut() {
+                                        shape.set_expected_paragraph_count(para_count);
+                                    }
+                                    context_stack.push(ParsingContext::Shape {
+                                        paragraph_count: para_count,
+                                    });
+                                    nested_paragraphs.push(Vec::new());
+                                    cell_paragraph_counts.push(0);
+                                }
                                 _ => {
                                     // Generic nested content (text box, caption, etc.)
                                     context_stack.push(ParsingContext::TextBox {
@@ -303,8 +341,16 @@ impl Section {
                 }
 
                 Some(RecordTagId::FootnoteShape) => {
-                    if let Ok(footnote_shape) = FootnoteShape::from_reader(&mut record_reader) {
-                        section.footnote_shape = Some(footnote_shape);
+                    // HWP 스펙: 각주 모양과 미주 모양이 같은 태그를 사용하며 연속으로 나옴
+                    // 첫 번째는 각주, 두 번째는 미주
+                    if section.footnote_shape.is_none() {
+                        if let Ok(footnote_shape) = FootnoteShape::from_reader(&mut record_reader) {
+                            section.footnote_shape = Some(footnote_shape);
+                        }
+                    } else if section.endnote_shape.is_none() {
+                        if let Ok(endnote_shape) = EndnoteShape::from_reader(&mut record_reader) {
+                            section.endnote_shape = Some(endnote_shape);
+                        }
                     }
                 }
 
@@ -333,6 +379,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentLine) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱 (표 81: 개체요소속성 + 테두리선 + 채우기 + 텍스트박스)
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 선 개체 속성 (표 92)
                         if let Ok(line) = LineShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Line(line);
@@ -343,6 +399,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentRectangle) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 사각형 개체 속성 (표 94)
                         if let Ok(rect) = RectangleShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Rectangle(rect);
@@ -353,6 +419,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentEllipse) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 타원 개체 속성 (표 96)
                         if let Ok(ellipse) = EllipseShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Ellipse(ellipse);
@@ -363,6 +439,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentArc) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 호 개체 속성 (표 101)
                         if let Ok(arc) = ArcShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Arc(arc);
@@ -373,6 +459,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentPolygon) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 다각형 개체 속성 (표 99)
                         if let Ok(polygon) = PolygonShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Polygon(polygon);
@@ -383,6 +479,16 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentCurve) => {
                     if let Some(ref mut ctrl) = current_control {
+                        // 그리기 개체 공통 속성 파싱
+                        if let Ok(common) = DrawingObjectCommon::from_reader(&mut record_reader) {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                shape.element_properties = common.element_properties;
+                                shape.border_line = common.border_line;
+                                shape.fill = common.fill;
+                                shape.text_box = common.text_box;
+                            }
+                        }
+                        // 곡선 개체 속성 (표 103)
                         if let Ok(curve) = CurveShape::from_reader(&mut record_reader) {
                             if let Some(shape) = ctrl.as_shape_mut() {
                                 shape.shape_type = ShapeType::Curve(curve);
@@ -393,7 +499,22 @@ impl Section {
 
                 Some(RecordTagId::ShapeComponentPicture) => {
                     if let Some(ref mut ctrl) = current_control {
-                        if let Ok(picture) = Picture::from_reader(&mut record_reader) {
+                        // 개체 요소 공통 속성(표 83)에서 flip/rotation 파싱
+                        let (flip, rotation) = if let Ok(elem_props) = ShapeElementProperties::from_reader(&mut record_reader) {
+                            let flip = match (elem_props.is_flipped_horizontal(), elem_props.is_flipped_vertical()) {
+                                (false, false) => ImageFlip::None,
+                                (true, false) => ImageFlip::Horizontal,
+                                (false, true) => ImageFlip::Vertical,
+                                (true, true) => ImageFlip::Both,
+                            };
+                            (flip, elem_props.rotation)
+                        } else {
+                            (ImageFlip::None, 0)
+                        };
+
+                        // 그림 개체 속성(표 107) 파싱
+                        if let Ok(properties) = PictureProperties::from_reader(&mut record_reader) {
+                            let picture = Picture::with_flip(properties, flip, rotation);
                             ctrl.set_content(ControlContent::Picture(picture));
                         }
                     }
@@ -559,7 +680,8 @@ impl Section {
             Some(ParsingContext::TableCell { .. })
             | Some(ParsingContext::HeaderFooter { .. })
             | Some(ParsingContext::FootnoteEndnote { .. })
-            | Some(ParsingContext::TextBox { .. }) => {
+            | Some(ParsingContext::TextBox { .. })
+            | Some(ParsingContext::Shape { .. }) => {
                 // Nested paragraph - store in the nested container
                 if let Some(paragraphs) = nested_paragraphs.get_mut(context_idx) {
                     paragraphs.push(paragraph);
@@ -665,6 +787,16 @@ impl Section {
                             }
                         }
                     }
+                    ParsingContext::Shape { .. } => {
+                        // Store paragraphs in the Shape
+                        if let Some(ctrl) = current_control {
+                            if let Some(shape) = ctrl.as_shape_mut() {
+                                for para in paragraphs {
+                                    shape.add_paragraph(para);
+                                }
+                            }
+                        }
+                    }
                     ParsingContext::Section => {
                         // Should not happen
                     }
@@ -705,6 +837,11 @@ impl Section {
     /// Returns the footnote shape settings for this section.
     pub fn footnote_shape(&self) -> Option<&FootnoteShape> {
         self.footnote_shape.as_ref()
+    }
+
+    /// Returns the endnote shape settings for this section.
+    pub fn endnote_shape(&self) -> Option<&EndnoteShape> {
+        self.endnote_shape.as_ref()
     }
 
     /// Returns the page border fill settings for this section.

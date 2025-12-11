@@ -53,6 +53,14 @@ pub enum FieldType {
     Formula,
     /// Memo field.
     Memo,
+    /// Private info field.
+    PrivateInfo,
+    /// Meta tag field.
+    MetaTag,
+    /// Mail merge field.
+    MailMerge,
+    /// Table of contents field.
+    TableOfContents,
 }
 
 impl FieldType {
@@ -72,6 +80,10 @@ impl FieldType {
             b"%xrf" => Self::CrossReference,
             b"%frm" => Self::Formula,
             b"%mem" => Self::Memo,
+            b"%prv" => Self::PrivateInfo,
+            b"%mtg" => Self::MetaTag,
+            b"%mmr" => Self::MailMerge,
+            b"%toc" => Self::TableOfContents,
             _ => Self::Unknown,
         }
     }

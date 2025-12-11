@@ -4,8 +4,8 @@
 //! such as table cells, captions, headers/footers, etc.
 
 use crate::error::Result;
-use crate::primitive::HwpUnit;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 /// List header properties.
 ///

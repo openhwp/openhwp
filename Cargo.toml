@@ -3,8 +3,11 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
+bitflags = "2.9"
 cfb = "0.12.1"
 insta = { version = "1.44.3", features = ["yaml"] }
 miniz_oxide = "0.8.8"
+primitive = { path = "crates/primitive" }
 serde = { version = "1.0.228", features = ["derive"] }
+slotmap = "1.1.1"
 quick-xml = { version = "0.38.4", features = ["serialize", "overlapped-lists"] }

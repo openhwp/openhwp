@@ -9,8 +9,8 @@
 //! - Controls (tables, shapes, etc.)
 
 use crate::error::Result;
-use crate::primitive::SignedHwpUnit;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 use super::control::Control;
 
@@ -193,19 +193,19 @@ pub struct LineSegment {
     /// Text start position.
     pub text_start_position: u32,
     /// Vertical position of the line.
-    pub vertical_position: SignedHwpUnit,
+    pub vertical_position: HwpUnit,
     /// Line height.
-    pub line_height: SignedHwpUnit,
+    pub line_height: HwpUnit,
     /// Text part height.
-    pub text_height: SignedHwpUnit,
+    pub text_height: HwpUnit,
     /// Distance from vertical position to baseline.
-    pub baseline_distance: SignedHwpUnit,
+    pub baseline_distance: HwpUnit,
     /// Line spacing.
-    pub line_spacing: SignedHwpUnit,
+    pub line_spacing: HwpUnit,
     /// Start position in column.
-    pub column_start_position: SignedHwpUnit,
+    pub column_start_position: HwpUnit,
     /// Segment width.
-    pub segment_width: SignedHwpUnit,
+    pub segment_width: HwpUnit,
     /// Tag value.
     pub tag: u32,
 }

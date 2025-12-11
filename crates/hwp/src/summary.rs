@@ -39,10 +39,6 @@ impl SummaryInfo {
     const PIDSI_COMMENTS: u32 = 0x06;
     const PIDSI_LAST_AUTHOR: u32 = 0x08;
     const PIDSI_APPNAME: u32 = 0x12;
-    #[allow(dead_code)]
-    const PIDSI_CREATE_DATE: u32 = 0x0C;
-    #[allow(dead_code)]
-    const PIDSI_LASTSAVE_DATE: u32 = 0x0D;
 
     /// Parses summary information from bytes.
     ///

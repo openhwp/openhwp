@@ -16,6 +16,7 @@ use super::header_footer::{Footer, Header};
 use super::hyperlink::Hyperlink;
 use super::memo::Memo;
 use super::picture::{OleObject, Picture};
+use super::section_definition::{ColumnDefinition, SectionDefinition};
 use super::shape::Shape;
 use super::table::Table;
 use super::text_art::TextArt;
@@ -65,6 +66,10 @@ pub enum ControlContent {
     Video(VideoData),
     /// 그룹화된 도형들.
     Container(ShapeContainer),
+    /// 구역 정의.
+    SectionDefinition(SectionDefinition),
+    /// 단 정의.
+    ColumnDefinition(ColumnDefinition),
 }
 
 /// Control character types in HWP documents.
@@ -282,6 +287,12 @@ impl ControlId {
     pub const FIELD_USER_INFO: Self = Self::from_chars(b"%usr");
     /// Hyperlink field.
     pub const FIELD_HYPERLINK: Self = Self::from_chars(b"%hlk");
+    /// Cross reference field.
+    pub const FIELD_CROSS_REFERENCE: Self = Self::from_chars(b"%xrf");
+    /// Private info field.
+    pub const FIELD_PRIVATE_INFO: Self = Self::from_chars(b"%prv");
+    /// Meta tag field.
+    pub const FIELD_META_TAG: Self = Self::from_chars(b"%mtg");
 
     /// Creates from 4-character code.
     pub const fn from_chars(chars: &[u8; 4]) -> Self {
@@ -708,6 +719,38 @@ impl Control {
     pub fn as_container_mut(&mut self) -> Option<&mut ShapeContainer> {
         match &mut self.content {
             Some(ControlContent::Container(container)) => Some(container),
+            _ => None,
+        }
+    }
+
+    /// Returns the section definition content if this control contains a section definition.
+    pub fn as_section_definition(&self) -> Option<&SectionDefinition> {
+        match &self.content {
+            Some(ControlContent::SectionDefinition(def)) => Some(def),
+            _ => None,
+        }
+    }
+
+    /// Returns a mutable reference to the section definition content.
+    pub fn as_section_definition_mut(&mut self) -> Option<&mut SectionDefinition> {
+        match &mut self.content {
+            Some(ControlContent::SectionDefinition(def)) => Some(def),
+            _ => None,
+        }
+    }
+
+    /// Returns the column definition content if this control contains a column definition.
+    pub fn as_column_definition(&self) -> Option<&ColumnDefinition> {
+        match &self.content {
+            Some(ControlContent::ColumnDefinition(def)) => Some(def),
+            _ => None,
+        }
+    }
+
+    /// Returns a mutable reference to the column definition content.
+    pub fn as_column_definition_mut(&mut self) -> Option<&mut ColumnDefinition> {
+        match &mut self.content {
+            Some(ControlContent::ColumnDefinition(def)) => Some(def),
             _ => None,
         }
     }

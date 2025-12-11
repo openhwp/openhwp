@@ -4,8 +4,9 @@
 //! appear at the end of the document or section.
 
 use crate::error::Result;
-use crate::primitive::HwpUnit;
+use crate::primitive::ColorReference;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 use super::paragraph::Paragraph;
 
@@ -193,6 +194,18 @@ pub struct FootnoteShape {
     pub continue_numbering: bool,
     /// Custom symbol (if using custom numbering).
     pub custom_symbol: Option<String>,
+    /// Prefix character (앞 장식 문자).
+    pub prefix: Option<String>,
+    /// Suffix character (뒤 장식 문자).
+    pub suffix: Option<String>,
+    /// Superscript display (위 첨자로 표시).
+    pub superscript: bool,
+    /// Separator line type.
+    pub separator_line_type: u8,
+    /// Separator line thickness (0.1mm 단위).
+    pub separator_line_thickness: u8,
+    /// Separator line color.
+    pub separator_line_color: ColorReference,
 }
 
 impl FootnoteShape {
@@ -203,51 +216,120 @@ impl FootnoteShape {
 
     /// Parses footnote shape from reader.
     ///
-    /// Format (per HWP spec - HWPTAG_FOOTNOTE_SHAPE):
-    /// - UINT32: Properties (numbering type in bits 0-3, placement in bits 4-5)
+    /// Format (per HWP spec 5.0 - HWPTAG_FOOTNOTE_SHAPE, 표 133):
+    /// - UINT32: Properties (numbering type in bits 0-7, placement in bits 8-9, superscript in bit 10)
+    /// - WCHAR: Custom symbol (사용자 기호)
+    /// - WCHAR: Prefix character (앞 장식 문자)
+    /// - WCHAR: Suffix character (뒤 장식 문자)
     /// - UINT16: Starting number
-    /// - HWPUNIT: Separator line length
-    /// - HWPUNIT: Separator position
-    /// - HWPUNIT: Space above separator
-    /// - HWPUNIT: Space below separator
-    /// - HWPUNIT: Space between notes
+    /// - HWPUNIT16: Separator line length
+    /// - HWPUNIT16: Separator position
+    /// - HWPUNIT16: Space above separator
+    /// - HWPUNIT16: Space below separator
+    /// - HWPUNIT16: Space between notes
+    /// - UINT8: Separator line type
+    /// - UINT8: Separator line thickness
+    /// - COLORREF: Separator line color
     pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
         let properties = reader.read_u32()?;
-        let numbering_type = NoteNumberingType::from_raw((properties & 0x0F) as u8);
-        let placement = NotePlacement::from_raw(((properties >> 4) & 0x03) as u8);
-        let continue_numbering = (properties & 0x100) != 0;
+        let numbering_type = NoteNumberingType::from_raw((properties & 0xFF) as u8);
+        let placement = NotePlacement::from_raw(((properties >> 8) & 0x03) as u8);
+        let superscript = (properties & 0x400) != 0; // bit 10
+        let continue_numbering = (properties & 0x1000) != 0; // bit 12
 
-        let start_number = reader.read_u16()?;
+        // Read custom symbol (WCHAR, 2 bytes)
+        let custom_symbol = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
-        // Read layout measurements (may not be present in all versions)
-        let separator_length = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        // Read prefix character (WCHAR, 2 bytes)
+        let prefix = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // Read suffix character (WCHAR, 2 bytes)
+        let suffix = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // Read starting number
+        let start_number = if reader.remaining() >= 2 {
+            reader.read_u16()?
+        } else {
+            1
+        };
+
+        // Read layout measurements (HWPUNIT16 = 2 bytes each)
+        let separator_length = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
         };
 
-        let separator_position = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        let separator_position = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
         };
 
-        let space_above = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        let space_above = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
         };
 
-        let space_below = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        let space_below = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
         };
 
-        let space_between = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        let space_between = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
+        };
+
+        // Read separator line type (1 byte)
+        let separator_line_type = if reader.remaining() >= 1 {
+            reader.read_u8()?
+        } else {
+            0
+        };
+
+        // Read separator line thickness (1 byte)
+        let separator_line_thickness = if reader.remaining() >= 1 {
+            reader.read_u8()?
+        } else {
+            1
+        };
+
+        // Read separator line color (COLORREF, 4 bytes)
+        let separator_line_color = if reader.remaining() >= 4 {
+            reader.read_color()?
+        } else {
+            ColorReference::default()
         };
 
         Ok(Self {
@@ -260,7 +342,13 @@ impl FootnoteShape {
             space_below,
             space_between,
             continue_numbering,
-            custom_symbol: None,
+            custom_symbol,
+            prefix,
+            suffix,
+            superscript,
+            separator_line_type,
+            separator_line_thickness,
+            separator_line_color,
         })
     }
 }
@@ -280,6 +368,20 @@ pub struct EndnoteShape {
     pub space_between: HwpUnit,
     /// Whether to continue numbering across sections.
     pub continue_numbering: bool,
+    /// Custom symbol (if using custom numbering).
+    pub custom_symbol: Option<String>,
+    /// Prefix character (앞 장식 문자).
+    pub prefix: Option<String>,
+    /// Suffix character (뒤 장식 문자).
+    pub suffix: Option<String>,
+    /// Superscript display (위 첨자로 표시).
+    pub superscript: bool,
+    /// Separator line type (stored but typically not used for endnotes).
+    pub separator_line_type: u8,
+    /// Separator line thickness (stored but typically not used for endnotes).
+    pub separator_line_thickness: u8,
+    /// Separator line color (stored but typically not used for endnotes).
+    pub separator_line_color: ColorReference,
 }
 
 impl EndnoteShape {
@@ -291,41 +393,93 @@ impl EndnoteShape {
     /// Parses endnote shape from reader (same format as FootnoteShape).
     pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
         let properties = reader.read_u32()?;
-        let numbering_type = NoteNumberingType::from_raw((properties & 0x0F) as u8);
-        let placement = NotePlacement::from_raw(((properties >> 4) & 0x03) as u8);
-        let continue_numbering = (properties & 0x100) != 0;
+        let numbering_type = NoteNumberingType::from_raw((properties & 0xFF) as u8);
+        let placement = NotePlacement::from_raw(((properties >> 8) & 0x03) as u8);
+        let superscript = (properties & 0x400) != 0; // bit 10
+        let continue_numbering = (properties & 0x1000) != 0; // bit 12
 
-        let start_number = reader.read_u16()?;
+        // Read custom symbol (WCHAR, 2 bytes)
+        let custom_symbol = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
-        // Skip separator fields (not used for endnotes)
-        let _separator_length = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        // Read prefix character (WCHAR, 2 bytes)
+        let prefix = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // Read suffix character (WCHAR, 2 bytes)
+        let suffix = if reader.remaining() >= 2 {
+            let ch = reader.read_u16()?;
+            if ch != 0 {
+                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // Read starting number
+        let start_number = if reader.remaining() >= 2 {
+            reader.read_u16()?
+        } else {
+            1
+        };
+
+        // Skip separator fields (not used for endnotes) - HWPUNIT16 each
+        if reader.remaining() >= 2 {
+            let _ = reader.read_u16()?; // separator_length
+        }
+        if reader.remaining() >= 2 {
+            let _ = reader.read_u16()?; // separator_position
+        }
+        if reader.remaining() >= 2 {
+            let _ = reader.read_u16()?; // space_above
+        }
+        if reader.remaining() >= 2 {
+            let _ = reader.read_u16()?; // space_below
+        }
+
+        let space_between = if reader.remaining() >= 2 {
+            HwpUnit::new(reader.read_u16()? as i32)
         } else {
             HwpUnit::default()
         };
 
-        let _separator_position = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        // Read separator line type (1 byte) - stored but typically not used for endnotes
+        let separator_line_type = if reader.remaining() >= 1 {
+            reader.read_u8()?
         } else {
-            HwpUnit::default()
+            0
         };
 
-        let _space_above = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        // Read separator line thickness (1 byte)
+        let separator_line_thickness = if reader.remaining() >= 1 {
+            reader.read_u8()?
         } else {
-            HwpUnit::default()
+            1
         };
 
-        let _space_below = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
+        // Read separator line color (COLORREF, 4 bytes)
+        let separator_line_color = if reader.remaining() >= 4 {
+            reader.read_color()?
         } else {
-            HwpUnit::default()
-        };
-
-        let space_between = if reader.remaining() >= 4 {
-            reader.read_hwp_unit()?
-        } else {
-            HwpUnit::default()
+            ColorReference::default()
         };
 
         Ok(Self {
@@ -334,6 +488,13 @@ impl EndnoteShape {
             start_number,
             space_between,
             continue_numbering,
+            custom_symbol,
+            prefix,
+            suffix,
+            superscript,
+            separator_line_type,
+            separator_line_thickness,
+            separator_line_color,
         })
     }
 }
@@ -404,26 +565,37 @@ mod tests {
     #[test]
     fn test_footnote_shape_from_reader() {
         let mut data = Vec::new();
-        // Properties: Arabic (0) numbering, EndOfPage (0) placement
-        data.extend_from_slice(&0x00u32.to_le_bytes());
+        // Properties: Arabic (0) numbering, EndOfPage (0) placement, superscript (bit 10)
+        data.extend_from_slice(&0x400u32.to_le_bytes()); // superscript = true
+        // Custom symbol (WCHAR): none
+        data.extend_from_slice(&0u16.to_le_bytes());
+        // Prefix character (WCHAR): '(' = 0x28
+        data.extend_from_slice(&0x28u16.to_le_bytes());
+        // Suffix character (WCHAR): ')' = 0x29
+        data.extend_from_slice(&0x29u16.to_le_bytes());
         // Start number: 1
         data.extend_from_slice(&1u16.to_le_bytes());
-        // Separator length
-        data.extend_from_slice(&1000i32.to_le_bytes());
-        // Separator position
-        data.extend_from_slice(&0i32.to_le_bytes());
-        // Space above
-        data.extend_from_slice(&500i32.to_le_bytes());
-        // Space below
-        data.extend_from_slice(&500i32.to_le_bytes());
-        // Space between
-        data.extend_from_slice(&300i32.to_le_bytes());
+        // Separator length (HWPUNIT16)
+        data.extend_from_slice(&1000u16.to_le_bytes());
+        // Separator position (HWPUNIT16)
+        data.extend_from_slice(&0u16.to_le_bytes());
+        // Space above (HWPUNIT16)
+        data.extend_from_slice(&500u16.to_le_bytes());
+        // Space below (HWPUNIT16)
+        data.extend_from_slice(&500u16.to_le_bytes());
+        // Space between (HWPUNIT16)
+        data.extend_from_slice(&300u16.to_le_bytes());
+        // Separator line type, thickness, color (1 + 1 + 4 bytes)
+        data.extend_from_slice(&[0u8; 6]);
 
         let mut reader = ByteReader::new(&data);
         let shape = FootnoteShape::from_reader(&mut reader).unwrap();
 
         assert_eq!(shape.numbering_type, NoteNumberingType::Arabic);
         assert_eq!(shape.placement, NotePlacement::EndOfPage);
+        assert!(shape.superscript);
+        assert_eq!(shape.prefix, Some("(".to_string()));
+        assert_eq!(shape.suffix, Some(")".to_string()));
         assert_eq!(shape.start_number, 1);
         assert_eq!(shape.separator_length.value(), 1000);
     }

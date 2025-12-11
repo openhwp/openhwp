@@ -123,6 +123,30 @@ impl From<(u8, u8, u8)> for ColorReference {
     }
 }
 
+// ============================================================================
+// primitive::Color 변환
+// ============================================================================
+
+impl From<primitive::Color> for ColorReference {
+    /// primitive::Color를 ColorReference로 변환
+    ///
+    /// primitive::Color는 ARGB, ColorReference는 BGR (알파 무시)
+    #[inline]
+    fn from(color: primitive::Color) -> Self {
+        Self::from_rgb(color.red, color.green, color.blue)
+    }
+}
+
+impl From<ColorReference> for primitive::Color {
+    /// ColorReference를 primitive::Color로 변환
+    ///
+    /// ColorReference는 알파가 없으므로 255(불투명)로 설정
+    #[inline]
+    fn from(color: ColorReference) -> Self {
+        Self::rgb(color.red(), color.green(), color.blue())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -159,5 +183,23 @@ mod tests {
         let bytes = color.to_le_bytes();
         assert_eq!(bytes, [0x12, 0x34, 0x56, 0x00]);
         assert_eq!(ColorReference::from_le_bytes(bytes), color);
+    }
+
+    #[test]
+    fn test_primitive_color_conversion() {
+        // ColorReference -> primitive::Color
+        let color_ref = ColorReference::from_rgb(255, 128, 64);
+        let primitive_color: primitive::Color = color_ref.into();
+        assert_eq!(primitive_color.red, 255);
+        assert_eq!(primitive_color.green, 128);
+        assert_eq!(primitive_color.blue, 64);
+        assert_eq!(primitive_color.alpha, 255); // 불투명
+
+        // primitive::Color -> ColorReference
+        let primitive_color = primitive::Color::rgb(100, 150, 200);
+        let color_ref: ColorReference = primitive_color.into();
+        assert_eq!(color_ref.red(), 100);
+        assert_eq!(color_ref.green(), 150);
+        assert_eq!(color_ref.blue(), 200);
     }
 }

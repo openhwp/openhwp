@@ -12,8 +12,11 @@ keywords = ["hwp", "hangul", "document", "parser", "korean"]
 categories = ["parsing", "encoding"]
 
 [dependencies]
+bitflags.workspace = true
 cfb.workspace = true
 miniz_oxide.workspace = true
+ir = { path = "../ir" }
+primitive = { workspace = true }
 
 [dev-dependencies]
 insta.workspace = true

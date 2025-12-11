@@ -4,8 +4,8 @@
 //! and properties.
 
 use crate::error::{Error, Result};
-use crate::primitive::Version;
 use crate::util::ByteReader;
+use primitive::Version;
 
 use super::properties::{EncryptionVersion, FileProperties, KoglCountry, LicenseInfo};
 

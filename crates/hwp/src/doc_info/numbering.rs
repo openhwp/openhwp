@@ -62,6 +62,12 @@ impl ParagraphHeadInfo {
         (self.properties & (1 << 3)) != 0
     }
 
+    /// Returns the number format type.
+    /// The format is stored in bits 12-15 of the properties field.
+    pub const fn number_format(&self) -> u8 {
+        ((self.properties >> 12) & 0x0F) as u8
+    }
+
     pub const fn character_shape_id(&self) -> u32 {
         self.character_shape_id
     }

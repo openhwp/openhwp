@@ -519,7 +519,7 @@ impl OptionalRgbColor {
     }
 
     /// 문자열로부터 파싱
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse(s: &str) -> Option<Self> {
         if s.eq_ignore_ascii_case("none") {
             Some(Self(None))
         } else {
@@ -558,8 +558,125 @@ impl<'de> Deserialize<'de> for OptionalRgbColor {
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        Self::from_str(&s)
+        Self::parse(&s)
             .ok_or_else(|| serde::de::Error::custom(format!("invalid optional RGB color: {}", s)))
+    }
+}
+
+// ============================================================================
+// primitive::Color 변환
+// ============================================================================
+
+impl From<primitive::Color> for RgbColor {
+    fn from(color: primitive::Color) -> Self {
+        Self {
+            r: color.red,
+            g: color.green,
+            b: color.blue,
+            a: color.alpha,
+        }
+    }
+}
+
+impl From<RgbColor> for primitive::Color {
+    fn from(color: RgbColor) -> Self {
+        Self::argb(color.a, color.r, color.g, color.b)
+    }
+}
+
+impl From<primitive::Color> for OptionalRgbColor {
+    fn from(color: primitive::Color) -> Self {
+        Self(Some(RgbColor::from(color)))
+    }
+}
+
+impl From<Option<primitive::Color>> for OptionalRgbColor {
+    fn from(color: Option<primitive::Color>) -> Self {
+        Self(color.map(RgbColor::from))
+    }
+}
+
+// ============================================================================
+// primitive ID 변환
+// ============================================================================
+
+// 숫자 ID 변환 매크로
+macro_rules! impl_id_conversion {
+    ($hwpx_type:ty, $primitive_type:ty) => {
+        impl From<$primitive_type> for $hwpx_type {
+            fn from(id: $primitive_type) -> Self {
+                Self(id.0)
+            }
+        }
+
+        impl From<$hwpx_type> for $primitive_type {
+            fn from(id: $hwpx_type) -> Self {
+                Self(id.0)
+            }
+        }
+    };
+}
+
+impl_id_conversion!(FontIdRef, primitive::FontId);
+impl_id_conversion!(BorderFillIdRef, primitive::BorderFillId);
+impl_id_conversion!(CharShapeIdRef, primitive::CharShapeId);
+impl_id_conversion!(ParaShapeIdRef, primitive::ParaShapeId);
+impl_id_conversion!(TabDefIdRef, primitive::TabDefId);
+impl_id_conversion!(StyleIdRef, primitive::StyleId);
+impl_id_conversion!(OutlineShapeIdRef, primitive::OutlineShapeId);
+impl_id_conversion!(MemoShapeIdRef, primitive::MemoShapeId);
+impl_id_conversion!(LinkListIdRef, primitive::LinkListId);
+impl_id_conversion!(BeginIdRef, primitive::BeginId);
+impl_id_conversion!(SubjectIdRef, primitive::SubjectId);
+impl_id_conversion!(PropertyIdRef, primitive::PropertyId);
+impl_id_conversion!(BorderTypeIdRef, primitive::BorderTypeId);
+
+// 문자열 ID 변환
+impl From<primitive::BinaryDataId> for BinaryItemIdRef {
+    fn from(id: primitive::BinaryDataId) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<BinaryItemIdRef> for primitive::BinaryDataId {
+    fn from(id: BinaryItemIdRef) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<primitive::FileId> for FileIdRef {
+    fn from(id: primitive::FileId) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<FileIdRef> for primitive::FileId {
+    fn from(id: FileIdRef) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<primitive::ImageId> for ImageIdRef {
+    fn from(id: primitive::ImageId) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<ImageIdRef> for primitive::ImageId {
+    fn from(id: ImageIdRef) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<primitive::MasterPageId> for MasterPageIdRef {
+    fn from(id: primitive::MasterPageId) -> Self {
+        Self(id.0)
+    }
+}
+
+impl From<MasterPageIdRef> for primitive::MasterPageId {
+    fn from(id: MasterPageIdRef) -> Self {
+        Self(id.0)
     }
 }
 

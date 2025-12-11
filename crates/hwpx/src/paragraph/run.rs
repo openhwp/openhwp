@@ -23,7 +23,7 @@ use crate::core::types::CharShapeIdRef;
 pub enum RunContent {
     /// 구역 정의
     #[serde(rename = "secPr")]
-    SectionDefinition(SectionDefinition),
+    SectionDefinition(Box<SectionDefinition>),
     /// 컨트롤
     #[serde(rename = "ctrl")]
     Control(Control),

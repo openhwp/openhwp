@@ -4,8 +4,9 @@
 //! BMP, JPG, PNG, GIF, TIFF, and Windows Metafile (WMF/EMF).
 
 use crate::error::Result;
-use crate::primitive::{HwpUnit16, SignedHwpUnit};
+use crate::primitive::HwpUnit16;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 use super::shape::Point;
 
@@ -101,13 +102,13 @@ pub struct PictureFill {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ImageCrop {
     /// Left crop amount.
-    pub left: SignedHwpUnit,
+    pub left: HwpUnit,
     /// Top crop amount.
-    pub top: SignedHwpUnit,
+    pub top: HwpUnit,
     /// Right crop amount.
-    pub right: SignedHwpUnit,
+    pub right: HwpUnit,
     /// Bottom crop amount.
-    pub bottom: SignedHwpUnit,
+    pub bottom: HwpUnit,
 }
 
 impl ImageCrop {
@@ -172,6 +173,8 @@ pub struct PictureProperties {
     pub instance_id: u32,
     /// Image dimension in pixels.
     pub image_dimension: (u32, u32),
+    /// Transparent color (COLORREF, version 5.0.3.0+).
+    pub transparent_color: Option<u32>,
 }
 
 impl PictureProperties {
@@ -208,6 +211,13 @@ impl PictureProperties {
             (0, 0)
         };
 
+        // Version 5.0.3.0+ fields
+        let transparent_color = if reader.remaining() >= 4 {
+            Some(reader.read_u32()?)
+        } else {
+            None
+        };
+
         Ok(Self {
             border_color,
             border_thickness,
@@ -220,6 +230,7 @@ impl PictureProperties {
             border_transparency,
             instance_id,
             image_dimension,
+            transparent_color,
         })
     }
 
@@ -238,6 +249,10 @@ pub struct Picture {
     pub original_filename: Option<String>,
     /// Caption text (if any).
     pub caption: Option<String>,
+    /// Image flip (from ShapeElementProperties).
+    pub flip: ImageFlip,
+    /// Rotation angle in degrees (from ShapeElementProperties).
+    pub rotation: i16,
 }
 
 impl Picture {
@@ -247,6 +262,19 @@ impl Picture {
             properties,
             original_filename: None,
             caption: None,
+            flip: ImageFlip::None,
+            rotation: 0,
+        }
+    }
+
+    /// Creates a new picture with flip and rotation from ShapeElementProperties.
+    pub fn with_flip(properties: PictureProperties, flip: ImageFlip, rotation: i16) -> Self {
+        Self {
+            properties,
+            original_filename: None,
+            caption: None,
+            flip,
+            rotation,
         }
     }
 

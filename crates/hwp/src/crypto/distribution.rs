@@ -5,25 +5,6 @@
 
 use crate::error::{Error, Result};
 
-/// Distribution document options.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct DistributionOptions {
-    /// Whether copying is disabled.
-    pub copy_disabled: bool,
-    /// Whether printing is disabled.
-    pub print_disabled: bool,
-}
-
-impl DistributionOptions {
-    /// Creates new DistributionOptions from the flag byte.
-    pub const fn from_flag(flag: u16) -> Self {
-        Self {
-            copy_disabled: (flag & 0x01) != 0,
-            print_disabled: (flag & 0x02) != 0,
-        }
-    }
-}
-
 /// Distribution document decryptor.
 ///
 /// Handles decryption of distribution documents which use ViewText instead of BodyText.
@@ -31,9 +12,6 @@ impl DistributionOptions {
 pub struct DistributionDecryptor {
     /// The decryption key (first 16 bytes of SHA-1 hash).
     key: [u8; 16],
-    /// Distribution options.
-    #[allow(dead_code)]
-    options: DistributionOptions,
 }
 
 impl DistributionDecryptor {
@@ -81,18 +59,7 @@ impl DistributionDecryptor {
         let mut key = [0u8; 16];
         key.copy_from_slice(&decoded[0..16]);
 
-        // Bytes 80-81 are the options flag
-        let options_flag = u16::from_le_bytes([decoded[80], decoded[81]]);
-        let options = DistributionOptions::from_flag(options_flag);
-
-        Ok(Self { key, options })
-    }
-
-    /// Returns the distribution options.
-    #[inline]
-    #[allow(dead_code)]
-    pub const fn options(&self) -> DistributionOptions {
-        self.options
+        Ok(Self { key })
     }
 
     /// Decrypts a distribution document stream.
@@ -155,25 +122,6 @@ pub fn decrypt_distribution_stream(data: &[u8], distribution_data: &[u8]) -> Res
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_distribution_options() {
-        let opts = DistributionOptions::from_flag(0x00);
-        assert!(!opts.copy_disabled);
-        assert!(!opts.print_disabled);
-
-        let opts = DistributionOptions::from_flag(0x01);
-        assert!(opts.copy_disabled);
-        assert!(!opts.print_disabled);
-
-        let opts = DistributionOptions::from_flag(0x02);
-        assert!(!opts.copy_disabled);
-        assert!(opts.print_disabled);
-
-        let opts = DistributionOptions::from_flag(0x03);
-        assert!(opts.copy_disabled);
-        assert!(opts.print_disabled);
-    }
 
     #[test]
     fn test_random_array_deterministic() {

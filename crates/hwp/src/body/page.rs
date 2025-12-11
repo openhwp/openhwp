@@ -4,8 +4,8 @@
 //! for each section of the document.
 
 use crate::error::Result;
-use crate::primitive::HwpUnit;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 /// Page orientation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -139,14 +139,14 @@ impl PageDefinition {
     }
 
     /// Returns the printable width (page width minus left and right margins).
-    pub fn printable_width(&self) -> u32 {
+    pub fn printable_width(&self) -> i32 {
         let total_margin = self.margins.left.value() + self.margins.right.value();
         let effective = self.effective_width().value();
         effective.saturating_sub(total_margin)
     }
 
     /// Returns the printable height (page height minus top and bottom margins).
-    pub fn printable_height(&self) -> u32 {
+    pub fn printable_height(&self) -> i32 {
         let total_margin = self.margins.top.value() + self.margins.bottom.value();
         let effective = self.effective_height().value();
         effective.saturating_sub(total_margin)
@@ -259,6 +259,60 @@ impl PageBorderFill {
             offset_top,
             offset_bottom,
         })
+    }
+}
+
+// ============================================================================
+// Conversions from/to primitive types
+// ============================================================================
+
+impl From<GutterPosition> for primitive::GutterPosition {
+    fn from(pos: GutterPosition) -> Self {
+        match pos {
+            GutterPosition::Left => Self::Left,
+            GutterPosition::Right => Self::Right,
+            GutterPosition::Top => Self::Top,
+            GutterPosition::Bottom => Self::Bottom,
+        }
+    }
+}
+
+impl From<primitive::GutterPosition> for GutterPosition {
+    fn from(pos: primitive::GutterPosition) -> Self {
+        match pos {
+            primitive::GutterPosition::Left => Self::Left,
+            primitive::GutterPosition::Right => Self::Right,
+            primitive::GutterPosition::Top => Self::Top,
+            primitive::GutterPosition::Bottom => Self::Bottom,
+        }
+    }
+}
+
+impl From<PageMargins> for primitive::PageMargins {
+    fn from(margins: PageMargins) -> Self {
+        Self::new(
+            margins.left,
+            margins.right,
+            margins.top,
+            margins.bottom,
+            margins.header,
+            margins.footer,
+            margins.gutter,
+        )
+    }
+}
+
+impl From<primitive::PageMargins> for PageMargins {
+    fn from(margins: primitive::PageMargins) -> Self {
+        Self {
+            left: margins.left,
+            right: margins.right,
+            top: margins.top,
+            bottom: margins.bottom,
+            header: margins.header,
+            footer: margins.footer,
+            gutter: margins.gutter,
+        }
     }
 }
 

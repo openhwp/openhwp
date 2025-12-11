@@ -1,30 +1,8 @@
 //! Tab definition record.
 
 use crate::error::Result;
-use crate::primitive::HwpUnit;
 use crate::util::ByteReader;
-
-/// Tab alignment type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TabType {
-    #[default]
-    Left,
-    Right,
-    Center,
-    Decimal,
-}
-
-impl TabType {
-    pub const fn from_raw(value: u8) -> Self {
-        match value {
-            0 => Self::Left,
-            1 => Self::Right,
-            2 => Self::Center,
-            3 => Self::Decimal,
-            _ => Self::Left,
-        }
-    }
-}
+use primitive::{HwpUnit, TabType};
 
 /// Individual tab stop information.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

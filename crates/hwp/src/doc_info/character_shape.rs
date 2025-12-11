@@ -5,6 +5,7 @@
 use crate::error::Result;
 use crate::primitive::ColorReference;
 use crate::util::ByteReader;
+use primitive::UnderlineShape;
 
 /// Language type for font references.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -61,68 +62,9 @@ impl UnderlinePosition {
     }
 }
 
-/// Underline line shape.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum UnderlineShape {
-    /// Solid line.
-    Solid,
-    /// Long dashes.
-    LongDash,
-    /// Short dashes.
-    Dash,
-    /// Dash-dot pattern.
-    DashDot,
-    /// Dash-dot-dot pattern.
-    DashDotDot,
-    /// Long dash.
-    LongDashLong,
-    /// Large circles.
-    Circle,
-    /// Double line.
-    Double,
-    /// Thin then thick.
-    ThinThick,
-    /// Thick then thin.
-    ThickThin,
-    /// Thin-thick-thin.
-    ThinThickThin,
-    /// Wave.
-    Wave,
-    /// Double wave.
-    DoubleWave,
-    /// Thick 3D.
-    Thick3D,
-    /// Thick 3D reversed.
-    Thick3DReversed,
-    /// Single 3D.
-    Single3D,
-    /// Single 3D reversed.
-    Single3DReversed,
-}
-
-impl UnderlineShape {
-    /// Creates from raw value.
-    pub const fn from_raw(value: u32) -> Self {
-        match (value >> 4) & 0x0F {
-            0 => Self::Solid,
-            1 => Self::LongDash,
-            2 => Self::Dash,
-            3 => Self::DashDot,
-            4 => Self::DashDotDot,
-            5 => Self::LongDashLong,
-            6 => Self::Circle,
-            7 => Self::Double,
-            8 => Self::ThinThick,
-            9 => Self::ThickThin,
-            10 => Self::ThinThickThin,
-            11 => Self::Wave,
-            12 => Self::DoubleWave,
-            13 => Self::Thick3D,
-            14 => Self::Thick3DReversed,
-            15 => Self::Single3D,
-            _ => Self::Solid,
-        }
-    }
+/// Extracts underline shape from properties bit field.
+fn extract_underline_shape(properties: u32) -> UnderlineShape {
+    UnderlineShape::from_raw(((properties >> 4) & 0x0F) as u8)
 }
 
 /// Outline type.
@@ -438,8 +380,8 @@ impl CharacterShape {
 
     /// Returns the underline shape.
     #[inline]
-    pub const fn underline_shape(&self) -> UnderlineShape {
-        UnderlineShape::from_raw(self.properties)
+    pub fn underline_shape(&self) -> UnderlineShape {
+        extract_underline_shape(self.properties)
     }
 
     /// Returns the outline type.

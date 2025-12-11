@@ -2,24 +2,7 @@
 
 use crate::error::Result;
 use crate::util::ByteReader;
-
-/// Style type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum StyleType {
-    #[default]
-    Paragraph,
-    Character,
-}
-
-impl StyleType {
-    pub const fn from_raw(value: u8) -> Self {
-        match value & 0x07 {
-            0 => Self::Paragraph,
-            1 => Self::Character,
-            _ => Self::Paragraph,
-        }
-    }
-}
+use primitive::StyleType;
 
 /// Style definition.
 #[derive(Debug, Clone)]

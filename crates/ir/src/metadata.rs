@@ -67,9 +67,10 @@ impl DocumentVersion {
             build,
         }
     }
+}
 
-    /// 문자열로 변환 (예: "5.1.0.0")
-    pub fn to_string(&self) -> String {
-        format!("{}.{}.{}.{}", self.major, self.minor, self.patch, self.build)
+impl std::fmt::Display for DocumentVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}.{}", self.major, self.minor, self.patch, self.build)
     }
 }

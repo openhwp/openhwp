@@ -4,7 +4,8 @@
 //! and UTF-16LE strings from byte slices.
 
 use crate::error::{Error, Result};
-use crate::primitive::{ColorReference, HwpUnit, HwpUnit16, SignedHwpUnit};
+use crate::primitive::{ColorReference, HwpUnit16};
+use primitive::HwpUnit;
 
 /// A reader for parsing binary data from a byte slice.
 ///
@@ -166,16 +167,21 @@ impl<'a> ByteReader<'a> {
         Ok(f64::from_bits(self.read_u64()?))
     }
 
-    /// Reads an HwpUnit (u32).
+    /// Reads an HwpUnit (i32 from u32 bytes).
+    ///
+    /// HWP 파일에서 단위 값은 unsigned로 저장되지만,
+    /// 실제 사용 시 signed 연산이 필요하므로 i32로 변환합니다.
     #[inline]
     pub fn read_hwp_unit(&mut self) -> Result<HwpUnit> {
-        Ok(HwpUnit::new(self.read_u32()?))
+        Ok(HwpUnit::new(self.read_u32()? as i32))
     }
 
-    /// Reads a SignedHwpUnit (i32).
+    /// Reads an HwpUnit (i32 from i32 bytes).
+    ///
+    /// 음수가 저장될 수 있는 위치/오프셋 값을 읽습니다.
     #[inline]
-    pub fn read_signed_hwp_unit(&mut self) -> Result<SignedHwpUnit> {
-        Ok(SignedHwpUnit::new(self.read_i32()?))
+    pub fn read_signed_hwp_unit(&mut self) -> Result<HwpUnit> {
+        Ok(HwpUnit::new(self.read_i32()?))
     }
 
     /// Reads an HwpUnit16 (i16).

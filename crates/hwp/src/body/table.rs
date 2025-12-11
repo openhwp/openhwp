@@ -4,8 +4,9 @@
 //! contains a list of paragraphs.
 
 use crate::error::Result;
-use crate::primitive::{HwpUnit, HwpUnit16};
+use crate::primitive::{CellPadding, HwpUnit16, TablePadding};
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 use super::paragraph::Paragraph;
 
@@ -29,31 +30,6 @@ impl PageBorderSplit {
             1 => Self::SplitByCell,
             _ => Self::NoSplitAlt,
         }
-    }
-}
-
-/// Table inner padding information.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct TablePadding {
-    /// Left padding.
-    pub left: HwpUnit16,
-    /// Right padding.
-    pub right: HwpUnit16,
-    /// Top padding.
-    pub top: HwpUnit16,
-    /// Bottom padding.
-    pub bottom: HwpUnit16,
-}
-
-impl TablePadding {
-    /// Parses from reader.
-    pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
-        Ok(Self {
-            left: reader.read_hwp_unit16()?,
-            right: reader.read_hwp_unit16()?,
-            top: reader.read_hwp_unit16()?,
-            bottom: reader.read_hwp_unit16()?,
-        })
     }
 }
 
@@ -88,30 +64,6 @@ impl TableZone {
     }
 }
 
-/// Cell padding (4 directions).
-#[derive(Debug, Clone, Copy, Default)]
-pub struct CellPadding {
-    /// Left padding.
-    pub left: HwpUnit16,
-    /// Right padding.
-    pub right: HwpUnit16,
-    /// Top padding.
-    pub top: HwpUnit16,
-    /// Bottom padding.
-    pub bottom: HwpUnit16,
-}
-
-impl CellPadding {
-    /// Parses from reader.
-    pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
-        Ok(Self {
-            left: reader.read_hwp_unit16()?,
-            right: reader.read_hwp_unit16()?,
-            top: reader.read_hwp_unit16()?,
-            bottom: reader.read_hwp_unit16()?,
-        })
-    }
-}
 
 /// Table cell information.
 #[derive(Debug, Clone, Default)]

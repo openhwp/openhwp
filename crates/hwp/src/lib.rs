@@ -48,7 +48,11 @@
 //! - `BinData`: 바이너리 데이터 (이미지 등)
 //! - `PrvText`, `PrvImage`: 미리보기 텍스트 및 이미지
 
+#![deny(clippy::all)]
+
+pub mod convert;
 pub mod error;
+pub mod writer;
 
 mod body;
 mod crypto;
@@ -70,42 +74,102 @@ pub use error::{Error, Result};
 pub use body::Section;
 pub use doc_info::DocInfo;
 pub use header::FileHeader;
-pub use primitive::Version;
+pub use ::primitive::Version;
 
 // 본문(Body) 타입 - HWP 스펙에 정의된 타입들
 pub use body::{
-    // 컨트롤 타입 (표, 그림 등 특수 개체)
-    Control, ControlCharacter, ControlContent, ControlId, ControlType,
-    // 수식 타입
-    Equation, EquationLineMode, EquationProperties,
-    // 필드 컨트롤
-    Field, FieldType,
-    // 각주/미주
-    Endnote, EndnoteShape, Footnote, FootnoteShape, NotePlacement, NoteNumberingType,
-    // 머리글/꼬리글
-    Footer, Header, HeaderFooterTarget,
-    // 하이퍼링크
-    Hyperlink, HyperlinkType,
-    // 리스트 헤더 (중첩 콘텐츠 컨테이너)
-    ListHeader, TextDirection,
-    // 페이지 설정
-    GutterPosition, PageBorderFill, PageBorderFillPosition, PageDefinition, PageMargins, PageOrientation,
-    // 문단 타입
-    BreakType, CharacterShapeReference, LineSegment, Paragraph, RangeTag,
-    // 그림 타입
-    ImageCrop, ImageFlip, InnerMargin, OleObject, Picture, PictureEffect, PictureFill,
-    PictureProperties,
     // 도형 타입
-    ArcShape, ArcType, ArrowSize, ArrowType, CurveSegmentType, CurveShape, EllipseShape,
-    LineEndCap, LineShape, Point, PolygonShape, RectangleShape, Shape, ShapeBorderLine,
-    ShapeElementProperties, ShapeType,
-    // 표 타입
-    Table, TableCell, TableProperties,
+    ArcShape,
+    ArcType,
+    ArrowSize,
+    ArrowType,
+    // 문단 타입
+    BreakType,
     // 텍스트 박스 및 캡션
-    Caption, CaptionDirection, TextBox, VerticalAlignment,
+    Caption,
+    CaptionDirection,
+    CharacterShapeReference,
     // 추가 컨트롤 타입
-    ChartData, ChartSeries, ChartType, FormObject, FormObjectType, Memo, MemoShape,
-    ShapeContainer, TextArt, TextArtAlignment, TextArtShape, VideoData, VideoType,
+    ChartData,
+    ChartSeries,
+    ChartType,
+    // 컨트롤 타입 (표, 그림 등 특수 개체)
+    Control,
+    ControlCharacter,
+    ControlContent,
+    ControlId,
+    ControlType,
+    CurveSegmentType,
+    CurveShape,
+    EllipseShape,
+    // 각주/미주
+    Endnote,
+    EndnoteShape,
+    // 수식 타입
+    Equation,
+    EquationLineMode,
+    EquationProperties,
+    // 필드 컨트롤
+    Field,
+    FieldType,
+    // 머리글/꼬리글
+    Footer,
+    Footnote,
+    FootnoteShape,
+    FormObject,
+    FormObjectType,
+    // 페이지 설정
+    GutterPosition,
+    Header,
+    HeaderFooterTarget,
+    // 하이퍼링크
+    Hyperlink,
+    HyperlinkType,
+    // 그림 타입
+    ImageCrop,
+    ImageFlip,
+    InnerMargin,
+    LineEndCap,
+    LineSegment,
+    LineShape,
+    // 리스트 헤더 (중첩 콘텐츠 컨테이너)
+    ListHeader,
+    Memo,
+    MemoShape,
+    NoteNumberingType,
+    NotePlacement,
+    OleObject,
+    PageBorderFill,
+    PageBorderFillPosition,
+    PageDefinition,
+    PageMargins,
+    PageOrientation,
+    Paragraph,
+    Picture,
+    PictureEffect,
+    PictureFill,
+    PictureProperties,
+    Point,
+    PolygonShape,
+    RangeTag,
+    RectangleShape,
+    Shape,
+    ShapeBorderLine,
+    ShapeContainer,
+    ShapeElementProperties,
+    ShapeType,
+    // 표 타입
+    Table,
+    TableCell,
+    TableProperties,
+    TextArt,
+    TextArtAlignment,
+    TextArtShape,
+    TextBox,
+    TextDirection,
+    VerticalAlignment,
+    VideoData,
+    VideoType,
 };
 
 // 문서 정보(DocInfo) 타입 - HWP 스펙에 정의된 타입들
@@ -113,27 +177,49 @@ pub use doc_info::{
     // 바이너리 데이터 (이미지 등)
     BinaryData,
     // 테두리/채우기 타입
-    BorderFill, BorderLineStyle, BorderLineThickness, DiagonalType, FillInfo, FillType,
-    GradientFill, GradientType, ImageFill, ImageFillType, ImageInfo, PatternFill, PatternType,
+    BorderFill,
+    BorderLineStyle,
+    BorderLineThickness,
     // 글머리표
     Bullet,
     // 글자 모양 타입
-    CharacterShape, EmphasisType, LanguageType, OutlineType, ShadowType, StrikethroughShape,
-    UnderlinePosition, UnderlineShape,
+    CharacterShape,
     // 문서 속성
-    CompatibleDocument, DocumentProperties, LayoutCompatibility,
+    CompatibleDocument,
+    DiagonalType,
+    DocumentProperties,
+    EmphasisType,
     // 글꼴 이름
     FaceName,
+    FillInfo,
+    FillType,
+    GradientFill,
+    GradientType,
     // ID 매핑
     IdMappings,
+    ImageFill,
+    ImageFillType,
+    ImageInfo,
+    LanguageType,
+    LayoutCompatibility,
     // 번호 매김 타입
-    Numbering, NumberingLevel, ParagraphHeadAlignment, ParagraphHeadInfo,
+    Numbering,
+    NumberingLevel,
+    OutlineType,
+    ParagraphHeadAlignment,
+    ParagraphHeadInfo,
     // 문단 모양
     ParagraphShape,
+    PatternFill,
+    PatternType,
+    ShadowType,
+    StrikethroughShape,
     // 스타일
     Style,
     // 탭 정의
     TabDefinition,
+    UnderlinePosition,
+    UnderlineShape,
 };
 
 // 미리보기 및 요약 정보 타입
