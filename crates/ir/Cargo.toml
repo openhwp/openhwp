@@ -1,0 +1,9 @@
+[package]
+name = "ir"
+version = "0.1.0"
+edition = "2024"
+description = "Intermediate representation for Korean document formats (HWP, HWPX)"
+license = "MIT"
+
+[dependencies]
+primitive = { workspace = true }
