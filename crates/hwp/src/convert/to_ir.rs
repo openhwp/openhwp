@@ -643,17 +643,18 @@ fn convert_fill_info(fill_info: &crate::doc_info::FillInfo) -> ir::border_fill::
             if pattern.pattern_type == HwpPatternType::None {
                 Fill::Solid(SolidFill {
                     color: convert_color(pattern.background_color),
+                    alpha: 255,
                 })
             } else {
                 Fill::Pattern(PatternFill {
                     pattern_type: match pattern.pattern_type {
-                        HwpPatternType::None => IrPatternType::Horizontal,
+                        HwpPatternType::None => IrPatternType::None,
                         HwpPatternType::Horizontal => IrPatternType::Horizontal,
                         HwpPatternType::Vertical => IrPatternType::Vertical,
-                        HwpPatternType::BackSlash => IrPatternType::DiagonalDown,
-                        HwpPatternType::Slash => IrPatternType::DiagonalUp,
-                        HwpPatternType::Cross => IrPatternType::Grid,
-                        HwpPatternType::CrossDiagonal => IrPatternType::DiagonalGrid,
+                        HwpPatternType::BackSlash => IrPatternType::BackSlash,
+                        HwpPatternType::Slash => IrPatternType::Slash,
+                        HwpPatternType::Cross => IrPatternType::Cross,
+                        HwpPatternType::CrossDiagonal => IrPatternType::CrossDiagonal,
                     },
                     foreground: convert_color(pattern.pattern_color),
                     background: convert_color(pattern.background_color),
@@ -733,6 +734,9 @@ fn convert_fill_info(fill_info: &crate::doc_info::FillInfo) -> ir::border_fill::
                 brightness: image.image_info.brightness,
                 contrast: image.image_info.contrast,
                 effect,
+                offset_x: primitive::HwpUnit::ZERO,
+                offset_y: primitive::HwpUnit::ZERO,
+                size: None,
             })
         }
     }
@@ -3100,6 +3104,7 @@ fn convert_text_art(text_art: &HwpTextArt, control: &Control) -> Result<IrTextAr
     let text_color = text_art.text_color();
     let fill = ir::border_fill::Fill::Solid(ir::border_fill::SolidFill {
         color: bgr_to_color(text_color),
+        alpha: 255,
     });
 
     // 그림자 색상 → ShapeShadow (색상이 0이 아니면 그림자 있음)

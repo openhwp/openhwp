@@ -1,7 +1,11 @@
 //! 텍스트 장식 관련 열거형
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// 밑줄 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum UnderlineType {
     /// 없음
     #[default]
@@ -26,6 +30,7 @@ pub enum UnderlineType {
 
 /// 밑줄 위치
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum UnderlinePosition {
     /// 아래
     #[default]
@@ -36,6 +41,7 @@ pub enum UnderlinePosition {
 
 /// 취소선 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum StrikethroughType {
     /// 없음
     #[default]
@@ -48,6 +54,7 @@ pub enum StrikethroughType {
 
 /// 강조점 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum EmphasisType {
     /// 없음
     #[default]
@@ -70,6 +77,7 @@ pub enum EmphasisType {
 
 /// 외곽선 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum OutlineType {
     /// 없음
     #[default]
@@ -86,6 +94,7 @@ pub enum OutlineType {
 
 /// 그림자 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ShadowType {
     /// 없음
     #[default]

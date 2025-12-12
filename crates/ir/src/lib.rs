@@ -45,10 +45,9 @@ pub mod table;
 
 // Re-exports from internal modules
 pub use binary::{BinaryData, BinaryDataStore, BinaryFormat};
-pub use char_shape::{
-    CharShape, EmphasisStyle, Font, FontFamily, FontRef, FontSet, FontType, ShadowStyle,
-    SubstituteFont, UnderlineStyle,
-};
+pub use char_shape::{CharShape, Font, FontRef, FontSet};
+// Re-exports from char_shape that come from primitive
+pub use char_shape::{EmphasisStyle, FontFamily, FontType, ShadowStyle, SubstituteFont, UnderlineStyle};
 pub use document::{CaretPosition, CompatibleDocument, Document, DocumentSettings};
 pub use error::{
     ConversionError, ConversionErrorKind, ConversionResult, ConversionWarning,

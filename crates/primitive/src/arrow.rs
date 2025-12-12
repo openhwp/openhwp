@@ -1,7 +1,11 @@
 //! 화살표 관련 열거형
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// 화살표 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ArrowType {
     /// 없음
     #[default]
@@ -22,6 +26,7 @@ pub enum ArrowType {
 
 /// 화살표 크기
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum ArrowSize {
     /// 작은
     Small,

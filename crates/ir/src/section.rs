@@ -2,14 +2,15 @@
 //!
 //! 문서의 섹션(구역)을 정의합니다. 섹션은 페이지 설정과 본문 내용을 포함합니다.
 
-use primitive::Color;
 use crate::paragraph::Paragraph;
-use primitive::BorderFillId;
 use primitive::{
-    EndnotePlacement, FootnotePlacement, GutterPosition, HeaderFooterApplyTo, HwpUnit, Insets,
-    LineNumberRestartType, LineType, NoteNumbering, NumberFormat, PageMargins, PageOrientation,
-    PageStartsOn,
+    BorderFillId, Color, EndnotePlacement, FootnotePlacement, GutterPosition, HeaderFooterApplyTo,
+    HwpUnit, Insets, LineNumberRestartType, LineType, NoteNumbering, NumberFormat, PageMargins,
+    PageOrientation, PageStartsOn,
 };
+
+// Re-export primitive types (only simple enums that don't have structural differences)
+pub use primitive::{PageBorderFillArea, PageBorderPageType, PageBorderPosition, VisibilityOption};
 
 /// 섹션
 ///
@@ -335,41 +336,7 @@ impl Default for PageBorderFill {
     }
 }
 
-/// 페이지 테두리 위치 기준
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum PageBorderPosition {
-    /// 용지 기준
-    #[default]
-    Paper,
-    /// 본문 영역 기준
-    Body,
-}
-
-/// 페이지 테두리 적용 페이지 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum PageBorderPageType {
-    /// 모든 페이지
-    #[default]
-    Both,
-    /// 짝수 페이지만
-    Even,
-    /// 홀수 페이지만
-    Odd,
-    /// 첫 페이지만
-    First,
-}
-
-/// 페이지 테두리 채우기 영역
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum PageBorderFillArea {
-    /// 용지 전체
-    #[default]
-    Paper,
-    /// 본문 영역
-    Body,
-    /// 꼬리말/머리말 제외
-    Content,
-}
+// PageBorderPosition, PageBorderPageType, PageBorderFillArea re-exported from primitive
 
 /// 섹션 확장 데이터
 #[derive(Debug, Clone, Default)]
@@ -421,18 +388,7 @@ pub struct SectionVisibility {
     pub fill_visibility: Option<VisibilityOption>,
 }
 
-/// 가시성 옵션 (HWPX 전용)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum VisibilityOption {
-    /// 숨김
-    Hide,
-    /// 표시
-    Show,
-    /// 첫 페이지만 숨김
-    HideFirstPage,
-    /// 첫 페이지만 표시
-    ShowFirstPage,
-}
+// VisibilityOption re-exported from primitive
 
 /// 섹션 그리드 설정
 ///

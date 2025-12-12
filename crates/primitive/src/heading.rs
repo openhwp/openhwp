@@ -2,8 +2,12 @@
 //!
 //! 문단 머리의 종류(개요, 번호, 글머리표)를 정의합니다.
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// 문단 머리 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum HeadingType {
     /// 없음

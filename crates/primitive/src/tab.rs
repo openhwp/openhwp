@@ -2,8 +2,12 @@
 //!
 //! 탭 정렬 및 채움선 타입을 정의합니다.
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// 탭 정렬 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum TabType {
     /// 왼쪽 정렬
@@ -37,6 +41,7 @@ impl TabType {
 
 /// 탭 채움선 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum TabLeader {
     /// 없음

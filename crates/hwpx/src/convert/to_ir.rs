@@ -240,7 +240,7 @@ fn convert_font(font: &HwpxFont) -> Font {
             binary_item_id_ref: substitute
                 .binary_item_id_reference
                 .as_ref()
-                .map(|r| primitive::BinaryDataId::new(r.0.clone())),
+                .map(|r| r.0.clone()),
         });
     }
 
@@ -742,6 +742,9 @@ fn convert_fill_brush(fill_brush: Option<&crate::core::types::FillBrush>) -> ir:
             brightness: img_brush.image.brightness.clamp(-100, 100) as i8,
             contrast: img_brush.image.contrast.clamp(-100, 100) as i8,
             effect,
+            offset_x: primitive::HwpUnit::ZERO,
+            offset_y: primitive::HwpUnit::ZERO,
+            size: None,
         });
     }
 
@@ -797,10 +800,10 @@ fn convert_fill_brush(fill_brush: Option<&crate::core::types::FillBrush>) -> ir:
             let pattern_type = match hatch {
                 HatchStyle::Horizontal => IrPatternType::Horizontal,
                 HatchStyle::Vertical => IrPatternType::Vertical,
-                HatchStyle::BackSlash => IrPatternType::DiagonalDown,
-                HatchStyle::Slash => IrPatternType::DiagonalUp,
-                HatchStyle::Cross => IrPatternType::Grid,
-                HatchStyle::CrossDiagonal => IrPatternType::DiagonalGrid,
+                HatchStyle::BackSlash => IrPatternType::BackSlash,
+                HatchStyle::Slash => IrPatternType::Slash,
+                HatchStyle::Cross => IrPatternType::Cross,
+                HatchStyle::CrossDiagonal => IrPatternType::CrossDiagonal,
             };
             let foreground = match win_brush.hatch_color.0 {
                 Some(ref c) => convert_color(c),
@@ -821,7 +824,7 @@ fn convert_fill_brush(fill_brush: Option<&crate::core::types::FillBrush>) -> ir:
                 Some(ref c) => convert_color(c),
                 None => Color::WHITE,
             };
-            return Fill::Solid(SolidFill { color });
+            return Fill::Solid(SolidFill { color, alpha: 255 });
         }
     }
 

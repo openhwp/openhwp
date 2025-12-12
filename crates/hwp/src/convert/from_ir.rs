@@ -1608,12 +1608,13 @@ fn convert_fill_to_hwp(fill: &ir::border_fill::Fill) -> HwpFillInfo {
         }
         ir::border_fill::Fill::Pattern(pattern) => {
             let pattern_type = match pattern.pattern_type {
+                ir::border_fill::PatternType::None => HwpPatternType::None,
                 ir::border_fill::PatternType::Horizontal => HwpPatternType::Horizontal,
                 ir::border_fill::PatternType::Vertical => HwpPatternType::Vertical,
-                ir::border_fill::PatternType::DiagonalDown => HwpPatternType::BackSlash,
-                ir::border_fill::PatternType::DiagonalUp => HwpPatternType::Slash,
-                ir::border_fill::PatternType::Grid => HwpPatternType::Cross,
-                ir::border_fill::PatternType::DiagonalGrid => HwpPatternType::CrossDiagonal,
+                ir::border_fill::PatternType::BackSlash => HwpPatternType::BackSlash,
+                ir::border_fill::PatternType::Slash => HwpPatternType::Slash,
+                ir::border_fill::PatternType::Cross => HwpPatternType::Cross,
+                ir::border_fill::PatternType::CrossDiagonal => HwpPatternType::CrossDiagonal,
             };
 
             HwpFillInfo::Pattern(HwpPatternFill {
@@ -1755,7 +1756,9 @@ fn convert_shape_type_to_hwp(shape_type: &IrShapeType) -> Result<ShapeTypeData, 
             // ConnectorType을 HWP line_type으로 변환
             let line_type = match connector.connector_type {
                 ir::shape::ConnectorType::Straight => 0,  // 직선
-                ir::shape::ConnectorType::Elbow => 1,     // 꺾인선
+                ir::shape::ConnectorType::Elbow
+                | ir::shape::ConnectorType::VerticalHorizontal
+                | ir::shape::ConnectorType::HorizontalVertical => 1,     // 꺾인선
                 ir::shape::ConnectorType::Curved => 2,    // 곡선
             };
 
@@ -2082,7 +2085,7 @@ fn convert_video_to_hwp(video: &IrVideo) -> Result<HwpVideoData, ConversionError
     let video_type = match video.video_type {
         IrVideoType::Embedded => 0,
         IrVideoType::Linked => 1,
-        IrVideoType::YouTube => 2,
+        IrVideoType::YouTube | IrVideoType::Web => 2,
     };
 
     // 바이너리 데이터 ID (임베디드인 경우)
@@ -2134,11 +2137,11 @@ fn convert_ole_to_hwp(ole: &IrOleObject) -> Result<HwpOleData, ConversionError> 
 /// IR Chart → HWP ChartData 변환
 fn convert_chart_to_hwp(chart: &IrChart) -> Result<HwpChartData, ConversionError> {
     let chart_type = match chart.chart_type {
-        IrChartType::Bar => 0,
-        IrChartType::Line => 1,
-        IrChartType::Pie => 2,
-        IrChartType::Area => 3,
-        IrChartType::Scatter => 4,
+        IrChartType::Bar | IrChartType::Column => 0,
+        IrChartType::Line | IrChartType::Stock => 1,
+        IrChartType::Pie | IrChartType::Doughnut => 2,
+        IrChartType::Area | IrChartType::Surface => 3,
+        IrChartType::Scatter | IrChartType::Bubble => 4,
         IrChartType::Radar => 6,
     };
 
@@ -2152,7 +2155,7 @@ fn convert_chart_to_hwp(chart: &IrChart) -> Result<HwpChartData, ConversionError
 /// IR FormObject → HWP FormObjectData 변환
 fn convert_form_object_to_hwp(form: &IrFormObject) -> Result<HwpFormObjectData, ConversionError> {
     let form_type = match form.form_type {
-        IrFormObjectType::Button => 5,
+        IrFormObjectType::Button | IrFormObjectType::Signature => 5,
         IrFormObjectType::CheckBox => 1,
         IrFormObjectType::RadioButton => 2,
         IrFormObjectType::ComboBox => 3,

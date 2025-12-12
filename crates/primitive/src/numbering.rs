@@ -44,6 +44,7 @@ pub enum NumberFormat {
 
 /// 각주/미주 번호 위치
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum NoteNumberPosition {
     /// 위 첨자
     #[default]
@@ -54,6 +55,7 @@ pub enum NoteNumberPosition {
 
 /// 각주/미주 번호 매김 방식
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum NoteNumbering {
     /// 문서 전체 연속
     #[default]
@@ -66,6 +68,7 @@ pub enum NoteNumbering {
 
 /// 각주 배치 위치
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum FootnotePlacement {
     /// 각 단마다 따로 배열
     #[default]
@@ -78,6 +81,7 @@ pub enum FootnotePlacement {
 
 /// 미주 배치 위치
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum EndnotePlacement {
     /// 문서의 마지막
     #[default]

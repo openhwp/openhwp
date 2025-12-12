@@ -2,8 +2,15 @@
 //!
 //! 문단의 정렬, 들여쓰기, 줄간격 등 문단 서식을 정의합니다.
 
-use primitive::{BorderFillId, TabDefId};
-use primitive::{Alignment, HeadingType, HwpUnit, LineBreakKorean, LineBreakLatin, Percent, TabLeader, TabType, VerticalAlignment};
+use primitive::{
+    Alignment, BorderFillId, HwpUnit, LineBreakKorean, LineBreakLatin, Percent, TabDefId,
+    VerticalAlignment,
+};
+
+// Re-export primitive types
+pub use primitive::{
+    LineSpacingType, ParagraphBorder, ParagraphNumbering, Tab, TabDef,
+};
 
 /// 문단 모양 정의
 #[derive(Debug, Clone)]
@@ -183,19 +190,7 @@ impl LineSpacing {
     }
 }
 
-/// 줄 간격 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum LineSpacingType {
-    /// 비율 (글자 크기 대비)
-    #[default]
-    Percent,
-    /// 고정값
-    Fixed,
-    /// 최소값
-    AtLeast,
-    /// 글꼴 기준 비율
-    FontBased,
-}
+// LineSpacingType re-exported from primitive
 
 /// 줄 간격 값
 #[derive(Debug, Clone)]
@@ -212,63 +207,4 @@ impl Default for LineSpacingValue {
     }
 }
 
-/// 문단 번호/기호
-#[derive(Debug, Clone)]
-pub struct ParagraphNumbering {
-    /// 문단 머리 종류 (None/Outline/Number/Bullet)
-    pub heading_type: HeadingType,
-    /// 번호 매기기 정의 ID
-    pub numbering_id: Option<u32>,
-    /// 글머리 기호 정의 ID
-    pub bullet_id: Option<u32>,
-    /// 수준 (1부터 시작, 개요 수준)
-    pub level: u8,
-}
-
-/// 탭 정의
-#[derive(Debug, Clone)]
-pub struct TabDef {
-    /// 탭 위치들
-    pub tabs: Vec<Tab>,
-    /// 자동 탭 간격 (없으면 비활성)
-    pub auto_tab_interval: Option<HwpUnit>,
-}
-
-impl Default for TabDef {
-    fn default() -> Self {
-        Self {
-            tabs: Vec::new(),
-            auto_tab_interval: Some(HwpUnit::new(800)), // 8pt (1pt = 100 HwpUnit)
-        }
-    }
-}
-
-/// 탭
-#[derive(Debug, Clone)]
-pub struct Tab {
-    /// 탭 위치
-    pub position: HwpUnit,
-    /// 탭 종류
-    pub tab_type: TabType,
-    /// 채움선 종류
-    pub leader: TabLeader,
-}
-
-/// 문단 테두리 설정
-#[derive(Debug, Clone)]
-pub struct ParagraphBorder {
-    /// 테두리/배경 참조
-    pub border_fill_id_ref: BorderFillId,
-    /// 왼쪽 간격
-    pub offset_left: HwpUnit,
-    /// 오른쪽 간격
-    pub offset_right: HwpUnit,
-    /// 위쪽 간격
-    pub offset_top: HwpUnit,
-    /// 아래쪽 간격
-    pub offset_bottom: HwpUnit,
-    /// 테두리 연결
-    pub connect: bool,
-    /// 여백 무시
-    pub ignore_margin: bool,
-}
+// ParagraphNumbering, TabDef, Tab, ParagraphBorder re-exported from primitive

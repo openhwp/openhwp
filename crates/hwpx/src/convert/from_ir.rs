@@ -1325,7 +1325,7 @@ fn convert_font_to_hwpx(font: &IrFont, id: u32) -> HwpxFont {
             binary_item_id_reference: subst
                 .binary_item_id_ref
                 .as_ref()
-                .map(|r| BinaryItemIdRef(r.value().to_string())),
+                .map(|r| BinaryItemIdRef(r.clone())),
         }
     });
 
@@ -2016,10 +2016,11 @@ fn convert_border_fill_to_hwpx(
             let hatch = match pattern.pattern_type {
                 IrPatternType::Horizontal => HatchStyle::Horizontal,
                 IrPatternType::Vertical => HatchStyle::Vertical,
-                IrPatternType::DiagonalDown => HatchStyle::BackSlash,
-                IrPatternType::DiagonalUp => HatchStyle::Slash,
-                IrPatternType::Grid => HatchStyle::Cross,
-                IrPatternType::DiagonalGrid => HatchStyle::CrossDiagonal,
+                IrPatternType::None => HatchStyle::Horizontal, // fallback
+                IrPatternType::BackSlash => HatchStyle::BackSlash,
+                IrPatternType::Slash => HatchStyle::Slash,
+                IrPatternType::Cross => HatchStyle::Cross,
+                IrPatternType::CrossDiagonal => HatchStyle::CrossDiagonal,
             };
             Some(FillBrush {
                 windows_brush: Some(WindowsBrush {
@@ -2161,10 +2162,11 @@ fn convert_fill_to_hwpx(fill: &ir::border_fill::Fill) -> Option<crate::core::typ
             let hatch = match pattern.pattern_type {
                 IrPatternType::Horizontal => HatchStyle::Horizontal,
                 IrPatternType::Vertical => HatchStyle::Vertical,
-                IrPatternType::DiagonalDown => HatchStyle::BackSlash,
-                IrPatternType::DiagonalUp => HatchStyle::Slash,
-                IrPatternType::Grid => HatchStyle::Cross,
-                IrPatternType::DiagonalGrid => HatchStyle::CrossDiagonal,
+                IrPatternType::None => HatchStyle::Horizontal, // fallback
+                IrPatternType::BackSlash => HatchStyle::BackSlash,
+                IrPatternType::Slash => HatchStyle::Slash,
+                IrPatternType::Cross => HatchStyle::Cross,
+                IrPatternType::CrossDiagonal => HatchStyle::CrossDiagonal,
             };
             Some(FillBrush {
                 windows_brush: Some(WindowsBrush {
@@ -4090,7 +4092,9 @@ fn convert_connector_to_hwpx(
             (true, true) => ConnectLineStyle::StraightBoth,
             _ => ConnectLineStyle::StraightOneWay,
         },
-        ir::shape::ConnectorType::Elbow => match (has_start_arrow, has_end_arrow) {
+        ir::shape::ConnectorType::Elbow
+        | ir::shape::ConnectorType::VerticalHorizontal
+        | ir::shape::ConnectorType::HorizontalVertical => match (has_start_arrow, has_end_arrow) {
             (false, false) => ConnectLineStyle::StrokeNoArrow,
             (true, true) => ConnectLineStyle::StrokeBoth,
             _ => ConnectLineStyle::StrokeOneWay,
@@ -4422,7 +4426,7 @@ fn convert_video_to_hwpx(video: &IrVideo) -> Result<crate::paragraph::Video, Con
     // 비디오 종류 변환
     let video_type = match video.video_type {
         IrVideoType::Embedded => VideoType::Local,
-        IrVideoType::Linked | IrVideoType::YouTube => VideoType::Web,
+        IrVideoType::Linked | IrVideoType::YouTube | IrVideoType::Web => VideoType::Web,
     };
 
     // 비디오 ID (로컬인 경우)
@@ -4978,6 +4982,41 @@ fn convert_form_object_to_hwpx(
                 bar_type,
             };
             Ok(Some(HwpxRunContent::ScrollBar(Box::new(scroll))))
+        }
+        // Signature는 Button으로 대체
+        IrFormObjectType::Signature => {
+            let btn = Button {
+                size,
+                position,
+                outside_margin: None,
+                caption_element: None,
+                shape_comment: None,
+                meta_tag: None,
+                form_char_property,
+                id,
+                z_order,
+                numbering_type: ShapeNumberingType::default(),
+                text_wrap,
+                text_flow,
+                lock: false,
+                name: form.name.clone(),
+                fore_color,
+                back_color,
+                group_name: group_name.clone(),
+                tab_stop,
+                editable: true,
+                tab_order: None,
+                enabled,
+                border_type_id_ref,
+                draw_frame,
+                printable,
+                caption_text: form.caption.clone(),
+                value: button_value,
+                radio_group_name: None,
+                tri_state: false,
+                back_style: None,
+            };
+            Ok(Some(HwpxRunContent::Button(Box::new(btn))))
         }
     }
 }

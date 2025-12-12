@@ -2,11 +2,12 @@
 //!
 //! 텍스트의 글꼴, 크기, 색상 등 글자 서식을 정의합니다.
 
-use primitive::Color;
-use primitive::FontId;
-use primitive::{
-    EmphasisType, HwpUnit, LanguageType, OutlineType, Percent, ShadowType, StrikethroughType,
-    UnderlinePosition, UnderlineType,
+use primitive::{Color, FontId, HwpUnit, LanguageType, OutlineType, Percent, StrikethroughType};
+
+// Re-export primitive types
+pub use primitive::{
+    CharShadowStyle as ShadowStyle, EmphasisStyle, FontFamily, FontType,
+    SubstituteFont, UnderlineStyle,
 };
 
 /// 글자 모양 정의
@@ -223,54 +224,7 @@ impl FontRef {
     }
 }
 
-/// 밑줄 스타일
-#[derive(Debug, Clone, Default)]
-pub struct UnderlineStyle {
-    /// 밑줄 종류
-    pub line_type: UnderlineType,
-    /// 밑줄 위치
-    pub position: UnderlinePosition,
-    /// 밑줄 색상 (None이면 글자 색상 사용)
-    pub color: Option<Color>,
-}
-
-impl UnderlineStyle {
-    /// 밑줄 없음
-    pub fn none() -> Self {
-        Self::default()
-    }
-
-    /// 단일 밑줄
-    pub fn single() -> Self {
-        Self {
-            line_type: UnderlineType::Single,
-            position: UnderlinePosition::Bottom,
-            color: None,
-        }
-    }
-}
-
-/// 강조점 스타일
-#[derive(Debug, Clone, Default)]
-pub struct EmphasisStyle {
-    /// 강조점 종류
-    pub emphasis_type: EmphasisType,
-    /// 강조점 색상 (None이면 글자 색상 사용)
-    pub color: Option<Color>,
-}
-
-/// 그림자 스타일
-#[derive(Debug, Clone, Default)]
-pub struct ShadowStyle {
-    /// 그림자 종류
-    pub shadow_type: ShadowType,
-    /// 그림자 색상
-    pub color: Option<Color>,
-    /// 가로 오프셋
-    pub offset_x: HwpUnit,
-    /// 세로 오프셋
-    pub offset_y: HwpUnit,
-}
+// UnderlineStyle, EmphasisStyle, ShadowStyle re-exported from primitive
 
 /// 폰트 정의
 #[derive(Debug, Clone)]
@@ -312,45 +266,4 @@ impl Font {
     }
 }
 
-/// 대체 폰트 정보 (HWPX용)
-#[derive(Debug, Clone)]
-pub struct SubstituteFont {
-    /// 대체 폰트 이름
-    pub face: String,
-    /// 대체 폰트 종류
-    pub font_type: FontType,
-    /// 임베디드 여부
-    pub is_embedded: bool,
-    /// 바이너리 항목 참조
-    pub binary_item_id_ref: Option<primitive::BinaryDataId>,
-}
-
-/// 폰트 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum FontType {
-    /// 대표 글꼴
-    #[default]
-    Representative,
-    /// 트루타입
-    TrueType,
-    /// 한글 전용
-    HangeulOnly,
-}
-
-/// 폰트 패밀리
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum FontFamily {
-    /// 알 수 없음
-    #[default]
-    Unknown,
-    /// 명조
-    Serif,
-    /// 고딕
-    SansSerif,
-    /// 장식체
-    Decorative,
-    /// 필기체
-    Script,
-    /// 고정폭
-    Monospace,
-}
+// SubstituteFont, FontType, FontFamily re-exported from primitive

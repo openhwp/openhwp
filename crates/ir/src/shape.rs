@@ -3,75 +3,19 @@
 //! 문서 내 도형(선, 사각형, 타원 등)을 정의합니다.
 
 use crate::border_fill::Fill;
-use primitive::Color;
 use crate::control::ObjectCommon;
 use crate::paragraph::Paragraph;
-use primitive::{ArrowSize, ArrowType, HwpUnit, Insets, LineCap, LineOutlineStyle, LineType, Point, TextDirection, VerticalAlignment};
+use primitive::{
+    Color, HwpUnit, Insets, LineCap, LineOutlineStyle, LineType, Point, TextDirection,
+    VerticalAlignment,
+};
 
-/// 2D 변환 행렬 (3x3 affine transform의 6개 값)
-///
-/// 행렬 형태:
-/// | e1  e2  e5 |
-/// | e3  e4  e6 |
-/// | 0   0   1  |
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct TransformMatrix {
-    pub e1: f64,
-    pub e2: f64,
-    pub e3: f64,
-    pub e4: f64,
-    pub e5: f64,
-    pub e6: f64,
-}
+// Re-export primitive types
+pub use primitive::{
+    Arrow, ConnectorPoint, ConnectorType, CurvePoint, CurvePointKind as CurvePointType,
+    RectangleCorner, TransformMatrix, ArcType,
+};
 
-impl Default for TransformMatrix {
-    fn default() -> Self {
-        // 단위 행렬 (identity matrix)
-        Self {
-            e1: 1.0,
-            e2: 0.0,
-            e3: 0.0,
-            e4: 1.0,
-            e5: 0.0,
-            e6: 0.0,
-        }
-    }
-}
-
-impl TransformMatrix {
-    /// 단위 행렬 생성
-    pub fn identity() -> Self {
-        Self::default()
-    }
-
-    /// HWP 행렬 벡터에서 변환 (6개 또는 그 이상의 값)
-    pub fn from_hwp_matrix(matrix: &[f64]) -> Option<Self> {
-        if matrix.len() >= 6 {
-            Some(Self {
-                e1: matrix[0],
-                e2: matrix[1],
-                e3: matrix[2],
-                e4: matrix[3],
-                e5: matrix[4],
-                e6: matrix[5],
-            })
-        } else {
-            None
-        }
-    }
-
-    /// HWPX Matrix 타입으로 변환
-    pub fn to_hwpx_values(&self) -> (f32, f32, f32, f32, f32, f32) {
-        (
-            self.e1 as f32,
-            self.e2 as f32,
-            self.e3 as f32,
-            self.e4 as f32,
-            self.e5 as f32,
-            self.e6 as f32,
-        )
-    }
-}
 
 /// 도형
 #[derive(Debug, Clone)]
@@ -150,16 +94,6 @@ pub struct LineShape {
     pub end_arrow: Arrow,
 }
 
-/// 화살표
-#[derive(Debug, Clone, Default)]
-pub struct Arrow {
-    /// 화살표 종류
-    pub arrow_type: ArrowType,
-    /// 화살표 크기
-    pub size: ArrowSize,
-    /// 채움 여부
-    pub filled: bool,
-}
 
 /// 사각형
 #[derive(Debug, Clone, Default)]
@@ -179,19 +113,7 @@ pub struct EllipseShape {
     pub end_angle: f64,
 }
 
-/// 호 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ArcType {
-    /// 전체 (타원)
-    #[default]
-    Full,
-    /// 호
-    Arc,
-    /// 부채꼴
-    Pie,
-    /// 활꼴
-    Chord,
-}
+// ArcType re-exported from primitive
 
 /// 호
 #[derive(Debug, Clone, Default)]
@@ -220,26 +142,7 @@ pub struct CurveShape {
     pub closed: bool,
 }
 
-/// 곡선 제어점
-#[derive(Debug, Clone)]
-pub struct CurvePoint {
-    /// 점 좌표
-    pub point: Point,
-    /// 점 종류
-    pub point_type: CurvePointType,
-}
-
-/// 곡선 점 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum CurvePointType {
-    /// 일반 점
-    #[default]
-    Normal,
-    /// 제어점 1 (이전 점의 나가는 핸들)
-    Control1,
-    /// 제어점 2 (현재 점의 들어오는 핸들)
-    Control2,
-}
+// CurvePoint and CurvePointType re-exported from primitive
 
 /// 연결선
 #[derive(Debug, Clone, Default)]
@@ -258,28 +161,7 @@ pub struct ConnectorShape {
     pub control_points: Vec<CurvePoint>,
 }
 
-/// 연결선 연결점 (HWPX 전용 subject 참조 포함)
-#[derive(Debug, Clone, Default)]
-pub struct ConnectorPoint {
-    /// 좌표
-    pub point: Point,
-    /// 대상 개체 ID 참조 (HWPX 전용)
-    pub subject_id_ref: Option<u32>,
-    /// 대상 개체 연결 인덱스 (HWPX 전용)
-    pub subject_index: Option<u32>,
-}
-
-/// 연결선 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ConnectorType {
-    /// 직선
-    #[default]
-    Straight,
-    /// 꺾인선
-    Elbow,
-    /// 곡선
-    Curved,
-}
+// ConnectorPoint and ConnectorType re-exported from primitive
 
 /// 선 스타일
 #[derive(Debug, Clone)]

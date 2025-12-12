@@ -4,16 +4,23 @@
 
 use crate::paragraph::Paragraph;
 use crate::picture::Picture;
-use primitive::BinaryDataId;
 use crate::shape::Shape;
 use crate::table::Table;
 use primitive::{
-    HeaderFooterApplyTo, HeightRelativeTo, HorizontalOffsetType, HorizontalRelativeTo, HwpUnit,
-    LineWrap, NoteNumberPosition, NumberFormat, PageNumberPosition, Point, Size, TextDirection,
-    TextWrapSide, TextWrapType, VerticalAlignment, VerticalOffsetType, VerticalRelativeTo,
-    WidthRelativeTo,
+    BinaryDataId, HeaderFooterApplyTo, HeightRelativeTo, HorizontalOffsetType,
+    HorizontalRelativeTo, HwpUnit, Insets, LineWrap, NoteNumberPosition, NumberFormat, Point, Size,
+    TextDirection, TextWrapSide, TextWrapType, VerticalAlignment, VerticalOffsetType,
+    VerticalRelativeTo, WidthRelativeTo,
 };
-use primitive::Insets;
+
+// Re-export primitive types
+pub use primitive::{
+    AutoNumberFormat, AutoNumberType, ButtonBackStyle, ButtonValue, CaptionPosition, ChartType,
+    EditScrollBars, EditTabKeyBehavior, EditTextAlignment, EquationFormat, EquationLineMode,
+    FormCharProperty, FormListItem, FormObjectType, MemoType, ObjectMargin, ObjectNumberingType,
+    ScrollBarType, TextArtAlignment, TextArtFontStyle, TextArtFontType, TextArtProperties,
+    TextArtShapeType, VideoType,
+};
 
 /// 컨트롤 (내장 객체)
 #[derive(Debug, Clone)]
@@ -81,32 +88,7 @@ impl Control {
     }
 }
 
-/// 개체 번호 매기기 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ObjectNumberingType {
-    /// 없음
-    #[default]
-    None,
-    /// 그림
-    Picture,
-    /// 표
-    Table,
-    /// 수식
-    Equation,
-}
-
-/// 개체 여백
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct ObjectMargin {
-    /// 왼쪽 여백
-    pub left: HwpUnit,
-    /// 오른쪽 여백
-    pub right: HwpUnit,
-    /// 위쪽 여백
-    pub top: HwpUnit,
-    /// 아래쪽 여백
-    pub bottom: HwpUnit,
-}
+// ObjectMargin re-exported from primitive
 
 /// 개체 공통 속성
 #[derive(Debug, Clone, Default)]
@@ -177,19 +159,6 @@ pub struct Caption {
     pub paragraphs: Vec<Paragraph>,
 }
 
-/// 캡션 위치
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum CaptionPosition {
-    /// 왼쪽
-    Left,
-    /// 오른쪽
-    Right,
-    /// 위
-    Top,
-    /// 아래
-    #[default]
-    Bottom,
-}
 
 /// 수식
 #[derive(Debug, Clone)]
@@ -216,31 +185,6 @@ pub struct Equation {
     pub properties: Option<u32>,
 }
 
-/// 수식 라인 모드
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum EquationLineMode {
-    /// 기준선 정렬
-    #[default]
-    Baseline,
-    /// 중앙 정렬
-    Center,
-    /// 하단 정렬
-    Bottom,
-    /// 상단 정렬
-    Top,
-}
-
-/// 수식 형식
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum EquationFormat {
-    /// 한글 수식 스크립트
-    #[default]
-    HwpScript,
-    /// MathML
-    MathML,
-    /// LaTeX
-    LaTeX,
-}
 
 /// OLE 객체
 #[derive(Debug, Clone)]
@@ -365,44 +309,7 @@ pub struct AutoNumber {
     pub auto_number_format: Option<AutoNumberFormat>,
 }
 
-/// 자동 번호 형식 상세
-#[derive(Debug, Clone)]
-pub struct AutoNumberFormat {
-    /// 사용자 기호
-    pub user_character: Option<String>,
-    /// 앞 장식 문자
-    pub prefix_character: Option<String>,
-    /// 뒤 장식 문자
-    pub suffix_character: String,
-    /// 위첨자 형식 여부
-    pub superscript: bool,
-    /// 번호 위치 (HWPX PageNumber 전용 - 11종)
-    pub position: Option<PageNumberPosition>,
-    /// 번호 모양 종류 (HWPX PageNumber 전용)
-    pub format_type: Option<NumberFormat>,
-    /// 줄표 넣기 문자 (HWPX PageNumber 전용, 기본값 "-")
-    pub side_character: Option<String>,
-}
-
-/// 자동 번호 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum AutoNumberType {
-    /// 페이지 번호
-    #[default]
-    Page,
-    /// 각주 번호
-    Footnote,
-    /// 미주 번호
-    Endnote,
-    /// 그림 번호
-    Picture,
-    /// 표 번호
-    Table,
-    /// 수식 번호
-    Equation,
-    /// 총 페이지
-    TotalPages,
-}
+// AutoNumberFormat re-exported from primitive
 
 /// 새 번호
 #[derive(Debug, Clone)]
@@ -431,35 +338,6 @@ pub struct Chart {
     pub chart_type: ChartType,
 }
 
-/// 차트 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ChartType {
-    /// 막대
-    #[default]
-    Bar,
-    /// 꺾은선
-    Line,
-    /// 원형
-    Pie,
-    /// 영역
-    Area,
-    /// 분산형
-    Scatter,
-    /// 방사형
-    Radar,
-}
-
-/// 비디오 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum VideoType {
-    /// 임베디드 (문서에 포함)
-    #[default]
-    Embedded,
-    /// 링크 (외부 URL)
-    Linked,
-    /// 유튜브
-    YouTube,
-}
 
 /// 비디오
 #[derive(Debug, Clone)]
@@ -587,115 +465,7 @@ pub struct FormObject {
     pub delay: Option<u32>,
 }
 
-/// 스크롤바 타입
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ScrollBarType {
-    /// 수평 스크롤바
-    #[default]
-    Horizontal,
-    /// 수직 스크롤바
-    Vertical,
-}
-
-/// 버튼 상태 값
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ButtonValue {
-    /// 선택 해제 상태
-    #[default]
-    Unchecked,
-    /// 선택됨 상태
-    Checked,
-    /// 불확정(혼합) 상태
-    Indeterminate,
-}
-
-/// 버튼 배경 스타일
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ButtonBackStyle {
-    /// 배경 투명
-    #[default]
-    Transparent,
-    /// 배경 불투명
-    Opaque,
-}
-
-/// Edit 스크롤바 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum EditScrollBars {
-    /// 스크롤바 없음
-    #[default]
-    None,
-    /// 세로 스크롤바만 표시
-    Vertical,
-    /// 가로 스크롤바만 표시
-    Horizontal,
-    /// 가로/세로 모두 표시
-    Both,
-}
-
-/// Edit 탭키 동작
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum EditTabKeyBehavior {
-    /// 탭키로 다음 개체로 이동
-    #[default]
-    NextObject,
-    /// 탭 문자를 입력
-    InsertTab,
-}
-
-/// Edit 텍스트 정렬
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum EditTextAlignment {
-    /// 좌측 정렬
-    #[default]
-    Left,
-    /// 중앙 정렬
-    Center,
-    /// 우측 정렬
-    Right,
-}
-
-/// 양식 글자 속성
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct FormCharProperty {
-    /// 글자 모양 참조 ID
-    pub char_shape_id: Option<u32>,
-    /// 문맥 따라가기 여부
-    pub follow_context: bool,
-    /// 자동 크기 여부
-    pub auto_size: bool,
-    /// 자동 줄바꿈 여부
-    pub word_wrap: bool,
-}
-
-/// 양식 목록 항목 (ComboBox, ListBox용)
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct FormListItem {
-    /// 표시 텍스트
-    pub display_text: Option<String>,
-    /// 값
-    pub value: Option<String>,
-}
-
-/// 양식 객체 종류
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum FormObjectType {
-    /// 버튼
-    #[default]
-    Button,
-    /// 체크 박스
-    CheckBox,
-    /// 라디오 버튼
-    RadioButton,
-    /// 콤보 박스
-    ComboBox,
-    /// 목록 상자
-    ListBox,
-    /// 텍스트 입력
-    Edit,
-    /// 스크롤 바
-    ScrollBar,
-}
+// EditTextAlignment re-exported from primitive
 
 /// 알 수 없는 컨트롤
 #[derive(Debug, Clone)]
@@ -737,67 +507,7 @@ pub struct TextArt {
     pub text_art_pr: Option<TextArtProperties>,
 }
 
-/// 글맵시 글꼴 타입 (HWPX)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TextArtFontType {
-    /// TrueType Font
-    #[default]
-    TTF,
-    /// Hancom TrueType Font
-    HTF,
-}
-
-/// 글맵시 추가 속성 (HWPX text_art_pr)
-#[derive(Debug, Clone, Default)]
-pub struct TextArtProperties {
-    /// HWPX의 추가 속성들을 저장
-    /// 실제 구조는 HWPX 스펙에 따라 확장 가능
-    pub raw_data: Option<String>,
-}
-
-/// 글맵시 글꼴 스타일
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TextArtFontStyle {
-    #[default]
-    Regular,
-    Bold,
-    Italic,
-    BoldItalic,
-}
-
-/// 글맵시 모양
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TextArtShapeType {
-    /// 사각형
-    #[default]
-    Rectangle,
-    /// 원형
-    Circle,
-    /// 아치형 위
-    ArchUp,
-    /// 아치형 아래
-    ArchDown,
-    /// 물결
-    Wave,
-    /// 실린더
-    Cylinder,
-    /// 볼록
-    Inflate,
-    /// 오목
-    Deflate,
-    /// 기타
-    Other(u32),
-}
-
-/// 글맵시 정렬
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TextArtAlignment {
-    #[default]
-    Left,
-    Center,
-    Right,
-    Full,
-}
+// TextArtFontStyle, TextArtShapeType re-exported from primitive
 
 /// 메모 (Memo/Annotation)
 ///
@@ -824,16 +534,3 @@ pub struct Memo {
     pub memo_type: Option<MemoType>,
 }
 
-/// 메모 종류 (HWPX)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum MemoType {
-    /// 일반
-    #[default]
-    Normal,
-    /// 사용자 삽입
-    UserInsert,
-    /// 사용자 삭제
-    UserDelete,
-    /// 사용자 수정
-    UserUpdate,
-}

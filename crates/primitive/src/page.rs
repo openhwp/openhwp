@@ -7,6 +7,7 @@ use crate::unit::HwpUnit;
 
 /// 브레이크 종류
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum BreakType {
     /// 없음
     #[default]
@@ -21,6 +22,7 @@ pub enum BreakType {
 
 /// 머리글/바닥글 적용 대상
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum HeaderFooterApplyTo {
     /// 양쪽 페이지
     #[default]
@@ -35,6 +37,7 @@ pub enum HeaderFooterApplyTo {
 
 /// 페이지 시작 옵션
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum PageStartsOn {
     /// 양쪽 페이지
     #[default]
@@ -47,6 +50,7 @@ pub enum PageStartsOn {
 
 /// 줄 번호 재시작 방식
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum LineNumberRestartType {
     /// 문서 전체 연속
     #[default]
