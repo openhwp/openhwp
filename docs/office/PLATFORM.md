@@ -4,7 +4,7 @@
 
 > **관련 문서**:
 > - [DESIGN.md](./DESIGN.md) - 전체 아키텍처
-> - [EDITOR.md](./EDITOR.md) - editor-core 명세
+> - [OFFICE.md](./OFFICE.md) - office-core 명세
 > - [RENDER.md](./RENDER.md) - 렌더링 명세
 
 ---
@@ -16,13 +16,13 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    애플리케이션 계층                          │
-│              (editor-web / editor-desktop)                  │
+│              (office-web / office-native)                  │
 ├─────────────────────────────────────────────────────────────┤
 │                    플랫폼 추상화 계층                         │
 │                    (platform-api)                           │
 ├─────────────────────────────────────────────────────────────┤
 │                    에디터 코어 계층                           │
-│                    (editor-core)                            │
+│                    (office-core)                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -31,8 +31,8 @@
 ```
 crates/
 ├── platform-api/        # 플랫폼 추상화 트레잇
-├── editor-web/          # 웹 플랫폼 구현 (WASM)
-└── editor-desktop/      # 데스크톱 플랫폼 구현 (Tauri)
+├── office-web/          # 웹 플랫폼 구현 (WASM)
+└── office-native/      # 데스크톱 플랫폼 구현 (Tauri)
 ```
 
 ---
@@ -348,7 +348,7 @@ pub trait DialogProvider {
 
 ---
 
-## 3. editor-web 크레이트
+## 3. office-web 크레이트
 
 ### 3.1 개요
 
@@ -359,7 +359,7 @@ DOM 이벤트를 에디터 이벤트로 변환합니다.
 
 ```toml
 [package]
-name = "editor-web"
+name = "office-web"
 version = "0.1.0"
 edition = "2021"
 
@@ -367,7 +367,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-editor-core = { path = "../editor-core" }
+office-core = { path = "../office-core" }
 render-web = { path = "../render-web" }
 platform-api = { path = "../platform-api" }
 document = { path = "../document" }
@@ -409,7 +409,7 @@ serde-wasm-bindgen = "0.6"
 console_error_panic_hook = "0.1"
 ```
 
-### 3.3 WebEditorApp 구조체
+### 3.3 WebOfficeApp 구조체
 
 ```rust
 use wasm_bindgen::prelude::*;
@@ -417,7 +417,7 @@ use web_sys::{HtmlCanvasElement, HtmlInputElement};
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use editor_core::{EditorCore, InputEvent, UpdateResult};
+use office_core::{OfficeCore, InputEvent, UpdateResult};
 use render_web::CanvasRenderer;
 use document::Document;
 
@@ -425,9 +425,9 @@ use document::Document;
 ///
 /// JavaScript에서 생성하고 사용합니다.
 #[wasm_bindgen]
-pub struct WebEditorApp {
+pub struct WebOfficeApp {
     /// 에디터 코어 (내부 가변성)
-    core: Rc<RefCell<EditorCore>>,
+    core: Rc<RefCell<OfficeCore>>,
 
     /// Canvas 렌더러
     renderer: Rc<RefCell<CanvasRenderer>>,
@@ -449,7 +449,7 @@ pub struct WebEditorApp {
 }
 
 #[wasm_bindgen]
-impl WebEditorApp {
+impl WebOfficeApp {
     /// 새 에디터 인스턴스 생성
     ///
     /// # Arguments
@@ -458,7 +458,7 @@ impl WebEditorApp {
     /// # Returns
     /// 에디터 인스턴스 또는 오류 메시지
     #[wasm_bindgen(constructor)]
-    pub fn new(container_id: &str) -> Result<WebEditorApp, JsValue> {
+    pub fn new(container_id: &str) -> Result<WebOfficeApp, JsValue> {
         // 패닉 훅 설치 (디버깅용)
         console_error_panic_hook::set_once();
 
@@ -481,9 +481,9 @@ impl WebEditorApp {
 
         // 에디터 코어 초기화
         let doc = Document::new();
-        let core = EditorCore::new(doc);
+        let core = OfficeCore::new(doc);
 
-        let mut app = WebEditorApp {
+        let mut app = WebOfficeApp {
             core: Rc::new(RefCell::new(core)),
             renderer: Rc::new(RefCell::new(renderer)),
             canvas,
@@ -591,7 +591,7 @@ impl WebEditorApp {
 ### 3.4 이벤트 핸들링
 
 ```rust
-impl WebEditorApp {
+impl WebOfficeApp {
     /// 이벤트 리스너 설정
     fn setup_event_listeners(&mut self) -> Result<(), JsValue> {
         self.setup_mouse_listeners()?;
@@ -1111,7 +1111,7 @@ impl Scheduler for WebScheduler {
 ```rust
 /// JavaScript에서 사용하는 API
 #[wasm_bindgen]
-impl WebEditorApp {
+impl WebOfficeApp {
     /// 텍스트 삽입
     #[wasm_bindgen(js_name = "insertText")]
     pub fn insert_text(&mut self, text: &str) {
@@ -1211,9 +1211,9 @@ impl WebEditorApp {
 ### 3.8 TypeScript 타입 정의
 
 ```typescript
-// editor-web/pkg/editor_web.d.ts (자동 생성 + 수동 보강)
+// office-web/pkg/office_web.d.ts (자동 생성 + 수동 보강)
 
-export class WebEditorApp {
+export class WebOfficeApp {
     constructor(containerId: string);
 
     loadDocument(bytes: Uint8Array, filename: string): void;
@@ -1268,7 +1268,7 @@ export interface ParaStyle {
 
 ---
 
-## 4. editor-desktop 크레이트
+## 4. office-native 크레이트
 
 ### 4.1 개요
 
@@ -1278,7 +1278,7 @@ Tauri를 사용한 데스크톱 애플리케이션입니다.
 ### 4.2 프로젝트 구조
 
 ```
-editor-desktop/
+office-native/
 ├── src-tauri/
 │   ├── Cargo.toml
 │   ├── tauri.conf.json
@@ -1306,7 +1306,7 @@ editor-desktop/
     "distDir": "../dist"
   },
   "package": {
-    "productName": "OpenHWP Editor",
+    "productName": "OpenHWP Office",
     "version": "0.1.0"
   },
   "tauri": {
@@ -1360,7 +1360,7 @@ editor-desktop/
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.openhwp.editor",
+      "identifier": "com.openhwp.office",
       "targets": ["app", "dmg", "msi", "deb"],
       "macOS": {
         "minimumSystemVersion": "10.13"
@@ -1375,13 +1375,13 @@ editor-desktop/
           "ext": ["hwp"],
           "mimeType": "application/x-hwp",
           "description": "HWP Document",
-          "role": "Editor"
+          "role": "Office"
         },
         {
           "ext": ["hwpx"],
           "mimeType": "application/hwpx+zip",
           "description": "HWPX Document",
-          "role": "Editor"
+          "role": "Office"
         }
       ]
     },
@@ -1396,7 +1396,7 @@ editor-desktop/
         "minWidth": 800,
         "minHeight": 600,
         "resizable": true,
-        "title": "OpenHWP Editor",
+        "title": "OpenHWP Office",
         "center": true
       }
     ]
@@ -1459,7 +1459,7 @@ pub async fn open_file(
 
     // 창 제목 업데이트
     let title = format!(
-        "{} - OpenHWP Editor",
+        "{} - OpenHWP Office",
         path.file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("Untitled")
@@ -1497,7 +1497,7 @@ pub async fn save_file(
 
     // 창 제목 업데이트
     let title = format!(
-        "{} - OpenHWP Editor",
+        "{} - OpenHWP Office",
         path.file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("Untitled")
@@ -1580,9 +1580,9 @@ pub fn set_modified(
         .unwrap_or("새 문서");
 
     let title = if modified {
-        format!("*{} - OpenHWP Editor", filename)
+        format!("*{} - OpenHWP Office", filename)
     } else {
-        format!("{} - OpenHWP Editor", filename)
+        format!("{} - OpenHWP Office", filename)
     };
 
     window.set_title(&title).ok();
@@ -1684,7 +1684,7 @@ pub fn create_menu() -> Menu {
     );
 
     let help_menu = Submenu::new("도움말", Menu::new()
-        .add_item(CustomMenuItem::new("about", "OpenHWP Editor 정보"))
+        .add_item(CustomMenuItem::new("about", "OpenHWP Office 정보"))
         .add_item(CustomMenuItem::new("website", "웹사이트"))
     );
 
@@ -1771,7 +1771,7 @@ fn main() {
                     // 정보 다이얼로그 표시
                     tauri::api::dialog::message(
                         Some(&window),
-                        "OpenHWP Editor",
+                        "OpenHWP Office",
                         "버전 0.1.0\n\n오픈소스 한글 문서 편집기"
                     );
                 }
@@ -1803,25 +1803,25 @@ fn main() {
 import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
 import { ask, message } from '@tauri-apps/api/dialog';
-import init, { WebEditorApp } from 'editor-web';
+import init, { WebOfficeApp } from 'office-web';
 
-let editor: WebEditorApp | null = null;
+let office: WebOfficeApp | null = null;
 
-async function initEditor() {
+async function initOffice() {
     // WASM 초기화
     await init();
 
     // 에디터 생성
-    editor = new WebEditorApp('editor-container');
+    office = new WebOfficeApp('office-container');
 
     // 창 크기에 맞춤
-    const container = document.getElementById('editor-container')!;
-    editor.resize(container.clientWidth, container.clientHeight);
+    const container = document.getElementById('office-container')!;
+    office.resize(container.clientWidth, container.clientHeight);
 
     // 리사이즈 처리
     window.addEventListener('resize', () => {
-        if (editor) {
-            editor.resize(container.clientWidth, container.clientHeight);
+        if (office) {
+            office.resize(container.clientWidth, container.clientHeight);
         }
     });
 
@@ -1847,16 +1847,16 @@ async function initEditor() {
 function setupMenuListeners() {
     listen('menu-new', () => {
         // 새 문서
-        if (editor) {
+        if (office) {
             // TODO: 새 문서 생성
         }
     });
 
     listen('menu-open', async () => {
         const path = await invoke<string | null>('open_file_dialog');
-        if (path && editor) {
+        if (path && office) {
             const bytes = await invoke<number[]>('open_file', { path });
-            editor.loadDocument(new Uint8Array(bytes), path);
+            office.loadDocument(new Uint8Array(bytes), path);
         }
     });
 
@@ -1869,46 +1869,46 @@ function setupMenuListeners() {
     });
 
     listen('menu-undo', () => {
-        editor?.undo();
+        office?.undo();
     });
 
     listen('menu-redo', () => {
-        editor?.redo();
+        office?.redo();
     });
 
     listen('menu-bold', () => {
-        editor?.applyStyle(JSON.stringify({ bold: true }));
+        office?.applyStyle(JSON.stringify({ bold: true }));
     });
 
     listen('menu-italic', () => {
-        editor?.applyStyle(JSON.stringify({ italic: true }));
+        office?.applyStyle(JSON.stringify({ italic: true }));
     });
 
     listen('menu-underline', () => {
-        editor?.applyStyle(JSON.stringify({ underline: true }));
+        office?.applyStyle(JSON.stringify({ underline: true }));
     });
 
     listen('menu-zoom-in', () => {
-        if (editor) {
-            editor.setZoom(editor.getZoom() * 1.1);
+        if (office) {
+            office.setZoom(office.getZoom() * 1.1);
         }
     });
 
     listen('menu-zoom-out', () => {
-        if (editor) {
-            editor.setZoom(editor.getZoom() / 1.1);
+        if (office) {
+            office.setZoom(office.getZoom() / 1.1);
         }
     });
 
     listen('menu-zoom-reset', () => {
-        editor?.setZoom(1.0);
+        office?.setZoom(1.0);
     });
 }
 
 async function saveDocument() {
-    if (!editor) return;
+    if (!office) return;
 
-    const content = editor.saveDocument();
+    const content = office.saveDocument();
     await invoke('save_file', {
         path: null, // 현재 경로 사용
         content: Array.from(content),
@@ -1918,14 +1918,14 @@ async function saveDocument() {
 }
 
 async function saveDocumentAs() {
-    if (!editor) return;
+    if (!office) return;
 
     const path = await invoke<string | null>('save_file_dialog', {
         defaultName: '새 문서.hwpx',
     });
 
     if (path) {
-        const content = editor.saveDocument();
+        const content = office.saveDocument();
         await invoke('save_file', {
             path,
             content: Array.from(content),
@@ -1941,7 +1941,7 @@ function onDocumentModified() {
 }
 
 // 앱 시작
-initEditor().catch(console.error);
+initOffice().catch(console.error);
 ```
 
 ---
@@ -2010,11 +2010,11 @@ fn windows_setup(app: &tauri::App) {
 
 ```bash
 # WASM 빌드
-cd crates/editor-web
+cd crates/office-web
 wasm-pack build --target web --release
 
 # 번들 크기 최적화
-wasm-opt -O3 -o pkg/editor_web_bg_opt.wasm pkg/editor_web_bg.wasm
+wasm-opt -O3 -o pkg/office_web_bg_opt.wasm pkg/office_web_bg.wasm
 
 # npm 패키지 생성
 cd pkg
@@ -2025,7 +2025,7 @@ npm pack
 
 ```bash
 # 개발 모드
-cd editor-desktop
+cd office-native
 npm run tauri dev
 
 # 릴리스 빌드
@@ -2062,15 +2062,15 @@ jobs:
         run: cargo install wasm-pack
       - name: Build WASM
         run: |
-          cd crates/editor-web
+          cd crates/office-web
           wasm-pack build --target web --release
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: wasm-package
-          path: crates/editor-web/pkg/
+          path: crates/office-web/pkg/
 
-  build-desktop:
+  build-native:
     strategy:
       matrix:
         include:
@@ -2096,14 +2096,14 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
       - name: Build Tauri
         run: |
-          cd editor-desktop
+          cd office-native
           npm install
           npm run tauri build -- --target ${{ matrix.target }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: desktop-${{ matrix.target }}
-          path: editor-desktop/src-tauri/target/${{ matrix.target }}/release/bundle/
+          name: native-${{ matrix.target }}
+          path: office-native/src-tauri/target/${{ matrix.target }}/release/bundle/
 ```
 
 ---
@@ -2113,17 +2113,17 @@ jobs:
 ### 7.1 웹 플랫폼 테스트
 
 ```rust
-// crates/editor-web/tests/web_tests.rs
+// crates/office-web/tests/web_tests.rs
 
 #[cfg(target_arch = "wasm32")]
 mod tests {
     use wasm_bindgen_test::*;
-    use editor_web::*;
+    use office_web::*;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
     #[wasm_bindgen_test]
-    fn test_editor_creation() {
+    fn test_office_creation() {
         // 테스트용 컨테이너 생성
         let document = web_sys::window()
             .unwrap()
@@ -2135,8 +2135,8 @@ mod tests {
         document.body().unwrap().append_child(&container).unwrap();
 
         // 에디터 생성
-        let editor = WebEditorApp::new("test-container");
-        assert!(editor.is_ok());
+        let office = WebOfficeApp::new("test-container");
+        assert!(office.is_ok());
 
         // 정리
         container.remove();
@@ -2152,7 +2152,7 @@ mod tests {
 ### 7.2 데스크톱 플랫폼 테스트
 
 ```rust
-// editor-desktop/src-tauri/tests/integration_tests.rs
+// office-native/src-tauri/tests/integration_tests.rs
 
 #[cfg(test)]
 mod tests {
@@ -2179,9 +2179,9 @@ mod tests {
 - [ ] `Scheduler` 트레잇 정의
 - [ ] `DialogProvider` 트레잇 정의
 
-### 8.2 editor-web
+### 8.2 office-web
 
-- [ ] `WebEditorApp` 기본 구조
+- [ ] `WebOfficeApp` 기본 구조
 - [ ] Canvas 생성 및 설정
 - [ ] 숨겨진 입력 요소 (IME)
 - [ ] 마우스 이벤트 핸들링
@@ -2195,7 +2195,7 @@ mod tests {
 - [ ] JavaScript API 바인딩
 - [ ] TypeScript 타입 정의
 
-### 8.3 editor-desktop
+### 8.3 office-native
 
 - [ ] Tauri 프로젝트 설정
 - [ ] 메뉴 바 구현

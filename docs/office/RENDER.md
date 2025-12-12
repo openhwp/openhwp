@@ -1101,7 +1101,7 @@ impl Default for ImageCache {
 레이아웃 결과에서 렌더링 명령을 생성하는 예시입니다.
 
 ```rust
-// editor-core에서 사용 예시
+// office-core에서 사용 예시
 
 use render_api::*;
 use layout::*;

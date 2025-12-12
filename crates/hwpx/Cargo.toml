@@ -14,7 +14,7 @@ categories = ["parsing", "encoding"]
 [dependencies]
 serde.workspace = true
 quick-xml.workspace = true
-ir = { path = "../ir" }
+ir.workspace = true
 primitive = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]

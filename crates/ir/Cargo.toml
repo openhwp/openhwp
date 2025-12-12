@@ -6,4 +6,4 @@ description = "Intermediate representation for Korean document formats (HWP, HWP
 license = "MIT"
 
 [dependencies]
-primitive = { workspace = true }
+primitive.workspace = true

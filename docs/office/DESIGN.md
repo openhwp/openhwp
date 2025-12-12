@@ -1,4 +1,4 @@
-# OpenHWP Editor Design Document
+# OpenHWP Office Design Document
 
 이 문서는 OpenHWP 리치 텍스트 에디터의 전체 설계를 정의합니다.
 
@@ -10,7 +10,7 @@
 > - [DOCUMENT.md](./DOCUMENT.md) - document 크레이트 상세 명세
 > - [LAYOUT.md](./LAYOUT.md) - layout 크레이트 상세 명세
 > - [RENDER.md](./RENDER.md) - render 크레이트 상세 명세
-> - [EDITOR.md](./EDITOR.md) - editor-core 상세 명세
+> - [OFFICE.md](./OFFICE.md) - office-core 상세 명세
 > - [PLATFORM.md](./PLATFORM.md) - 플랫폼 통합 상세 명세
 
 ---
@@ -140,7 +140,7 @@
 | `layout` | 레이아웃 계산 | `document` |
 | `render-api` | 렌더링 추상화 | `layout` |
 | `render-*` | 플랫폼별 렌더링 | `render-api` |
-| `editor-core` | 에디터 통합 | 모든 크레이트 |
+| `office-core` | 에디터 통합 | 모든 크레이트 |
 
 #### 원칙 2: 플랫폼 독립적 코어
 
@@ -149,8 +149,8 @@
 ┌────────────────────────┐     ┌────────────────────┐
 │  document              │     │  render-web        │
 │  layout                │     │  render-native     │
-│  render-api            │     │  editor-web        │
-│  editor-core           │     │  editor-desktop    │
+│  render-api            │     │  office-web        │
+│  office-core           │     │  office-native    │
 │  input (추상화)         │     │  input-web         │
 └────────────────────────┘     └────────────────────┘
 ```
@@ -298,13 +298,13 @@ crates/
 │       ├── ime.rs        # IME 이벤트
 │       └── clipboard.rs  # 클립보드 추상화
 │
-├── editor-core/          # [신규] 에디터 코어
+├── office-core/          # [신규] 에디터 코어
 │   ├── Cargo.toml
 │   └── src/
 │       ├── lib.rs
-│       ├── editor.rs     # EditorCore
-│       ├── state.rs      # EditorState
-│       ├── event.rs      # EditorEvent
+│       ├── office.rs     # OfficeCore
+│       ├── state.rs      # OfficeState
+│       ├── event.rs      # OfficeEvent
 │       ├── handler/      # 이벤트 핸들러
 │       │   ├── mod.rs
 │       │   ├── keyboard.rs
@@ -314,7 +314,7 @@ crates/
 │       ├── viewport.rs   # 뷰포트 관리
 │       └── cursor.rs     # 커서 렌더링
 │
-├── editor-web/           # [신규] 웹 에디터
+├── office-web/           # [신규] 웹 에디터
 │   ├── Cargo.toml
 │   └── src/
 │       ├── lib.rs
@@ -323,7 +323,7 @@ crates/
 │       ├── ime_handler.rs
 │       └── bindings.rs   # wasm-bindgen
 │
-└── editor-desktop/       # [신규, 추후] 데스크톱 에디터
+└── office-native/       # [신규, 추후] 데스크톱 에디터
     ├── Cargo.toml
     ├── src/
     │   └── main.rs
@@ -353,16 +353,16 @@ render-api = { path = "../render-api" }
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = [...] }
 
-# editor-core/Cargo.toml
+# office-core/Cargo.toml
 [dependencies]
 document = { path = "../document" }
 layout = { path = "../layout" }
 render-api = { path = "../render-api" }
 input = { path = "../input" }
 
-# editor-web/Cargo.toml
+# office-web/Cargo.toml
 [dependencies]
-editor-core = { path = "../editor-core" }
+office-core = { path = "../office-core" }
 render-web = { path = "../render-web" }
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = [...] }
@@ -403,7 +403,7 @@ async fn open_file(bytes: &[u8], file_type: FileType) -> Result<(), Error> {
     let document = Document::from_ir(ir_document)?;
 
     // 3. 에디터에 로드
-    editor.load_document(document);
+    office.load_document(document);
 
     // 4. 레이아웃 및 렌더링은 자동으로 트리거됨
     Ok(())
@@ -419,9 +419,9 @@ async fn open_file(bytes: &[u8], file_type: FileType) -> Result<(), Error> {
 ```
 
 ```rust
-async fn save_file(editor: &Editor, file_type: FileType) -> Result<Vec<u8>, Error> {
+async fn save_file(office: &Office, file_type: FileType) -> Result<Vec<u8>, Error> {
     // 1. IR로 변환
-    let ir_document = editor.document().to_ir()?;
+    let ir_document = office.document().to_ir()?;
 
     // 2. 파일 포맷으로 직렬화
     let bytes = match file_type {
@@ -444,7 +444,7 @@ async fn save_file(editor: &Editor, file_type: FileType) -> Result<Vec<u8>, Erro
 ```
 1. 플랫폼 이벤트 수신 (DOM Event, Win32 Message 등)
 2. InputEvent로 변환
-3. EditorCore.handle_event() 호출
+3. OfficeCore.handle_event() 호출
 4. Command 생성 및 실행
 5. Document 변경
 6. 영향받은 블록 dirty 표시
@@ -453,8 +453,8 @@ async fn save_file(editor: &Editor, file_type: FileType) -> Result<Vec<u8>, Erro
 ```
 
 ```rust
-// editor-core/src/editor.rs
-impl EditorCore {
+// office-core/src/office.rs
+impl OfficeCore {
     pub fn handle_event(&mut self, event: InputEvent) -> UpdateResult {
         match event {
             InputEvent::KeyPress(key) => self.handle_key_press(key),
@@ -506,7 +506,7 @@ impl EditorCore {
 ```
 
 ```rust
-// editor-web/src/platform.rs
+// office-web/src/platform.rs
 impl WebPlatform {
     fn update_and_render(&mut self) {
         // 1. 레이아웃 업데이트
@@ -541,10 +541,10 @@ impl WebPlatform {
 | 1.8 | `render-api` | RenderCommand, Renderer trait 정의 |
 | 1.9 | `render-web` | CanvasRenderer 구현 |
 | 1.10 | `render-web` | CanvasTextMeasurer 구현 |
-| 1.11 | `editor-core` | EditorCore 기본 구조 |
-| 1.12 | `editor-core` | 키보드 이벤트 처리 |
-| 1.13 | `editor-web` | WebPlatform, DOM 이벤트 연결 |
-| 1.14 | `editor-web` | IME 통합 (숨겨진 textarea) |
+| 1.11 | `office-core` | OfficeCore 기본 구조 |
+| 1.12 | `office-core` | 키보드 이벤트 처리 |
+| 1.13 | `office-web` | WebPlatform, DOM 이벤트 연결 |
+| 1.14 | `office-web` | IME 통합 (숨겨진 textarea) |
 
 **완료 기준**: 웹 브라우저에서 텍스트 입력/삭제/Undo가 동작
 
@@ -561,7 +561,7 @@ impl WebPlatform {
 | 2.5 | `layout` | 스타일별 텍스트 측정 |
 | 2.6 | `layout` | Run 단위 레이아웃 |
 | 2.7 | `render-*` | 스타일 적용 렌더링 |
-| 2.8 | `editor-core` | 서식 단축키 처리 |
+| 2.8 | `office-core` | 서식 단축키 처리 |
 
 **완료 기준**: 굵게, 기울임, 글꼴 크기 변경이 동작
 
@@ -577,8 +577,8 @@ impl WebPlatform {
 | 3.4 | `layout` | TableLayout 구현 |
 | 3.5 | `layout` | ImageLayout 구현 |
 | 3.6 | `render-*` | 표, 이미지 렌더링 |
-| 3.7 | `editor-core` | 표 편집 (셀 이동, 선택) |
-| 3.8 | `editor-core` | 이미지 삽입/크기 조절 |
+| 3.7 | `office-core` | 표 편집 (셀 이동, 선택) |
+| 3.8 | `office-core` | 이미지 삽입/크기 조절 |
 
 **완료 기준**: 표와 이미지가 포함된 문서 편집 가능
 
@@ -590,8 +590,8 @@ impl WebPlatform {
 |------|---------|------|
 | 4.1 | `document` | IR → Document 변환 |
 | 4.2 | `document` | Document → IR 변환 |
-| 4.3 | `editor-web` | 파일 열기 UI |
-| 4.4 | `editor-web` | 파일 저장 UI |
+| 4.3 | `office-web` | 파일 열기 UI |
+| 4.4 | `office-web` | 파일 저장 UI |
 
 **완료 기준**: 실제 HWP/HWPX 파일 열고 편집 후 저장 가능
 
@@ -605,7 +605,7 @@ impl WebPlatform {
 | 5.2 | `layout` | 머리글/바닥글 레이아웃 |
 | 5.3 | `layout` | 페이지 번호 |
 | 5.4 | `render-*` | 페이지 구분선 렌더링 |
-| 5.5 | `editor-core` | 페이지 뷰 모드 |
+| 5.5 | `office-core` | 페이지 뷰 모드 |
 
 **완료 기준**: 페이지 단위로 문서가 표시되고 인쇄 미리보기 가능
 
@@ -645,14 +645,14 @@ fn test_insert_text() {
 
 #[test]
 fn test_undo_redo() {
-    let mut editor = EditorCore::new();
-    editor.insert_text("Hello");
-    editor.undo();
+    let mut office = OfficeCore::new();
+    office.insert_text("Hello");
+    office.undo();
 
-    assert_eq!(editor.document().get_text(), "");
+    assert_eq!(office.document().get_text(), "");
 
-    editor.redo();
-    assert_eq!(editor.document().get_text(), "Hello");
+    office.redo();
+    assert_eq!(office.document().get_text(), "Hello");
 }
 ```
 
@@ -695,10 +695,10 @@ Playwright를 사용한 브라우저 테스트:
 
 ```typescript
 test('basic editing', async ({ page }) => {
-    await page.goto('/editor');
+    await page.goto('/office');
     await page.keyboard.type('안녕하세요');
 
-    const text = await page.evaluate(() => editor.getText());
+    const text = await page.evaluate(() => office.getText());
     expect(text).toBe('안녕하세요');
 });
 ```

@@ -9,7 +9,7 @@
 > - [DOCUMENT.md](./DOCUMENT.md) - document 크레이트
 > - [LAYOUT.md](./LAYOUT.md) - layout 크레이트
 > - [RENDER.md](./RENDER.md) - render 크레이트
-> - [EDITOR.md](./EDITOR.md) - editor-core 크레이트
+> - [OFFICE.md](./OFFICE.md) - office-core 크레이트
 > - [PLATFORM.md](./PLATFORM.md) - 플랫폼 통합
 
 ---
@@ -30,10 +30,10 @@ Phase 4: 렌더링
     └── render-api + render-web (RenderCommand, CanvasRenderer)
 
 Phase 5: 에디터 코어
-    └── editor-core (EditorCore, InputEvent handling)
+    └── office-core (OfficeCore, InputEvent handling)
 
 Phase 6: 플랫폼 통합
-    └── editor-web + editor-desktop (WebEditorApp, Tauri)
+    └── office-web + office-native (WebOfficeApp, Tauri)
 ```
 
 ---
@@ -881,7 +881,7 @@ impl CommandHistory {
     └── Modifiers (Ctrl, Shift, Alt)
 
 6.2 에디터 코어
-    ├── EditorCore 구조체
+    ├── OfficeCore 구조체
     ├── handle_event() 메서드
     └── UpdateResult
 
@@ -898,12 +898,12 @@ impl CommandHistory {
 
 ### 6.4 상세 구현 가이드
 
-에디터 코어 상세는 [EDITOR.md](./EDITOR.md)를 참조하세요.
+에디터 코어 상세는 [OFFICE.md](./OFFICE.md)를 참조하세요.
 
 ### 6.5 완료 기준
 
 - [ ] `InputEvent` enum 정의
-- [ ] `EditorCore` 기본 구조
+- [ ] `OfficeCore` 기본 구조
 - [ ] 키보드 핸들러 (방향키, Backspace, Delete 등)
 - [ ] 마우스 핸들러 (클릭, 드래그 선택)
 - [ ] IME 핸들러 (한글 조합)
@@ -933,7 +933,7 @@ impl CommandHistory {
     └── Scheduler trait
 
 7.2 웹 플랫폼
-    ├── WebEditorApp (wasm-bindgen)
+    ├── WebOfficeApp (wasm-bindgen)
     ├── DOM 이벤트 바인딩
     ├── 숨겨진 textarea (IME)
     └── JavaScript API
@@ -952,7 +952,7 @@ impl CommandHistory {
 ### 7.5 완료 기준
 
 - [ ] `PlatformContext` 트레잇 정의
-- [ ] `WebEditorApp` WASM 바인딩
+- [ ] `WebOfficeApp` WASM 바인딩
 - [ ] DOM 이벤트 → InputEvent 변환
 - [ ] 숨겨진 textarea IME 통합
 - [ ] JavaScript API 노출
@@ -974,14 +974,14 @@ hwpx ───────────┼───► ir ───► document �
                 │                 │              │        render-web
                 │                 │              │
                 │                 ▼              ▼
-                │         editor-core ◄─────────┘
+                │         office-core ◄─────────┘
                 │              │
                 │              ▼
                 └────► platform-api
                               │
                     ┌─────────┴─────────┐
                     ▼                   ▼
-               editor-web        editor-desktop
+               office-web        office-native
 ```
 
 ---
@@ -1130,7 +1130,7 @@ pub struct TextStorage { ... }
 
 ### Phase 5: 에디터 코어
 - [ ] InputEvent
-- [ ] EditorCore
+- [ ] OfficeCore
 - [ ] KeyboardHandler
 - [ ] MouseHandler
 - [ ] ImeHandler
@@ -1139,6 +1139,6 @@ pub struct TextStorage { ... }
 
 ### Phase 6: 플랫폼 통합
 - [ ] PlatformContext
-- [ ] WebEditorApp
+- [ ] WebOfficeApp
 - [ ] DOM 이벤트 바인딩
 - [ ] Tauri 통합

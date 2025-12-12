@@ -15,8 +15,8 @@ categories = ["parsing", "encoding"]
 bitflags.workspace = true
 cfb.workspace = true
 miniz_oxide.workspace = true
-ir = { path = "../ir" }
-primitive = { workspace = true }
+ir.workspace = true
+primitive.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

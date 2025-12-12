@@ -1,6 +1,6 @@
-# editor-core 크레이트 상세 명세
+# office-core 크레이트 상세 명세
 
-이 문서는 `editor-core` 크레이트의 구현 상세를 정의합니다.
+이 문서는 `office-core` 크레이트의 구현 상세를 정의합니다.
 
 > **상위 문서**: [DESIGN.md](./DESIGN.md)
 
@@ -10,7 +10,7 @@
 
 ### 1.1 목적
 
-`editor-core` 크레이트는 **에디터의 핵심 로직을 통합**합니다.
+`office-core` 크레이트는 **에디터의 핵심 로직을 통합**합니다.
 
 - 문서 모델, 레이아웃, 렌더링 연결
 - 입력 이벤트 처리
@@ -29,12 +29,12 @@
 ## 2. 파일 구조
 
 ```
-crates/editor-core/
+crates/office-core/
 ├── Cargo.toml
 └── src/
     ├── lib.rs
-    ├── editor.rs           # EditorCore
-    ├── state.rs            # EditorState
+    ├── office.rs           # OfficeCore
+    ├── state.rs            # OfficeState
     ├── event.rs            # InputEvent enum
     ├── result.rs           # UpdateResult
     │
@@ -55,12 +55,12 @@ crates/editor-core/
 
 ## 3. 핵심 타입
 
-### 3.1 EditorCore
+### 3.1 OfficeCore
 
 에디터의 메인 구조체입니다.
 
 ```rust
-// src/editor.rs
+// src/office.rs
 
 use document::{Document, Position, Selection, SelectionSet, CommandHistory};
 use layout::{LayoutEngine, TextMeasurer};
@@ -74,7 +74,7 @@ use crate::cursor::CursorState;
 /// 에디터 코어
 ///
 /// 플랫폼 독립적인 에디터 로직을 제공합니다.
-pub struct EditorCore {
+pub struct OfficeCore {
     /// 문서 모델
     document: Document,
 
@@ -103,7 +103,7 @@ pub struct EditorCore {
     modified: bool,
 }
 
-impl EditorCore {
+impl OfficeCore {
     /// 새 에디터 생성
     pub fn new() -> Self {
         Self {
@@ -352,7 +352,7 @@ enum DragKind {
     Block,
 }
 
-impl Default for EditorCore {
+impl Default for OfficeCore {
     fn default() -> Self {
         Self::new()
     }
@@ -648,9 +648,9 @@ fn merge_ranges(a: Option<Range<usize>>, b: Option<Range<usize>>) -> Option<Rang
 // src/handler/keyboard.rs
 
 use document::{Command, InsertTextCommand, DeleteCommand, DeleteDirection, Position};
-use crate::{EditorCore, UpdateResult, KeyEvent, Key, Modifiers};
+use crate::{OfficeCore, UpdateResult, KeyEvent, Key, Modifiers};
 
-impl EditorCore {
+impl OfficeCore {
     pub(crate) fn handle_key_down(&mut self, event: KeyEvent) -> UpdateResult {
         // IME 조합 중이면 일부 키만 처리
         if self.ime.composing.is_some() {
@@ -1147,9 +1147,9 @@ fn next_grapheme_boundary(text: &str, offset: usize) -> usize {
 // src/handler/mouse.rs
 
 use document::{Position, Selection};
-use crate::{EditorCore, UpdateResult, MouseEvent, MouseButton, WheelEvent};
+use crate::{OfficeCore, UpdateResult, MouseEvent, MouseButton, WheelEvent};
 
-impl EditorCore {
+impl OfficeCore {
     pub(crate) fn handle_mouse_down(&mut self, event: MouseEvent) -> UpdateResult {
         if event.button != MouseButton::Left {
             return UpdateResult::none();
@@ -1268,9 +1268,9 @@ impl EditorCore {
 // src/handler/ime.rs
 
 use document::Position;
-use crate::{EditorCore, UpdateResult, ComposingText};
+use crate::{OfficeCore, UpdateResult, ComposingText};
 
-impl EditorCore {
+impl OfficeCore {
     pub(crate) fn handle_ime_start(&mut self) -> UpdateResult {
         let pos = self.selection.primary().cursor_position();
 
@@ -1319,9 +1319,9 @@ impl EditorCore {
 // src/handler/clipboard.rs
 
 use document::ClipboardData;
-use crate::{EditorCore, UpdateResult, PasteData};
+use crate::{OfficeCore, UpdateResult, PasteData};
 
-impl EditorCore {
+impl OfficeCore {
     pub(crate) fn handle_copy(&mut self) -> UpdateResult {
         let selection = self.selection.primary();
         if selection.is_collapsed() {
@@ -1885,94 +1885,94 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_editor_insert_text() {
-        let mut editor = EditorCore::new();
+    fn test_office_insert_text() {
+        let mut office = OfficeCore::new();
 
         // 문자 입력
-        editor.handle_event(InputEvent::KeyDown(KeyEvent {
+        office.handle_event(InputEvent::KeyDown(KeyEvent {
             key: Key::Char('H'),
             modifiers: Modifiers::none(),
         }));
-        editor.handle_event(InputEvent::KeyDown(KeyEvent {
+        office.handle_event(InputEvent::KeyDown(KeyEvent {
             key: Key::Char('i'),
             modifiers: Modifiers::none(),
         }));
 
-        assert_eq!(editor.document().plain_text(), "Hi");
+        assert_eq!(office.document().plain_text(), "Hi");
     }
 
     #[test]
-    fn test_editor_undo_redo() {
-        let mut editor = EditorCore::new();
+    fn test_office_undo_redo() {
+        let mut office = OfficeCore::new();
 
         // 입력
         for c in "Hello".chars() {
-            editor.handle_event(InputEvent::KeyDown(KeyEvent {
+            office.handle_event(InputEvent::KeyDown(KeyEvent {
                 key: Key::Char(c),
                 modifiers: Modifiers::none(),
             }));
         }
 
-        assert_eq!(editor.document().plain_text(), "Hello");
+        assert_eq!(office.document().plain_text(), "Hello");
 
         // Undo
-        editor.undo();
+        office.undo();
         // 명령 병합으로 인해 전체가 취소될 수 있음
 
         // Redo
-        editor.redo();
+        office.redo();
     }
 
     #[test]
     fn test_cursor_movement() {
-        let mut editor = EditorCore::new();
+        let mut office = OfficeCore::new();
 
         // 텍스트 입력
         for c in "Hello".chars() {
-            editor.handle_event(InputEvent::KeyDown(KeyEvent {
+            office.handle_event(InputEvent::KeyDown(KeyEvent {
                 key: Key::Char(c),
                 modifiers: Modifiers::none(),
             }));
         }
 
         // Home
-        editor.handle_event(InputEvent::KeyDown(KeyEvent {
+        office.handle_event(InputEvent::KeyDown(KeyEvent {
             key: Key::Home,
             modifiers: Modifiers::none(),
         }));
 
-        let pos = editor.selection().primary().cursor_position();
+        let pos = office.selection().primary().cursor_position();
         assert_eq!(pos.offset, 0);
 
         // End
-        editor.handle_event(InputEvent::KeyDown(KeyEvent {
+        office.handle_event(InputEvent::KeyDown(KeyEvent {
             key: Key::End,
             modifiers: Modifiers::none(),
         }));
 
-        let pos = editor.selection().primary().cursor_position();
+        let pos = office.selection().primary().cursor_position();
         assert_eq!(pos.offset, 5);
     }
 
     #[test]
     fn test_selection() {
-        let mut editor = EditorCore::new();
+        let mut office = OfficeCore::new();
 
         // 텍스트 입력
         for c in "Hello".chars() {
-            editor.handle_event(InputEvent::KeyDown(KeyEvent {
+            office.handle_event(InputEvent::KeyDown(KeyEvent {
                 key: Key::Char(c),
                 modifiers: Modifiers::none(),
             }));
         }
 
         // 전체 선택
-        editor.handle_event(InputEvent::KeyDown(KeyEvent {
+        office.handle_event(InputEvent::KeyDown(KeyEvent {
             key: Key::Char('a'),
             modifiers: Modifiers::ctrl(),
         }));
 
-        let selection = editor.selection().primary();
+        let selection = office.selection().primary();
         assert!(!selection.is_collapsed());
     }
 }

@@ -1,4 +1,4 @@
-# OpenHWP Editor Design Decisions
+# OpenHWP Office Design Decisions
 
 설계 결정 사항을 요약합니다. 상세 내용은 [DESIGN.md](./DESIGN.md)를 참조하세요.
 

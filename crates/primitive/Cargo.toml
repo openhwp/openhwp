@@ -6,7 +6,7 @@ description = "Primitive types for Korean document formats (HWP, HWPX)"
 license = "MIT"
 
 [dependencies]
-serde = { version = "1.0", optional = true, features = ["derive"] }
+serde = { workspace = true, optional = true }
 
 [features]
 default = []
