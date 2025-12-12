@@ -11,14 +11,14 @@
 //! - `/BodyText/Section{N}`: 본문 내용 (압축됨)
 //! - `/BinData/BIN{XXXX}.{ext}`: 바이너리 데이터 (이미지 등)
 
+pub mod body_writer;
 pub mod byte_writer;
 pub mod doc_info_writer;
-pub mod body_writer;
 pub mod file_header_writer;
 
+pub use body_writer::BodyWriter;
 pub use byte_writer::ByteWriter;
 pub use doc_info_writer::DocInfoWriter;
-pub use body_writer::BodyWriter;
 pub use file_header_writer::FileHeaderWriter;
 
 use std::collections::HashMap;
@@ -96,7 +96,8 @@ impl HwpWriter {
     /// HWP 파일을 바이트로 생성합니다.
     pub fn write_to_bytes(&self) -> Result<Vec<u8>> {
         let cursor = Cursor::new(Vec::new());
-        let mut cfb = CompoundFile::create(cursor).map_err(|e| Error::Io(std::io::Error::other(e)))?;
+        let mut cfb =
+            CompoundFile::create(cursor).map_err(|e| Error::Io(std::io::Error::other(e)))?;
 
         // FileHeader 스트림 생성
         self.write_file_header(&mut cfb)?;
@@ -111,7 +112,8 @@ impl HwpWriter {
         self.write_bin_data(&mut cfb)?;
 
         // CFB 파일 완성
-        cfb.flush().map_err(|e| Error::Io(std::io::Error::other(e)))?;
+        cfb.flush()
+            .map_err(|e| Error::Io(std::io::Error::other(e)))?;
 
         let cursor = cfb.into_inner();
         Ok(cursor.into_inner())
@@ -210,11 +212,5 @@ impl HwpWriter {
         }
 
         Ok(())
-    }
-}
-
-impl Default for HwpWriter {
-    fn default() -> Self {
-        Self::new()
     }
 }

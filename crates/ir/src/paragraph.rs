@@ -3,8 +3,8 @@
 //! 문서의 문단과 그 내용을 정의합니다.
 
 use crate::control::Control;
-use primitive::{CharShapeId, ParaShapeId, StyleId};
 use primitive::{BreakType, FieldType, HwpUnit};
+use primitive::{CharShapeId, ParaShapeId, StyleId};
 
 /// 문단
 #[derive(Debug, Clone, Default)]
@@ -91,9 +91,7 @@ impl Run {
     pub fn text(text: impl Into<String>) -> Self {
         Self {
             char_shape_id: None,
-            contents: vec![RunContent::Text(Text {
-                text: text.into(),
-            })],
+            contents: vec![RunContent::Text(Text { text: text.into() })],
         }
     }
 
@@ -101,9 +99,7 @@ impl Run {
     pub fn text_with_shape(text: impl Into<String>, char_shape_id: CharShapeId) -> Self {
         Self {
             char_shape_id: Some(char_shape_id),
-            contents: vec![RunContent::Text(Text {
-                text: text.into(),
-            })],
+            contents: vec![RunContent::Text(Text { text: text.into() })],
         }
     }
 

@@ -81,7 +81,7 @@ pub struct BinaryData {
 
 impl BinaryData {
     /// 바이너리 데이터 생성
-    pub fn new(format: BinaryFormat, data: Vec<u8>) -> Self {
+    pub const fn new(format: BinaryFormat, data: Vec<u8>) -> Self {
         Self {
             format,
             filename: None,
@@ -97,12 +97,12 @@ impl BinaryData {
     }
 
     /// 데이터 크기 반환
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.data.len()
     }
 
     /// 비어있는지 확인
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 
@@ -151,7 +151,7 @@ pub enum BinaryFormat {
 
 impl BinaryFormat {
     /// MIME 타입 반환
-    pub fn mime_type(&self) -> &'static str {
+    pub const fn mime_type(&self) -> &'static str {
         match self {
             BinaryFormat::Bmp => "image/bmp",
             BinaryFormat::Jpg => "image/jpeg",
@@ -167,7 +167,7 @@ impl BinaryFormat {
     }
 
     /// 확장자 반환
-    pub fn extension(&self) -> &'static str {
+    pub const fn extension(&self) -> &'static str {
         match self {
             BinaryFormat::Bmp => "bmp",
             BinaryFormat::Jpg => "jpg",
@@ -183,7 +183,7 @@ impl BinaryFormat {
     }
 
     /// 이미지 형식인지 확인
-    pub fn is_image(&self) -> bool {
+    pub const fn is_image(&self) -> bool {
         matches!(
             self,
             BinaryFormat::Bmp

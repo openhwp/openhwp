@@ -17,7 +17,7 @@
 //!
 //! Use [`Field::from_control_id_and_data()`] for instantiation during parsing.
 
-use super::control_data::{field_item_ids, ControlData};
+use super::control_data::{ControlData, field_item_ids};
 
 /// Field type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -65,7 +65,7 @@ pub enum FieldType {
 
 impl FieldType {
     /// Creates from a control ID string.
-    pub fn from_control_id(id: &[u8; 4]) -> Self {
+    pub const fn from_control_id(id: &[u8; 4]) -> Self {
         match id {
             b"%dat" => Self::Date,
             b"%tim" => Self::Time,
@@ -110,7 +110,7 @@ pub struct Field {
 
 impl Field {
     /// Creates a new field.
-    pub fn new(field_type: FieldType) -> Self {
+    pub const fn new(field_type: FieldType) -> Self {
         Self {
             field_type,
             instruction: String::new(),
@@ -119,7 +119,7 @@ impl Field {
     }
 
     /// Creates a field with instruction.
-    pub fn with_instruction(field_type: FieldType, instruction: String) -> Self {
+    pub const fn with_instruction(field_type: FieldType, instruction: String) -> Self {
         Self {
             field_type,
             instruction,

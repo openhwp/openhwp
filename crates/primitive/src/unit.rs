@@ -28,56 +28,56 @@ impl HwpUnit {
     }
 
     /// 포인트에서 변환 (1pt = 100 HwpUnit)
-    pub fn from_pt(pt: f64) -> Self {
+    pub const fn from_pt(pt: f64) -> Self {
         Self((pt * 100.0) as i32)
     }
 
     /// 포인트로 변환 (to_points의 별칭)
-    pub fn to_pt(self) -> f64 {
+    pub const fn to_pt(self) -> f64 {
         self.0 as f64 / 100.0
     }
 
     /// 포인트로 변환
     #[inline]
-    pub fn to_points(self) -> f64 {
+    pub const fn to_points(self) -> f64 {
         self.to_pt()
     }
 
     /// 밀리미터에서 변환
-    pub fn from_mm(mm: f64) -> Self {
+    pub const fn from_mm(mm: f64) -> Self {
         Self((mm * 7200.0 / 25.4) as i32)
     }
 
     /// 밀리미터로 변환
-    pub fn to_mm(self) -> f64 {
+    pub const fn to_mm(self) -> f64 {
         self.0 as f64 * 25.4 / 7200.0
     }
 
     /// 인치에서 변환 (from_inches의 별칭)
-    pub fn from_inch(inch: f64) -> Self {
+    pub const fn from_inch(inch: f64) -> Self {
         Self((inch * 7200.0) as i32)
     }
 
     /// 인치에서 변환
     #[inline]
-    pub fn from_inches(inches: f64) -> Self {
+    pub const fn from_inches(inches: f64) -> Self {
         Self::from_inch(inches)
     }
 
     /// 인치로 변환 (to_inches의 별칭)
-    pub fn to_inch(self) -> f64 {
+    pub const fn to_inch(self) -> f64 {
         self.0 as f64 / 7200.0
     }
 
     /// 인치로 변환
     #[inline]
-    pub fn to_inches(self) -> f64 {
+    pub const fn to_inches(self) -> f64 {
         self.to_inch()
     }
 
     /// 센티미터로 변환
     #[inline]
-    pub fn to_centimeters(self) -> f64 {
+    pub const fn to_centimeters(self) -> f64 {
         self.to_inches() * 2.54
     }
 
@@ -88,13 +88,13 @@ impl HwpUnit {
 
     /// Little-endian 바이트에서 읽기
     #[inline]
-    pub fn from_le_bytes(bytes: [u8; 4]) -> Self {
+    pub const fn from_le_bytes(bytes: [u8; 4]) -> Self {
         Self(i32::from_le_bytes(bytes))
     }
 
     /// Little-endian 바이트로 변환
     #[inline]
-    pub fn to_le_bytes(self) -> [u8; 4] {
+    pub const fn to_le_bytes(self) -> [u8; 4] {
         self.0.to_le_bytes()
     }
 }
@@ -256,12 +256,12 @@ impl Percent {
     pub const ZERO: Self = Self(0.0);
 
     /// 비율로 변환 (100% = 1.0)
-    pub fn to_ratio(self) -> f64 {
+    pub const fn to_ratio(self) -> f64 {
         self.0 / 100.0
     }
 
     /// 비율에서 변환
-    pub fn from_ratio(ratio: f64) -> Self {
+    pub const fn from_ratio(ratio: f64) -> Self {
         Self(ratio * 100.0)
     }
 }

@@ -27,7 +27,7 @@ pub struct TransformMatrix {
 
 impl TransformMatrix {
     /// 단위 행렬 생성
-    pub fn identity() -> Self {
+    pub const fn identity() -> Self {
         Self {
             e1: 1.0,
             e2: 0.0,
@@ -39,7 +39,7 @@ impl TransformMatrix {
     }
 
     /// HWP 행렬 벡터에서 변환 (6개 또는 그 이상의 값)
-    pub fn from_hwp_matrix(matrix: &[f64]) -> Option<Self> {
+    pub const fn from_hwp_matrix(matrix: &[f64]) -> Option<Self> {
         if matrix.len() >= 6 {
             Some(Self {
                 e1: matrix[0],
@@ -55,7 +55,7 @@ impl TransformMatrix {
     }
 
     /// HWPX Matrix 타입으로 변환
-    pub fn to_hwpx_values(&self) -> (f32, f32, f32, f32, f32, f32) {
+    pub const fn to_hwpx_values(&self) -> (f32, f32, f32, f32, f32, f32) {
         (
             self.e1 as f32,
             self.e2 as f32,

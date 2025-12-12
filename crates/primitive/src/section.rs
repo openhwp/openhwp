@@ -60,16 +60,6 @@ pub struct ColumnSeparator {
     pub color: Color,
 }
 
-impl Default for ColumnSeparator {
-    fn default() -> Self {
-        Self {
-            line_type: LineType::Solid,
-            thickness: 1,
-            color: Color::BLACK,
-        }
-    }
-}
-
 /// 페이지 테두리 위치 기준
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -199,15 +189,4 @@ pub struct LineNumberShape {
     pub distance: HwpUnit,
     /// 시작 번호
     pub start_number: u32,
-}
-
-impl Default for LineNumberShape {
-    fn default() -> Self {
-        Self {
-            restart_type: crate::LineNumberRestartType::Continuous,
-            count_by: 1,
-            distance: HwpUnit::from_mm(5.0),
-            start_number: 1,
-        }
-    }
 }

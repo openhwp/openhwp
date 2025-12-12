@@ -43,11 +43,6 @@ impl Document {
         self.sections.push(section);
     }
 
-    /// 섹션 수 반환
-    pub fn section_count(&self) -> usize {
-        self.sections.len()
-    }
-
     /// 전체 텍스트 추출
     pub fn to_plain_text(&self) -> String {
         let mut text = String::new();

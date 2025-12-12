@@ -63,7 +63,7 @@ impl UnderlinePosition {
 }
 
 /// Extracts underline shape from properties bit field.
-fn extract_underline_shape(properties: u32) -> UnderlineShape {
+const fn extract_underline_shape(properties: u32) -> UnderlineShape {
     UnderlineShape::from_raw(((properties >> 4) & 0x0F) as u8)
 }
 
@@ -380,7 +380,7 @@ impl CharacterShape {
 
     /// Returns the underline shape.
     #[inline]
-    pub fn underline_shape(&self) -> UnderlineShape {
+    pub const fn underline_shape(&self) -> UnderlineShape {
         extract_underline_shape(self.properties)
     }
 

@@ -257,7 +257,7 @@ pub struct Picture {
 
 impl Picture {
     /// Creates a new picture with properties.
-    pub fn new(properties: PictureProperties) -> Self {
+    pub const fn new(properties: PictureProperties) -> Self {
         Self {
             properties,
             original_filename: None,
@@ -268,7 +268,7 @@ impl Picture {
     }
 
     /// Creates a new picture with flip and rotation from ShapeElementProperties.
-    pub fn with_flip(properties: PictureProperties, flip: ImageFlip, rotation: i16) -> Self {
+    pub const fn with_flip(properties: PictureProperties, flip: ImageFlip, rotation: i16) -> Self {
         Self {
             properties,
             original_filename: None,
@@ -285,22 +285,22 @@ impl Picture {
     }
 
     /// Returns the binary data ID for the image content.
-    pub fn binary_data_id(&self) -> u16 {
+    pub const fn binary_data_id(&self) -> u16 {
         self.properties.binary_data_id
     }
 
     /// Returns the image dimensions in pixels.
-    pub fn dimensions(&self) -> (u32, u32) {
+    pub const fn dimensions(&self) -> (u32, u32) {
         self.properties.image_dimension
     }
 
     /// Returns the image width in pixels.
-    pub fn width(&self) -> u32 {
+    pub const fn width(&self) -> u32 {
         self.properties.image_dimension.0
     }
 
     /// Returns the image height in pixels.
-    pub fn height(&self) -> u32 {
+    pub const fn height(&self) -> u32 {
         self.properties.image_dimension.1
     }
 }

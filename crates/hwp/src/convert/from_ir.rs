@@ -6,6 +6,33 @@
 //! 1. IR → HWP 데이터 변환 (HwpBuildData)
 //! 2. IR → HWP 파일 바이트 변환 (to_hwp_bytes)
 
+use ir::{
+    ConversionError, ConversionResult, Document as IrDocument, StyleStore,
+    border_fill::{Border as IrBorder, BorderFill as IrBorderFill},
+    control::{
+        AutoNumber as IrAutoNumber, AutoNumberType as IrAutoNumberType, Bookmark as IrBookmark,
+        Caption as IrCaption, CaptionPosition as IrCaptionPosition, Chart as IrChart,
+        ChartType as IrChartType, Control as IrControl, Equation as IrEquation,
+        FormObject as IrFormObject, FormObjectType as IrFormObjectType,
+        HeaderFooterControl as IrHeaderFooter, HiddenComment as IrHiddenComment,
+        Hyperlink as IrHyperlink, NewNumber as IrNewNumber, Note as IrNote,
+        ObjectCommon as IrObjectCommon, OleObject as IrOleObject, TextArt as IrTextArt,
+        TextArtAlignment as IrTextArtAlignment, TextArtFontStyle as IrTextArtFontStyle,
+        TextArtShapeType as IrTextArtShapeType, TextBox as IrTextBox, TextWrap as IrTextWrap,
+        Video as IrVideo, VideoType as IrVideoType,
+    },
+    para_shape::{LineSpacingValue, ParaShape as IrParaShape, TabDef as IrTabDef},
+    paragraph::{
+        FieldStart as IrFieldStart, Paragraph as IrParagraph, Run as IrRun,
+        RunContent as IrRunContent,
+    },
+    picture::Picture as IrPicture,
+    shape::{
+        ArcType as IrArcType, CurvePointType as IrCurvePointType, Shape as IrShape,
+        ShapeType as IrShapeType,
+    },
+    table::{Table as IrTable, TableCell as IrTableCell},
+};
 use primitive::{
     Alignment, FieldType as IrFieldType, HeaderFooterApplyTo,
     HorizontalRelativeTo as IrHorizontalRelativeTo, LineType as IrLineType, NumberFormat,
@@ -13,59 +40,32 @@ use primitive::{
     TextWrapSide as IrTextWrapSide, TextWrapType as IrTextWrapType,
     VerticalRelativeTo as IrVerticalRelativeTo,
 };
-use ir::{
-    ConversionError, ConversionResult, Document as IrDocument, StyleStore,
-    border_fill::{
-        BorderFill as IrBorderFill, Border as IrBorder,
-    },
-    control::{
-        Control as IrControl, Equation as IrEquation, HeaderFooterControl as IrHeaderFooter,
-        Note as IrNote, Hyperlink as IrHyperlink, Bookmark as IrBookmark,
-        AutoNumber as IrAutoNumber, NewNumber as IrNewNumber, HiddenComment as IrHiddenComment,
-        AutoNumberType as IrAutoNumberType, TextBox as IrTextBox,
-        Video as IrVideo, VideoType as IrVideoType, OleObject as IrOleObject, Chart as IrChart, ChartType as IrChartType,
-        FormObject as IrFormObject, FormObjectType as IrFormObjectType,
-        TextArt as IrTextArt, TextArtFontStyle as IrTextArtFontStyle,
-        TextArtShapeType as IrTextArtShapeType, TextArtAlignment as IrTextArtAlignment,
-        ObjectCommon as IrObjectCommon, TextWrap as IrTextWrap,
-        Caption as IrCaption, CaptionPosition as IrCaptionPosition,
-    },
-    para_shape::{LineSpacingValue, ParaShape as IrParaShape, TabDef as IrTabDef},
-    paragraph::{Paragraph as IrParagraph, Run as IrRun, RunContent as IrRunContent, FieldStart as IrFieldStart},
-    picture::Picture as IrPicture,
-    shape::{
-        Shape as IrShape, ShapeType as IrShapeType, ArcType as IrArcType,
-        CurvePointType as IrCurvePointType,
-    },
-    table::{Table as IrTable, TableCell as IrTableCell},
-};
 
 use crate::writer::{
     BodyWriter, DocInfoWriter, HwpWriter,
     body_writer::{
-        CharShapeRef, ControlData, EquationData, PageDefinitionData, ParagraphData, PictureData,
-        SectionData, TableData, TableCellData, HeaderFooterData, NoteData, HyperlinkData,
-        BookmarkData, AutoNumberData, NewNumberData, HiddenCommentData, TextBoxData,
-        ShapeData, ShapeTypeData, LineShapeData, RectangleShapeData, EllipseShapeData,
-        ArcShapeData, PolygonShapeData, CurveShapeData, ContainerShapeData,
-        VideoData as HwpVideoData, OleData as HwpOleData, ChartData as HwpChartData,
-        FormObjectData as HwpFormObjectData, TextArtData as HwpTextArtData,
-        PageBorderFillData, FootnoteShapeData, EndnoteShapeData, ObjectCommonData,
-        FieldData as HwpFieldData, FieldTypeData as HwpFieldTypeData,
-        SectionDefinitionData, ColumnDefinitionData,
-        CaptionData as HwpCaptionData, CaptionDirection as HwpCaptionDirection,
+        ArcShapeData, AutoNumberData, BookmarkData, CaptionData as HwpCaptionData,
+        CaptionDirection as HwpCaptionDirection, CharShapeRef, ChartData as HwpChartData,
+        ColumnDefinitionData, ContainerShapeData, ControlData, CurveShapeData, EllipseShapeData,
+        EndnoteShapeData, EquationData, FieldData as HwpFieldData,
+        FieldTypeData as HwpFieldTypeData, FootnoteShapeData, FormObjectData as HwpFormObjectData,
+        HeaderFooterData, HiddenCommentData, HyperlinkData, LineShapeData, NewNumberData, NoteData,
+        ObjectCommonData, OleData as HwpOleData, PageBorderFillData, PageDefinitionData,
+        ParagraphData, PictureData, PolygonShapeData, RectangleShapeData, SectionData,
+        SectionDefinitionData, ShapeData, ShapeTypeData, TableCellData, TableData,
+        TextArtData as HwpTextArtData, TextBoxData, VideoData as HwpVideoData,
     },
     doc_info_writer::{
-        CharShapeData, FontCounts, FontData, PanoseData, ParaShapeData, StyleData,
-        BorderFillData, BorderLine, TabDefinitionData, TabItem,
-        NumberingData, NumberingLevelData, BulletData,
+        BinaryDataInfo, BorderFillData, BorderLine, BulletData, CharShapeData, FontCounts,
+        FontData, NumberingData, NumberingLevelData, PanoseData, ParaShapeData, StyleData,
+        TabDefinitionData, TabItem,
     },
 };
 
 use crate::doc_info::{
     FillInfo as HwpFillInfo, GradientFill as HwpGradientFill, GradientType as HwpGradientType,
-    PatternFill as HwpPatternFill, PatternType as HwpPatternType,
     ImageFill as HwpImageFill, ImageFillType as HwpImageFillType, ImageInfo as HwpImageInfo,
+    PatternFill as HwpPatternFill, PatternType as HwpPatternType,
 };
 use crate::primitive::ColorReference;
 
@@ -124,7 +124,10 @@ impl IrToHwp for IrDocument {
 }
 
 /// IR → HWP 데이터 변환
-fn convert_to_hwp_data(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<HwpBuildData, ConversionError> {
+fn convert_to_hwp_data(
+    ir: &IrDocument,
+    ctx: &mut FromIrContext,
+) -> Result<HwpBuildData, ConversionError> {
     let mut data = HwpBuildData {
         title: ir.metadata.title.clone(),
         author: ir.metadata.author.clone(),
@@ -136,7 +139,9 @@ fn convert_to_hwp_data(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<HwpBu
         let section_data = HwpSectionData {
             page_width: section.page.width.value(),
             page_height: section.page.height.value(),
-            paragraphs: section.paragraphs.iter()
+            paragraphs: section
+                .paragraphs
+                .iter()
                 .map(|p| p.to_plain_text())
                 .collect(),
         };
@@ -145,19 +150,24 @@ fn convert_to_hwp_data(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<HwpBu
 
     // 바이너리 데이터 변환
     for (id, binary) in ir.binary_data.iter() {
-        data.binary_data.push((id.value().to_string(), binary.data.clone()));
+        data.binary_data
+            .push((id.value().to_string(), binary.data.clone()));
     }
 
     // HWPX 확장 데이터 경고
     if ir.extensions.hwpx.is_some() {
-        ctx.warnings.data_loss("HWPX 확장 데이터는 HWP로 변환 시 손실됩니다");
+        ctx.warnings
+            .data_loss("HWPX 확장 데이터는 HWP로 변환 시 손실됩니다");
     }
 
     Ok(data)
 }
 
 /// IR → HWP 파일 바이트 변환
-fn convert_to_hwp_bytes(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<Vec<u8>, ConversionError> {
+fn convert_to_hwp_bytes(
+    ir: &IrDocument,
+    ctx: &mut FromIrContext,
+) -> Result<Vec<u8>, ConversionError> {
     let section_count = ir.sections.len().max(1) as u16;
 
     // DocInfo 빌드
@@ -181,7 +191,9 @@ fn convert_to_hwp_bytes(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<Vec<
         writer.add_binary_data(name, binary.data.clone());
     }
 
-    writer.write_to_bytes().map_err(|e| ConversionError::unsupported(e.to_string()))
+    writer
+        .write_to_bytes()
+        .map_err(|e| ConversionError::unsupported(e.to_string()))
 }
 
 /// DocInfo 스트림 빌드
@@ -238,6 +250,30 @@ fn build_doc_info(
         doc_info.add_bullet(data);
     }
 
+    // 바이너리 데이터 정보 추가
+    for (id, binary) in ir.binary_data.iter() {
+        let bin_id = id.value().parse::<u16>().unwrap_or_else(|_| {
+            // "BIN0001" 형식에서 숫자 추출
+            id.value()
+                .trim_start_matches("BIN")
+                .parse::<u16>()
+                .unwrap_or(0)
+        });
+
+        let extension = binary.format.extension().to_string();
+
+        let info = BinaryDataInfo {
+            // 타입: 0=링크, 1=임베드, 2=스토리지
+            // IR에서 임베드된 데이터만 지원하므로 1로 설정
+            data_type: 1,
+            abs_path: String::new(),
+            rel_path: String::new(),
+            bin_data_id: bin_id,
+            extension,
+        };
+        doc_info.add_binary_data_info(info);
+    }
+
     Ok(doc_info.build())
 }
 
@@ -253,7 +289,10 @@ fn build_fonts(styles: &StyleStore, _ctx: &mut FromIrContext) -> FontCounts {
 
     for font in &styles.fonts {
         // 한글 폰트와 영문 폰트 구분 (간단한 휴리스틱)
-        let is_korean = font.name.chars().any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c));
+        let is_korean = font
+            .name
+            .chars()
+            .any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c));
 
         // FontData 생성
         let font_data = FontData {
@@ -410,19 +449,27 @@ fn convert_char_shape(shape: &ir::char_shape::CharShape) -> CharShapeData {
         .build();
 
     // shade_color (음영 색상, IR의 shade_color 우선 사용, 없으면 background_color 사용)
-    let shade_color = shape.shade_color.as_ref()
+    let shade_color = shape
+        .shade_color
+        .as_ref()
         .or(shape.background_color.as_ref())
         .map(ColorConvert::to_bgr_u32)
         .unwrap_or(0xFFFFFF);
 
     // 밑줄 색상 (None이면 글자 색상 사용)
-    let underline_color = shape.underline.color.as_ref()
+    let underline_color = shape
+        .underline
+        .color
+        .as_ref()
         .map(ColorConvert::to_bgr_u32)
         .unwrap_or_else(|| ColorConvert::to_bgr_u32(&shape.color));
 
     // 그림자 색상 및 오프셋
     // HWP shadow offset은 i8 퍼센트 단위 (-100% ~ 100%)
-    let shadow_color = shape.shadow.color.as_ref()
+    let shadow_color = shape
+        .shadow
+        .color
+        .as_ref()
         .map(ColorConvert::to_bgr_u32)
         .unwrap_or(0x808080); // 기본값: 회색
     // IR에서는 퍼센트 값을 그대로 저장하므로 i8 범위로 클램프
@@ -526,26 +573,36 @@ fn convert_para_shape(shape: &IrParaShape) -> ParaShapeData {
     };
 
     // 문단 테두리 정보 추출
-    let (border_fill_id, border_space_left, border_space_right, border_space_top, border_space_bottom) =
-        if let Some(ref border) = shape.border {
-            (
-                border.border_fill_id_ref.value() as u16,
-                border.offset_left.value() as i16,
-                border.offset_right.value() as i16,
-                border.offset_top.value() as i16,
-                border.offset_bottom.value() as i16,
-            )
-        } else {
-            // border_fill_id만 ParaShape에서 가져오기
-            let bf_id = shape.border_fill_id.map(|id| id.value() as u16).unwrap_or(0);
-            (bf_id, 0, 0, 0, 0)
-        };
+    let (
+        border_fill_id,
+        border_space_left,
+        border_space_right,
+        border_space_top,
+        border_space_bottom,
+    ) = if let Some(ref border) = shape.border {
+        (
+            border.border_fill_id_ref.value() as u16,
+            border.offset_left.value() as i16,
+            border.offset_right.value() as i16,
+            border.offset_top.value() as i16,
+            border.offset_bottom.value() as i16,
+        )
+    } else {
+        // border_fill_id만 ParaShape에서 가져오기
+        let bf_id = shape
+            .border_fill_id
+            .map(|id| id.value() as u16)
+            .unwrap_or(0);
+        (bf_id, 0, 0, 0, 0)
+    };
 
     // Tab 정의 ID
     let tab_def_id = shape.tab_def_id.map(|id| id.value() as u16).unwrap_or(0);
 
     // Numbering/Bullet ID (번호 매기기 정의 ID)
-    let numbering_bullet_id = shape.numbering.as_ref()
+    let numbering_bullet_id = shape
+        .numbering
+        .as_ref()
         .and_then(|n| n.numbering_id.or(n.bullet_id))
         .map(|id| id as u16)
         .unwrap_or(0);
@@ -590,7 +647,10 @@ fn convert_style(style: &ir::style::Style) -> StyleData {
 }
 
 /// BodyText 섹션들 빌드
-fn build_body_sections(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<Vec<Vec<u8>>, ConversionError> {
+fn build_body_sections(
+    ir: &IrDocument,
+    ctx: &mut FromIrContext,
+) -> Result<Vec<Vec<u8>>, ConversionError> {
     let mut body_writer = BodyWriter::new();
 
     for section in &ir.sections {
@@ -607,7 +667,11 @@ fn build_body_sections(ir: &IrDocument, ctx: &mut FromIrContext) -> Result<Vec<V
 }
 
 /// 섹션 빌드
-fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrContext) -> Result<SectionData, ConversionError> {
+fn build_section(
+    section: &ir::Section,
+    ir_doc: &IrDocument,
+    _ctx: &mut FromIrContext,
+) -> Result<SectionData, ConversionError> {
     let mut data = SectionData::default();
 
     // 페이지 정의
@@ -670,7 +734,10 @@ fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrCo
             suffix: base.suffix.clone().unwrap_or_default(),
             start_number: base.start_number as u16,
             separator_length: base.separator_length.value() as u16, // HwpUnit → u16
-            separator_position: base.separator_position.map(|p| p.value() as u16).unwrap_or(0),
+            separator_position: base
+                .separator_position
+                .map(|p| p.value() as u16)
+                .unwrap_or(0),
             space_above: base.space_above.value() as u16,
             space_below: base.space_below.value() as u16,
             space_between: base.space_between.value() as u16,
@@ -710,7 +777,10 @@ fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrCo
             prefix: base.prefix.clone().unwrap_or_default(),
             suffix: base.suffix.clone().unwrap_or_default(),
             start_number: base.start_number as u16,
-            separator_position: base.separator_position.map(|p| p.value() as u16).unwrap_or(0),
+            separator_position: base
+                .separator_position
+                .map(|p| p.value() as u16)
+                .unwrap_or(0),
         });
     }
 
@@ -725,10 +795,22 @@ fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrCo
     let visibility = &section.extensions.visibility;
     let hide_header_flag = if visibility.hide_header { 1 << 0 } else { 0 };
     let hide_footer_flag = if visibility.hide_footer { 1 << 1 } else { 0 };
-    let hide_master_page_flag = if visibility.hide_master_page { 1 << 2 } else { 0 };
+    let hide_master_page_flag = if visibility.hide_master_page {
+        1 << 2
+    } else {
+        0
+    };
     let hide_border_flag = if visibility.hide_border { 1 << 3 } else { 0 };
-    let hide_background_flag = if visibility.hide_background { 1 << 4 } else { 0 };
-    let hide_page_number_flag = if visibility.hide_page_number { 1 << 5 } else { 0 };
+    let hide_background_flag = if visibility.hide_background {
+        1 << 4
+    } else {
+        0
+    };
+    let hide_page_number_flag = if visibility.hide_page_number {
+        1 << 5
+    } else {
+        0
+    };
     let properties = hide_header_flag
         | hide_footer_flag
         | hide_master_page_flag
@@ -773,7 +855,11 @@ fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrCo
             ir::section::ColumnDirection::RightToLeft => 1,
             ir::section::ColumnDirection::FacingPages => 2, // 맞쪽 페이지
         };
-        let same_width_flag: u16 = if section.columns.widths.is_empty() { 1 << 12 } else { 0 };
+        let same_width_flag: u16 = if section.columns.widths.is_empty() {
+            1 << 12
+        } else {
+            0
+        };
         let properties1 = section.columns.count << 2 | direction_flag << 10 | same_width_flag;
 
         let separator_style = match section.columns.separator {
@@ -786,7 +872,12 @@ fn build_section(section: &ir::Section, ir_doc: &IrDocument, _ctx: &mut FromIrCo
         data.column_definition = Some(ColumnDefinitionData {
             properties1,
             column_gap: section.columns.gap.value() as u16,
-            column_widths: section.columns.widths.iter().map(|w| w.value() as u16).collect(),
+            column_widths: section
+                .columns
+                .widths
+                .iter()
+                .map(|w| w.value() as u16)
+                .collect(),
             properties2: 0,
             separator_style,
             separator_thickness: section.columns.separator_thickness,
@@ -816,23 +907,25 @@ fn convert_note_number_format_to_hwp(format: NumberFormat) -> u32 {
         NumberFormat::HangulSyllable => 6,
         NumberFormat::HangulJamo => 7,
         // 각주/미주에서 지원하지 않는 형식들은 가장 유사한 것으로 매핑
-        NumberFormat::CircledLatinUpper => 1,   // CircledDigit으로 fallback
-        NumberFormat::CircledLatinLower => 1,   // CircledDigit으로 fallback
-        NumberFormat::CircledHangul => 1,       // CircledDigit으로 fallback
-        NumberFormat::CircledHangulJamo => 1,   // CircledDigit으로 fallback
-        NumberFormat::HangulIdeograph => 6,     // HangulSyllable으로 fallback
-        NumberFormat::Ideograph => 0,           // Digit으로 fallback
-        NumberFormat::CircledIdeograph => 1,    // CircledDigit으로 fallback
-        NumberFormat::Ganji => 0,               // Digit으로 fallback
+        NumberFormat::CircledLatinUpper => 1, // CircledDigit으로 fallback
+        NumberFormat::CircledLatinLower => 1, // CircledDigit으로 fallback
+        NumberFormat::CircledHangul => 1,     // CircledDigit으로 fallback
+        NumberFormat::CircledHangulJamo => 1, // CircledDigit으로 fallback
+        NumberFormat::HangulIdeograph => 6,   // HangulSyllable으로 fallback
+        NumberFormat::Ideograph => 0,         // Digit으로 fallback
+        NumberFormat::CircledIdeograph => 1,  // CircledDigit으로 fallback
+        NumberFormat::Ganji => 0,             // Digit으로 fallback
     }
 }
 
 /// RangeTag 변환 (IR → HWP)
 ///
 /// IR RangeTag를 HWP RangeTagData로 변환합니다.
-fn convert_range_tag_to_hwp(range_tag: &ir::paragraph::RangeTag) -> crate::writer::body_writer::RangeTagData {
-    use ir::paragraph::RangeTagType;
+fn convert_range_tag_to_hwp(
+    range_tag: &ir::paragraph::RangeTag,
+) -> crate::writer::body_writer::RangeTagData {
     use crate::writer::body_writer::RangeTagData;
+    use ir::paragraph::RangeTagType;
 
     // 태그 종류를 상위 바이트로 변환
     let tag_type_byte = match range_tag.tag_type {
@@ -858,7 +951,10 @@ fn convert_range_tag_to_hwp(range_tag: &ir::paragraph::RangeTag) -> crate::write
                 u8::from_str_radix(&data_str[i..end], 16).ok()
             })
             .collect();
-        (bytes.get(1).copied().unwrap_or(0), bytes.first().copied().unwrap_or(0))
+        (
+            bytes.get(1).copied().unwrap_or(0),
+            bytes.first().copied().unwrap_or(0),
+        )
     } else {
         (0, 0)
     };
@@ -879,7 +975,9 @@ fn build_paragraph(para: &IrParagraph) -> Result<ParagraphData, ConversionError>
     let controls = extract_controls(para)?;
 
     // RangeTag 변환 (IR → HWP)
-    let range_tags = para.range_tags.iter()
+    let range_tags = para
+        .range_tags
+        .iter()
         .map(convert_range_tag_to_hwp)
         .collect();
 
@@ -931,23 +1029,28 @@ fn build_char_shape_refs(para: &IrParagraph) -> Vec<CharShapeRef> {
 
 /// Run 내용의 UTF-16 길이 계산
 fn get_run_utf16_length(run: &IrRun) -> usize {
-    run.contents.iter().map(|content| {
-        match content {
-            IrRunContent::Text(text) => text.text.encode_utf16().count(),
-            IrRunContent::Tab(_) => 1,
-            IrRunContent::LineBreak => 1,
-            IrRunContent::Hyphen => 1,
-            IrRunContent::NonBreakingSpace => 1,
-            IrRunContent::FixedWidthSpace => 1,
-            IrRunContent::Control(_) => 1,  // 컨트롤은 확장문자 1글자
-            IrRunContent::FieldStart(_) => 1,
-            IrRunContent::FieldEnd(_) => 1,
-            IrRunContent::BookmarkStart(_) => 1,
-            IrRunContent::BookmarkEnd(_) => 1,
-            IrRunContent::Compose(c) => c.compose_text.encode_utf16().count(),
-            IrRunContent::Dutmal(d) => d.main_text.encode_utf16().count() + d.sub_text.encode_utf16().count(),
-        }
-    }).sum()
+    run.contents
+        .iter()
+        .map(|content| {
+            match content {
+                IrRunContent::Text(text) => text.text.encode_utf16().count(),
+                IrRunContent::Tab(_) => 1,
+                IrRunContent::LineBreak => 1,
+                IrRunContent::Hyphen => 1,
+                IrRunContent::NonBreakingSpace => 1,
+                IrRunContent::FixedWidthSpace => 1,
+                IrRunContent::Control(_) => 1, // 컨트롤은 확장문자 1글자
+                IrRunContent::FieldStart(_) => 1,
+                IrRunContent::FieldEnd(_) => 1,
+                IrRunContent::BookmarkStart(_) => 1,
+                IrRunContent::BookmarkEnd(_) => 1,
+                IrRunContent::Compose(c) => c.compose_text.encode_utf16().count(),
+                IrRunContent::Dutmal(d) => {
+                    d.main_text.encode_utf16().count() + d.sub_text.encode_utf16().count()
+                }
+            }
+        })
+        .sum()
 }
 
 /// 문단에서 컨트롤 추출
@@ -1073,7 +1176,9 @@ fn convert_control_to_hwp(ctrl: &IrControl) -> Result<Option<ControlData>, Conve
                 let format_type = fmt.format_type.as_ref().unwrap_or(&auto_num.number_format);
                 let number_format = convert_auto_number_format_to_hwp(format_type);
 
-                let side_character = fmt.side_character.clone()
+                let side_character = fmt
+                    .side_character
+                    .clone()
                     .unwrap_or_else(|| "-".to_string());
 
                 return Ok(Some(ControlData::PageNumber(PageNumberData {
@@ -1142,7 +1247,10 @@ fn convert_control_to_hwp(ctrl: &IrControl) -> Result<Option<ControlData>, Conve
 /// IR 수식 → HWP EquationData 변환
 fn convert_equation_to_hwp(equation: &IrEquation) -> Result<EquationData, ConversionError> {
     // 캡션 변환 (있는 경우)
-    let caption = equation.common.caption.as_ref()
+    let caption = equation
+        .common
+        .caption
+        .as_ref()
         .and_then(|c| convert_caption_to_hwp(c).ok());
 
     Ok(EquationData {
@@ -1157,7 +1265,9 @@ fn convert_equation_to_hwp(equation: &IrEquation) -> Result<EquationData, Conver
 fn convert_table_to_hwp(table: &IrTable) -> Result<TableData, ConversionError> {
     // 열 너비 계산
     let column_widths: Vec<u16> = if !table.rows.is_empty() && !table.rows[0].cells.is_empty() {
-        table.rows[0].cells.iter()
+        table.rows[0]
+            .cells
+            .iter()
             .map(|cell| cell.width.value() as u16)
             .collect()
     } else {
@@ -1174,7 +1284,10 @@ fn convert_table_to_hwp(table: &IrTable) -> Result<TableData, ConversionError> {
     }
 
     // 캡션 변환 (있는 경우)
-    let caption = table.common.caption.as_ref()
+    let caption = table
+        .common
+        .caption
+        .as_ref()
         .and_then(|c| convert_caption_to_hwp(c).ok());
 
     // 표 속성 비트 필드 생성
@@ -1205,7 +1318,10 @@ fn convert_table_to_hwp(table: &IrTable) -> Result<TableData, ConversionError> {
         columns: table.column_count,
         column_widths,
         cells,
-        border_fill_id: table.border_fill_id.map(|id| id.value() as u16).unwrap_or(0),
+        border_fill_id: table
+            .border_fill_id
+            .map(|id| id.value() as u16)
+            .unwrap_or(0),
         caption,
         properties,
     })
@@ -1214,7 +1330,8 @@ fn convert_table_to_hwp(table: &IrTable) -> Result<TableData, ConversionError> {
 /// IR 표 셀 → HWP TableCellData 변환
 fn convert_table_cell_to_hwp(cell: &IrTableCell) -> Result<TableCellData, ConversionError> {
     // 셀 내용 (문단들) 변환
-    let paragraphs: Vec<ParagraphData> = cell.paragraphs
+    let paragraphs: Vec<ParagraphData> = cell
+        .paragraphs
         .iter()
         .map(build_paragraph)
         .collect::<Result<Vec<_>, _>>()?;
@@ -1255,20 +1372,20 @@ fn convert_shadow_type_to_bits(shadow_type: &primitive::ShadowType) -> u32 {
     match shadow_type {
         primitive::ShadowType::None => 0,
         // 기본 방향 (스타일 구분 없음) - discrete로 처리
-        primitive::ShadowType::TopLeft |
-        primitive::ShadowType::TopRight |
-        primitive::ShadowType::BottomLeft |
-        primitive::ShadowType::BottomRight => 1,
+        primitive::ShadowType::TopLeft
+        | primitive::ShadowType::TopRight
+        | primitive::ShadowType::BottomLeft
+        | primitive::ShadowType::BottomRight => 1,
         // Discrete 스타일 (모든 방향)
-        primitive::ShadowType::TopLeftDiscrete |
-        primitive::ShadowType::TopRightDiscrete |
-        primitive::ShadowType::BottomLeftDiscrete |
-        primitive::ShadowType::BottomRightDiscrete => 1,
+        primitive::ShadowType::TopLeftDiscrete
+        | primitive::ShadowType::TopRightDiscrete
+        | primitive::ShadowType::BottomLeftDiscrete
+        | primitive::ShadowType::BottomRightDiscrete => 1,
         // Continuous 스타일 (모든 방향)
-        primitive::ShadowType::TopLeftContinuous |
-        primitive::ShadowType::TopRightContinuous |
-        primitive::ShadowType::BottomLeftContinuous |
-        primitive::ShadowType::BottomRightContinuous => 2,
+        primitive::ShadowType::TopLeftContinuous
+        | primitive::ShadowType::TopRightContinuous
+        | primitive::ShadowType::BottomLeftContinuous
+        | primitive::ShadowType::BottomRightContinuous => 2,
     }
 }
 
@@ -1355,7 +1472,8 @@ fn convert_caption_to_hwp(caption: &IrCaption) -> Result<HwpCaptionData, Convers
     };
 
     // 캡션 문단 변환
-    let paragraphs: Vec<ParagraphData> = caption.paragraphs
+    let paragraphs: Vec<ParagraphData> = caption
+        .paragraphs
         .iter()
         .filter_map(|para| build_paragraph(para).ok())
         .collect();
@@ -1371,17 +1489,19 @@ fn convert_caption_to_hwp(caption: &IrCaption) -> Result<HwpCaptionData, Convers
 fn convert_picture_to_hwp(picture: &IrPicture) -> Result<PictureData, ConversionError> {
     // 바이너리 데이터 ID 파싱
     let binary_id_str = picture.binary_id.value();
-    let binary_data_id = binary_id_str
-        .parse::<u16>()
-        .unwrap_or_else(|_| {
-            // BINxxxx 형식에서 숫자 추출 시도
-            binary_id_str.strip_prefix("BIN")
-                .and_then(|hex_str| u16::from_str_radix(hex_str, 16).ok())
-                .unwrap_or(0)
-        });
+    let binary_data_id = binary_id_str.parse::<u16>().unwrap_or_else(|_| {
+        // BINxxxx 형식에서 숫자 추출 시도
+        binary_id_str
+            .strip_prefix("BIN")
+            .and_then(|hex_str| u16::from_str_radix(hex_str, 16).ok())
+            .unwrap_or(0)
+    });
 
     // 캡션 변환 (있는 경우)
-    let caption = picture.common.caption.as_ref()
+    let caption = picture
+        .common
+        .caption
+        .as_ref()
         .and_then(|c| convert_caption_to_hwp(c).ok());
 
     Ok(PictureData {
@@ -1402,17 +1522,22 @@ fn convert_header_footer_to_hwp(hf: &IrHeaderFooter) -> Result<HeaderFooterData,
         HeaderFooterApplyTo::First => 0, // HWP doesn't have First, use Both
     };
 
-    let paragraphs: Vec<ParagraphData> = hf.paragraphs
+    let paragraphs: Vec<ParagraphData> = hf
+        .paragraphs
         .iter()
         .map(build_paragraph)
         .collect::<Result<Vec<_>, _>>()?;
 
-    Ok(HeaderFooterData { apply_to, paragraphs })
+    Ok(HeaderFooterData {
+        apply_to,
+        paragraphs,
+    })
 }
 
 /// IR 각주/미주 → HWP NoteData 변환
 fn convert_note_to_hwp(note: &IrNote) -> Result<NoteData, ConversionError> {
-    let paragraphs: Vec<ParagraphData> = note.paragraphs
+    let paragraphs: Vec<ParagraphData> = note
+        .paragraphs
         .iter()
         .map(build_paragraph)
         .collect::<Result<Vec<_>, _>>()?;
@@ -1489,8 +1614,11 @@ fn convert_new_number_to_hwp(new_num: &IrNewNumber) -> Result<NewNumberData, Con
 }
 
 /// IR 숨은 설명 → HWP HiddenCommentData 변환
-fn convert_hidden_comment_to_hwp(comment: &IrHiddenComment) -> Result<HiddenCommentData, ConversionError> {
-    let paragraphs: Vec<ParagraphData> = comment.paragraphs
+fn convert_hidden_comment_to_hwp(
+    comment: &IrHiddenComment,
+) -> Result<HiddenCommentData, ConversionError> {
+    let paragraphs: Vec<ParagraphData> = comment
+        .paragraphs
         .iter()
         .map(build_paragraph)
         .collect::<Result<Vec<_>, _>>()?;
@@ -1540,13 +1668,22 @@ fn convert_shape_to_hwp(shape: &IrShape) -> Result<ShapeData, ConversionError> {
     let shape_type = convert_shape_type_to_hwp(&shape.shape_type)?;
 
     // 캡션 변환 (있는 경우)
-    let caption = shape.common.caption.as_ref()
+    let caption = shape
+        .common
+        .caption
+        .as_ref()
         .and_then(|c| convert_caption_to_hwp(c).ok());
 
     // 변환 행렬 변환 (IR TransformMatrix → HWP 행렬)
-    let translation_matrix = shape.translation_matrix.map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
-    let scale_matrix = shape.scale_matrix.map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
-    let rotation_matrix = shape.rotation_matrix.map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
+    let translation_matrix = shape
+        .translation_matrix
+        .map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
+    let scale_matrix = shape
+        .scale_matrix
+        .map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
+    let rotation_matrix = shape
+        .rotation_matrix
+        .map(|m| [m.e1, m.e2, m.e3, m.e4, m.e5, m.e6]);
 
     Ok(ShapeData {
         common: convert_object_common_to_hwp(&shape.common),
@@ -1587,7 +1724,8 @@ fn convert_fill_to_hwp(fill: &ir::border_fill::Fill) -> HwpFillInfo {
                 primitive::GradientType::Square => HwpGradientType::Rectangular,
             };
 
-            let colors: Vec<ColorReference> = gradient.stops
+            let colors: Vec<ColorReference> = gradient
+                .stops
                 .iter()
                 .map(|stop| ColorConvert::from_ir(&stop.color))
                 .collect();
@@ -1628,7 +1766,9 @@ fn convert_fill_to_hwp(fill: &ir::border_fill::Fill) -> HwpFillInfo {
             let fill_type = match image.mode {
                 primitive::ImageFillMode::Tile => HwpImageFillType::TileAll,
                 primitive::ImageFillMode::TileHorizontalTop => HwpImageFillType::TileHorizontalTop,
-                primitive::ImageFillMode::TileHorizontalBottom => HwpImageFillType::TileHorizontalBottom,
+                primitive::ImageFillMode::TileHorizontalBottom => {
+                    HwpImageFillType::TileHorizontalBottom
+                }
                 primitive::ImageFillMode::TileVerticalLeft => HwpImageFillType::TileVerticalLeft,
                 primitive::ImageFillMode::TileVerticalRight => HwpImageFillType::TileVerticalRight,
                 primitive::ImageFillMode::Stretch => HwpImageFillType::FitToSize,
@@ -1700,50 +1840,54 @@ fn convert_fill_to_hwp_simple(fill: &ir::border_fill::Fill) -> (u32, u32) {
 /// IR 도형 타입 → HWP ShapeTypeData 변환
 fn convert_shape_type_to_hwp(shape_type: &IrShapeType) -> Result<ShapeTypeData, ConversionError> {
     match shape_type {
-        IrShapeType::Line(line) => {
-            Ok(ShapeTypeData::Line(LineShapeData {
-                start_x: line.start.x.value(),
-                start_y: line.start.y.value(),
-                end_x: line.end.x.value(),
-                end_y: line.end.y.value(),
-                start_arrow_type: convert_arrow_type_with_filled(&line.start_arrow.arrow_type, line.start_arrow.filled),
-                start_arrow_size: convert_arrow_size(&line.start_arrow.size),
-                end_arrow_type: convert_arrow_type_with_filled(&line.end_arrow.arrow_type, line.end_arrow.filled),
-                end_arrow_size: convert_arrow_size(&line.end_arrow.size),
-            }))
-        }
-        IrShapeType::Rectangle(rect) => {
-            Ok(ShapeTypeData::Rectangle(RectangleShapeData {
-                corner_radius: rect.corner_radius.value() as u32,
-            }))
-        }
-        IrShapeType::Ellipse(ellipse) => {
-            Ok(ShapeTypeData::Ellipse(EllipseShapeData {
-                arc_type: convert_arc_type(&ellipse.arc_type),
-                start_angle: (ellipse.start_angle * 100.0) as i32,
-                end_angle: (ellipse.end_angle * 100.0) as i32,
-            }))
-        }
-        IrShapeType::Arc(arc) => {
-            Ok(ShapeTypeData::Arc(ArcShapeData {
-                arc_type: convert_arc_type(&arc.arc_type),
-                start_angle: (arc.start_angle * 100.0) as i32,
-                end_angle: (arc.end_angle * 100.0) as i32,
-            }))
-        }
+        IrShapeType::Line(line) => Ok(ShapeTypeData::Line(LineShapeData {
+            start_x: line.start.x.value(),
+            start_y: line.start.y.value(),
+            end_x: line.end.x.value(),
+            end_y: line.end.y.value(),
+            start_arrow_type: convert_arrow_type_with_filled(
+                &line.start_arrow.arrow_type,
+                line.start_arrow.filled,
+            ),
+            start_arrow_size: convert_arrow_size(&line.start_arrow.size),
+            end_arrow_type: convert_arrow_type_with_filled(
+                &line.end_arrow.arrow_type,
+                line.end_arrow.filled,
+            ),
+            end_arrow_size: convert_arrow_size(&line.end_arrow.size),
+        })),
+        IrShapeType::Rectangle(rect) => Ok(ShapeTypeData::Rectangle(RectangleShapeData {
+            corner_radius: rect.corner_radius.value() as u32,
+        })),
+        IrShapeType::Ellipse(ellipse) => Ok(ShapeTypeData::Ellipse(EllipseShapeData {
+            arc_type: convert_arc_type(&ellipse.arc_type),
+            start_angle: (ellipse.start_angle * 100.0) as i32,
+            end_angle: (ellipse.end_angle * 100.0) as i32,
+        })),
+        IrShapeType::Arc(arc) => Ok(ShapeTypeData::Arc(ArcShapeData {
+            arc_type: convert_arc_type(&arc.arc_type),
+            start_angle: (arc.start_angle * 100.0) as i32,
+            end_angle: (arc.end_angle * 100.0) as i32,
+        })),
         IrShapeType::Polygon(poly) => {
-            let points = poly.points.iter()
+            let points = poly
+                .points
+                .iter()
                 .map(|p| (p.x.value(), p.y.value()))
                 .collect();
             Ok(ShapeTypeData::Polygon(PolygonShapeData { points }))
         }
         IrShapeType::Curve(curve) => {
-            let points = curve.points.iter()
-                .map(|p| (
-                    p.point.x.value(),
-                    p.point.y.value(),
-                    convert_curve_point_type(&p.point_type),
-                ))
+            let points = curve
+                .points
+                .iter()
+                .map(|p| {
+                    (
+                        p.point.x.value(),
+                        p.point.y.value(),
+                        convert_curve_point_type(&p.point_type),
+                    )
+                })
                 .collect();
             Ok(ShapeTypeData::Curve(CurveShapeData {
                 points,
@@ -1755,15 +1899,17 @@ fn convert_shape_type_to_hwp(shape_type: &IrShapeType) -> Result<ShapeTypeData, 
 
             // ConnectorType을 HWP line_type으로 변환
             let line_type = match connector.connector_type {
-                ir::shape::ConnectorType::Straight => 0,  // 직선
+                ir::shape::ConnectorType::Straight => 0, // 직선
                 ir::shape::ConnectorType::Elbow
                 | ir::shape::ConnectorType::VerticalHorizontal
-                | ir::shape::ConnectorType::HorizontalVertical => 1,     // 꺾인선
-                ir::shape::ConnectorType::Curved => 2,    // 곡선
+                | ir::shape::ConnectorType::HorizontalVertical => 1, // 꺾인선
+                ir::shape::ConnectorType::Curved => 2,   // 곡선
             };
 
             // 제어점 변환
-            let control_points: Vec<(i32, i32)> = connector.control_points.iter()
+            let control_points: Vec<(i32, i32)> = connector
+                .control_points
+                .iter()
                 .map(|cp| (cp.point.x.value(), cp.point.y.value()))
                 .collect();
 
@@ -1778,9 +1924,15 @@ fn convert_shape_type_to_hwp(shape_type: &IrShapeType) -> Result<ShapeTypeData, 
                 end_subject_id: connector.end.subject_id_ref,
                 end_subject_index: connector.end.subject_index,
                 control_points,
-                start_arrow_type: convert_arrow_type_with_filled(&connector.start_arrow.arrow_type, connector.start_arrow.filled),
+                start_arrow_type: convert_arrow_type_with_filled(
+                    &connector.start_arrow.arrow_type,
+                    connector.start_arrow.filled,
+                ),
                 start_arrow_size: convert_arrow_size(&connector.start_arrow.size),
-                end_arrow_type: convert_arrow_type_with_filled(&connector.end_arrow.arrow_type, connector.end_arrow.filled),
+                end_arrow_type: convert_arrow_type_with_filled(
+                    &connector.end_arrow.arrow_type,
+                    connector.end_arrow.filled,
+                ),
                 end_arrow_size: convert_arrow_size(&connector.end_arrow.size),
             }))
         }
@@ -1800,12 +1952,30 @@ fn convert_shape_type_to_hwp(shape_type: &IrShapeType) -> Result<ShapeTypeData, 
 fn convert_arrow_type_with_filled(arrow_type: &primitive::ArrowType, filled: bool) -> u8 {
     match arrow_type {
         primitive::ArrowType::None => 0,
-        primitive::ArrowType::Arrow => 1,       // Arrow (채워진)
-        primitive::ArrowType::ArrowOpen => 2,   // Spear (열린)
-        primitive::ArrowType::Stealth => 3,     // ConcaveArrow
-        primitive::ArrowType::Diamond => if filled { 7 } else { 4 }, // FilledDiamond : EmptyDiamond
-        primitive::ArrowType::Circle => if filled { 8 } else { 5 },  // FilledCircle : EmptyCircle
-        primitive::ArrowType::Square => if filled { 9 } else { 6 },  // FilledBox : EmptyBox
+        primitive::ArrowType::Arrow => 1,     // Arrow (채워진)
+        primitive::ArrowType::ArrowOpen => 2, // Spear (열린)
+        primitive::ArrowType::Stealth => 3,   // ConcaveArrow
+        primitive::ArrowType::Diamond => {
+            if filled {
+                7
+            } else {
+                4
+            }
+        } // FilledDiamond : EmptyDiamond
+        primitive::ArrowType::Circle => {
+            if filled {
+                8
+            } else {
+                5
+            }
+        } // FilledCircle : EmptyCircle
+        primitive::ArrowType::Square => {
+            if filled {
+                9
+            } else {
+                6
+            }
+        } // FilledBox : EmptyBox
     }
 }
 
@@ -1840,7 +2010,8 @@ fn convert_curve_point_type(pt_type: &IrCurvePointType) -> u8 {
 /// IR 텍스트 박스 → HWP TextBoxData 변환
 fn convert_textbox_to_hwp(text_box: &IrTextBox) -> Result<TextBoxData, ConversionError> {
     // 문단들 변환
-    let paragraphs: Vec<ParagraphData> = text_box.paragraphs
+    let paragraphs: Vec<ParagraphData> = text_box
+        .paragraphs
         .iter()
         .map(build_paragraph)
         .collect::<Result<Vec<_>, _>>()?;
@@ -1993,10 +2164,10 @@ fn convert_tab_type_to_hwp(tab_type: &IrTabType) -> u8 {
 /// 0: 실선, 1: 긴 점선, 2: 점선, 3: -.-.-., 4: -..-..-, 5: Dash보다 긴 선분, 6: Dot보다 큰 동그라미
 fn convert_tab_leader_to_fill_char(leader: &IrTabLeader) -> u16 {
     match leader {
-        IrTabLeader::None => 0,      // 없음 (실선으로 표시되지만 실제로는 채움 없음)
-        IrTabLeader::Dot => 2,       // 점선
-        IrTabLeader::LongDash => 1,  // 긴 점선
-        IrTabLeader::Dash => 3,      // -.-.-. (파선)
+        IrTabLeader::None => 0,       // 없음 (실선으로 표시되지만 실제로는 채움 없음)
+        IrTabLeader::Dot => 2,        // 점선
+        IrTabLeader::LongDash => 1,   // 긴 점선
+        IrTabLeader::Dash => 3,       // -.-.-. (파선)
         IrTabLeader::Underscore => 0, // 밑줄 (실선)
     }
 }
@@ -2012,7 +2183,9 @@ fn convert_numbering_to_hwp(numbering: &ir::style::Numbering) -> NumberingData {
                 primitive::Alignment::Left => 0,
                 primitive::Alignment::Center => 1,
                 primitive::Alignment::Right => 2,
-                primitive::Alignment::Justify | primitive::Alignment::Distribute | primitive::Alignment::Divide => 0,
+                primitive::Alignment::Justify
+                | primitive::Alignment::Distribute
+                | primitive::Alignment::Divide => 0,
             };
 
             // NumberFormat 변환 (IR → HWP)
@@ -2057,9 +2230,7 @@ fn convert_numbering_to_hwp(numbering: &ir::style::Numbering) -> NumberingData {
 
 /// IR Bullet → HWP BulletData 변환
 fn convert_bullet_to_hwp(bullet: &ir::style::Bullet) -> BulletData {
-    let para_head_info = bullet.char_shape_id
-        .map(|id| id.value())
-        .unwrap_or(0);
+    let para_head_info = bullet.char_shape_id.map(|id| id.value()).unwrap_or(0);
 
     BulletData {
         para_head_info,
@@ -2089,13 +2260,15 @@ fn convert_video_to_hwp(video: &IrVideo) -> Result<HwpVideoData, ConversionError
     };
 
     // 바이너리 데이터 ID (임베디드인 경우)
-    let bin_data_id = video.video_id
+    let bin_data_id = video
+        .video_id
         .as_ref()
         .map(extract_bin_data_id)
         .unwrap_or(0);
 
     // 포스터 바이너리 데이터 ID (poster_binary_id 우선, 없으면 preview_image_id 사용)
-    let poster_bin_id = video.poster_binary_id
+    let poster_bin_id = video
+        .poster_binary_id
         .as_ref()
         .map(extract_bin_data_id)
         .or_else(|| video.preview_image_id.as_ref().map(extract_bin_data_id))
@@ -2239,12 +2412,15 @@ fn convert_form_object_to_hwp(form: &IrFormObject) -> Result<HwpFormObjectData, 
     });
 
     // Convert password_char
-    let password_char = form.password_char.as_ref().and_then(|s| {
-        s.chars().next().map(|c| c as u16)
-    });
+    let password_char = form
+        .password_char
+        .as_ref()
+        .and_then(|s| s.chars().next().map(|c| c as u16));
 
     // Build items lists
-    let (items_text, items_value): (Vec<String>, Vec<String>) = form.items.iter()
+    let (items_text, items_value): (Vec<String>, Vec<String>) = form
+        .items
+        .iter()
         .map(|item| {
             let text = item.display_text.clone().unwrap_or_default();
             let value = item.value.clone().unwrap_or_default();

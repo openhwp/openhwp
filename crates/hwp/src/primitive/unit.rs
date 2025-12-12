@@ -30,31 +30,31 @@ impl HwpUnit16 {
 
     /// Converts to inches.
     #[inline]
-    pub fn to_inches(self) -> f64 {
+    pub const fn to_inches(self) -> f64 {
         self.0 as f64 / Self::UNITS_PER_INCH as f64
     }
 
     /// Converts to points (1 point = 1/72 inch).
     #[inline]
-    pub fn to_points(self) -> f64 {
+    pub const fn to_points(self) -> f64 {
         self.0 as f64 / 100.0
     }
 
     /// Reads from little-endian bytes.
     #[inline]
-    pub fn from_le_bytes(bytes: [u8; 2]) -> Self {
+    pub const fn from_le_bytes(bytes: [u8; 2]) -> Self {
         Self(i16::from_le_bytes(bytes))
     }
 
     /// Converts to little-endian bytes.
     #[inline]
-    pub fn to_le_bytes(self) -> [u8; 2] {
+    pub const fn to_le_bytes(self) -> [u8; 2] {
         self.0.to_le_bytes()
     }
 
     /// Converts to primitive::HwpUnit (32-bit).
     #[inline]
-    pub fn to_hwp_unit(self) -> primitive::HwpUnit {
+    pub const fn to_hwp_unit(self) -> primitive::HwpUnit {
         primitive::HwpUnit::new(self.0 as i32)
     }
 }

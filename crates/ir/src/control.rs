@@ -73,17 +73,17 @@ pub enum Control {
 
 impl Control {
     /// 표인지 확인
-    pub fn is_table(&self) -> bool {
+    pub const fn is_table(&self) -> bool {
         matches!(self, Control::Table(_))
     }
 
     /// 그림인지 확인
-    pub fn is_picture(&self) -> bool {
+    pub const fn is_picture(&self) -> bool {
         matches!(self, Control::Picture(_))
     }
 
     /// 도형인지 확인
-    pub fn is_shape(&self) -> bool {
+    pub const fn is_shape(&self) -> bool {
         matches!(self, Control::Shape(_))
     }
 }
@@ -159,7 +159,6 @@ pub struct Caption {
     pub paragraphs: Vec<Paragraph>,
 }
 
-
 /// 수식
 #[derive(Debug, Clone)]
 pub struct Equation {
@@ -184,7 +183,6 @@ pub struct Equation {
     /// 속성 플래그 (HWP 전용)
     pub properties: Option<u32>,
 }
-
 
 /// OLE 객체
 #[derive(Debug, Clone)]
@@ -337,7 +335,6 @@ pub struct Chart {
     /// 차트 종류
     pub chart_type: ChartType,
 }
-
 
 /// 비디오
 #[derive(Debug, Clone)]
@@ -533,4 +530,3 @@ pub struct Memo {
     /// 메모 종류 (HWPX 전용)
     pub memo_type: Option<MemoType>,
 }
-

@@ -577,8 +577,11 @@ fn convert_note_auto_number_format(note: &ir::section::NoteShape) -> AutoNumberF
 }
 
 /// IR LineType → HWPX LineStyleType2 변환
-fn convert_line_type_to_hwpx(line_type: primitive::LineType) -> crate::core::enums::LineStyleType2 {
+const fn convert_line_type_to_hwpx(
+    line_type: primitive::LineType,
+) -> crate::core::enums::LineStyleType2 {
     use crate::core::enums::LineStyleType2;
+
     match line_type {
         primitive::LineType::None => LineStyleType2::None,
         primitive::LineType::Solid => LineStyleType2::Solid,
@@ -593,8 +596,9 @@ fn convert_line_type_to_hwpx(line_type: primitive::LineType) -> crate::core::enu
 }
 
 /// IR separator_line_width → HWPX LineWidth 변환
-fn convert_line_width_to_hwpx(width: u8) -> crate::core::enums::LineWidth {
+const fn convert_line_width_to_hwpx(width: u8) -> crate::core::enums::LineWidth {
     use crate::core::enums::LineWidth;
+
     // 0.1mm 단위
     match width {
         0..=1 => LineWidth::Mm0_12,
@@ -613,7 +617,7 @@ fn convert_line_width_to_hwpx(width: u8) -> crate::core::enums::LineWidth {
 }
 
 /// IR separator_length (HwpUnit) → HWPX NoteLine length 변환
-fn convert_separator_length_to_hwpx(length: primitive::HwpUnit) -> i32 {
+const fn convert_separator_length_to_hwpx(length: primitive::HwpUnit) -> i32 {
     // HWPX: 0 (없음), -1 (5cm), -2 (2cm), -3 (단 크기의 1/3), -4 (단 크기), 양수 (HWPUNIT)
     let length_val = length.value();
 
@@ -750,8 +754,7 @@ fn convert_paragraph(para: &ir::Paragraph, id: u32) -> Result<HwpxParagraph, Con
 
     // 런 변환
     for run in &para.runs {
-        let hwpx_run = convert_run(run)?;
-        hwpx_para.runs.push(hwpx_run);
+        hwpx_para.runs.push(convert_run(run)?);
     }
 
     // 줄 세그먼트 변환
@@ -2412,7 +2415,7 @@ fn convert_bullets(bullets: &[IrBullet]) -> BulletList {
 // === 열거형 변환 헬퍼 함수들 ===
 
 /// IR NumberFormat을 HWPX NumberFormatType1으로 변환
-fn convert_ir_number_format_to_hwpx(
+const fn convert_ir_number_format_to_hwpx(
     format: primitive::NumberFormat,
 ) -> crate::core::enums::NumberFormatType1 {
     use crate::core::enums::NumberFormatType1;
@@ -2438,14 +2441,14 @@ fn convert_ir_number_format_to_hwpx(
     }
 }
 
-fn convert_underline_position_to_hwpx(pos: &IrUnderlinePosition) -> HwpxUnderlinePosition {
+const fn convert_underline_position_to_hwpx(pos: &IrUnderlinePosition) -> HwpxUnderlinePosition {
     match pos {
         IrUnderlinePosition::Bottom => HwpxUnderlinePosition::Bottom,
         IrUnderlinePosition::Top => HwpxUnderlinePosition::Top,
     }
 }
 
-fn convert_underline_type_to_hwpx(line_type: &IrUnderlineType) -> LineStyleType2 {
+const fn convert_underline_type_to_hwpx(line_type: &IrUnderlineType) -> LineStyleType2 {
     match line_type {
         IrUnderlineType::None => LineStyleType2::None,
         IrUnderlineType::Single | IrUnderlineType::Thick | IrUnderlineType::Wave => {
@@ -2459,7 +2462,7 @@ fn convert_underline_type_to_hwpx(line_type: &IrUnderlineType) -> LineStyleType2
     }
 }
 
-fn convert_strikethrough_type_to_hwpx(st: &IrStrikethroughType) -> LineStyleType2 {
+const fn convert_strikethrough_type_to_hwpx(st: &IrStrikethroughType) -> LineStyleType2 {
     match st {
         IrStrikethroughType::None => LineStyleType2::None,
         IrStrikethroughType::Single => LineStyleType2::Solid,
@@ -2467,7 +2470,7 @@ fn convert_strikethrough_type_to_hwpx(st: &IrStrikethroughType) -> LineStyleType
     }
 }
 
-fn convert_outline_type_to_hwpx(outline: &IrOutlineType) -> LineStyleType1 {
+const fn convert_outline_type_to_hwpx(outline: &IrOutlineType) -> LineStyleType1 {
     match outline {
         IrOutlineType::None => LineStyleType1::None,
         IrOutlineType::Outline
@@ -2477,7 +2480,7 @@ fn convert_outline_type_to_hwpx(outline: &IrOutlineType) -> LineStyleType1 {
     }
 }
 
-fn convert_shadow_type_to_hwpx(shadow: &IrShadowType) -> HwpxShadowType {
+const fn convert_shadow_type_to_hwpx(shadow: &IrShadowType) -> HwpxShadowType {
     match shadow {
         IrShadowType::None => HwpxShadowType::None,
         // Discrete types map to Drop
@@ -2497,7 +2500,7 @@ fn convert_shadow_type_to_hwpx(shadow: &IrShadowType) -> HwpxShadowType {
     }
 }
 
-fn convert_emphasis_type_to_hwpx(emphasis: &IrEmphasisType) -> EmphasisMarkType {
+const fn convert_emphasis_type_to_hwpx(emphasis: &IrEmphasisType) -> EmphasisMarkType {
     match emphasis {
         IrEmphasisType::None => EmphasisMarkType::None,
         IrEmphasisType::Dot => EmphasisMarkType::DotAbove,
@@ -2511,7 +2514,7 @@ fn convert_emphasis_type_to_hwpx(emphasis: &IrEmphasisType) -> EmphasisMarkType 
     }
 }
 
-fn convert_alignment_to_hwpx(align: &IrAlignment) -> HorizontalAlignment {
+const fn convert_alignment_to_hwpx(align: &IrAlignment) -> HorizontalAlignment {
     match align {
         IrAlignment::Left => HorizontalAlignment::Left,
         IrAlignment::Center => HorizontalAlignment::Center,
@@ -2522,7 +2525,7 @@ fn convert_alignment_to_hwpx(align: &IrAlignment) -> HorizontalAlignment {
     }
 }
 
-fn convert_vertical_alignment_to_hwpx(align: &IrVerticalAlignment) -> HwpxVerticalAlignment {
+const fn convert_vertical_alignment_to_hwpx(align: &IrVerticalAlignment) -> HwpxVerticalAlignment {
     match align {
         IrVerticalAlignment::Top => HwpxVerticalAlignment::Top,
         IrVerticalAlignment::Middle => HwpxVerticalAlignment::Center,
@@ -2531,7 +2534,9 @@ fn convert_vertical_alignment_to_hwpx(align: &IrVerticalAlignment) -> HwpxVertic
     }
 }
 
-fn convert_line_spacing_type_to_hwpx(spacing_type: &IrLineSpacingType) -> HwpxLineSpacingType {
+const fn convert_line_spacing_type_to_hwpx(
+    spacing_type: &IrLineSpacingType,
+) -> HwpxLineSpacingType {
     match spacing_type {
         IrLineSpacingType::Percent => HwpxLineSpacingType::Percent,
         IrLineSpacingType::Fixed => HwpxLineSpacingType::Fixed,
@@ -2540,7 +2545,7 @@ fn convert_line_spacing_type_to_hwpx(spacing_type: &IrLineSpacingType) -> HwpxLi
     }
 }
 
-fn convert_break_latin_to_hwpx(break_type: &LineBreakLatin) -> LatinWordBreak {
+const fn convert_break_latin_to_hwpx(break_type: &LineBreakLatin) -> LatinWordBreak {
     match break_type {
         LineBreakLatin::Word => LatinWordBreak::KeepWord,
         LineBreakLatin::Hyphenation => LatinWordBreak::Hyphenation,
@@ -2548,14 +2553,14 @@ fn convert_break_latin_to_hwpx(break_type: &LineBreakLatin) -> LatinWordBreak {
     }
 }
 
-fn convert_break_korean_to_hwpx(break_type: &LineBreakKorean) -> NonLatinWordBreak {
+const fn convert_break_korean_to_hwpx(break_type: &LineBreakKorean) -> NonLatinWordBreak {
     match break_type {
         LineBreakKorean::Word => NonLatinWordBreak::KeepWord,
         LineBreakKorean::Character => NonLatinWordBreak::BreakWord,
     }
 }
 
-fn convert_text_direction_to_hwpx(
+const fn convert_text_direction_to_hwpx(
     direction: &primitive::TextDirection,
 ) -> crate::paragraph::TextDirection {
     use crate::paragraph::TextDirection;
@@ -2569,7 +2574,7 @@ fn convert_text_direction_to_hwpx(
     }
 }
 
-fn convert_line_wrap_to_hwpx(
+const fn convert_line_wrap_to_hwpx(
     line_wrap: &primitive::LineWrap,
 ) -> crate::paragraph::ParagraphLineWrap {
     use crate::paragraph::ParagraphLineWrap;
@@ -2582,7 +2587,7 @@ fn convert_line_wrap_to_hwpx(
     }
 }
 
-fn convert_paragraph_vertical_alignment_to_hwpx(
+const fn convert_paragraph_vertical_alignment_to_hwpx(
     align: &IrVerticalAlignment,
 ) -> crate::paragraph::ParagraphVerticalAlignment {
     use crate::paragraph::ParagraphVerticalAlignment;
@@ -3007,7 +3012,7 @@ fn convert_picture_to_hwpx(
 }
 
 /// IR 이미지 효과 → HWPX ImageEffect 변환
-fn convert_image_effect_to_hwpx(effect: &IrImageEffect) -> crate::core::enums::ImageEffect {
+const fn convert_image_effect_to_hwpx(effect: &IrImageEffect) -> crate::core::enums::ImageEffect {
     use crate::core::enums::ImageEffect;
     match effect {
         IrImageEffect::Original => ImageEffect::RealPicture,
@@ -3403,7 +3408,7 @@ fn convert_auto_number_to_page_number(
     })
 }
 
-fn convert_number_format_to_hwpx_type1(
+const fn convert_number_format_to_hwpx_type1(
     format: &IrNumberFormat,
 ) -> crate::core::enums::NumberFormatType1 {
     use crate::core::enums::NumberFormatType1;
@@ -3429,7 +3434,7 @@ fn convert_number_format_to_hwpx_type1(
 }
 
 /// IR 새 번호 → HWPX AutoNumberNewNumber 변환
-fn convert_new_number_to_hwpx(
+const fn convert_new_number_to_hwpx(
     new_num: &IrNewNumber,
 ) -> Result<crate::paragraph::AutoNumberNewNumber, ConversionError> {
     use crate::paragraph::AutoNumberKind;
@@ -3482,7 +3487,9 @@ fn convert_hidden_comment_to_hwpx(
 }
 
 /// IR 번호 형식 → HWPX NumberFormatType2 변환
-fn convert_number_format_to_hwpx(format: &IrNumberFormat) -> crate::core::enums::NumberFormatType2 {
+const fn convert_number_format_to_hwpx(
+    format: &IrNumberFormat,
+) -> crate::core::enums::NumberFormatType2 {
     use crate::core::enums::NumberFormatType2;
 
     match format {
@@ -4298,7 +4305,7 @@ fn convert_line_style_with_arrows_to_hwpx(
 }
 
 /// IR ArrowSize → HWPX ArrowSize 변환
-fn convert_arrow_size_to_hwpx(size: &primitive::ArrowSize) -> crate::core::enums::ArrowSize {
+const fn convert_arrow_size_to_hwpx(size: &primitive::ArrowSize) -> crate::core::enums::ArrowSize {
     use crate::core::enums::ArrowSize as HwpxArrowSize;
     use primitive::ArrowSize;
 
@@ -4312,7 +4319,7 @@ fn convert_arrow_size_to_hwpx(size: &primitive::ArrowSize) -> crate::core::enums
 }
 
 /// IR 화살표 타입 → HWPX ArrowStyle 변환
-fn convert_arrow_type_to_hwpx(
+const fn convert_arrow_type_to_hwpx(
     arrow_type: &primitive::ArrowType,
     filled: bool,
 ) -> crate::core::enums::ArrowStyle {
@@ -4384,7 +4391,7 @@ fn convert_line_style_to_hwpx(
 }
 
 /// IR 선 종류 → HWPX LineStyleType2 변환 (도형 선용)
-fn convert_line_type_to_hwpx2(line_type: &primitive::LineType) -> LineStyleType2 {
+const fn convert_line_type_to_hwpx2(line_type: &primitive::LineType) -> LineStyleType2 {
     match line_type {
         primitive::LineType::None => LineStyleType2::None,
         primitive::LineType::Solid => LineStyleType2::Solid,
@@ -4404,7 +4411,9 @@ fn convert_line_type_to_hwpx2(line_type: &primitive::LineType) -> LineStyleType2
 }
 
 /// IR 호 종류 → HWPX ArcStyle 변환
-fn convert_arc_type_to_hwpx(arc_type: &IrArcType) -> crate::paragraph::shape_common::ArcStyle {
+const fn convert_arc_type_to_hwpx(
+    arc_type: &IrArcType,
+) -> crate::paragraph::shape_common::ArcStyle {
     use crate::paragraph::shape_common::ArcStyle;
     match arc_type {
         IrArcType::Full => ArcStyle::Pie,
@@ -5457,7 +5466,7 @@ fn convert_object_common_to_position(common: &IrObjectCommon) -> Option<ShapeObj
 }
 
 /// IR TextWrap → HWPX TextWrapMode 변환
-fn convert_text_wrap_to_mode(text_wrap: &IrTextWrap) -> TextWrapMode {
+const fn convert_text_wrap_to_mode(text_wrap: &IrTextWrap) -> TextWrapMode {
     match text_wrap.wrap_type {
         IrTextWrapType::Inline => TextWrapMode::Square,
         IrTextWrapType::Square => TextWrapMode::Square,
@@ -5468,7 +5477,7 @@ fn convert_text_wrap_to_mode(text_wrap: &IrTextWrap) -> TextWrapMode {
 }
 
 /// IR TextWrap → HWPX TextFlowMode 변환
-fn convert_text_wrap_to_flow(text_wrap: &IrTextWrap) -> TextFlowMode {
+const fn convert_text_wrap_to_flow(text_wrap: &IrTextWrap) -> TextFlowMode {
     match text_wrap.wrap_side {
         IrTextWrapSide::Both => TextFlowMode::BothSides,
         IrTextWrapSide::Left => TextFlowMode::LeftOnly,

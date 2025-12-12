@@ -20,7 +20,7 @@ impl ColorConvert {
     /// - Bits 8-15: Green
     /// - Bits 16-23: Blue
     #[inline]
-    pub fn to_ir(color_ref: ColorReference) -> Color {
+    pub const fn to_ir(color_ref: ColorReference) -> Color {
         let value = color_ref.value();
         Color {
             red: (value & 0xFF) as u8,
@@ -32,7 +32,7 @@ impl ColorConvert {
 
     /// Converts IR Color to HWP ColorReference.
     #[inline]
-    pub fn from_ir(color: &Color) -> ColorReference {
+    pub const fn from_ir(color: &Color) -> ColorReference {
         ColorReference::from_rgb(color.red, color.green, color.blue)
     }
 
@@ -40,7 +40,7 @@ impl ColorConvert {
     ///
     /// This is useful when writing raw color values to HWP binary data.
     #[inline]
-    pub fn to_bgr_u32(color: &Color) -> u32 {
+    pub const fn to_bgr_u32(color: &Color) -> u32 {
         ((color.blue as u32) << 16) | ((color.green as u32) << 8) | (color.red as u32)
     }
 }

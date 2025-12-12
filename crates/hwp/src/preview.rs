@@ -21,51 +21,16 @@ pub enum PreviewFormat {
 
 impl PreviewFormat {
     /// Detects format from magic bytes.
-    pub fn detect(data: &[u8]) -> Self {
-        if data.len() < 4 {
-            return Self::Unknown;
-        }
-
-        // PNG magic: 89 50 4E 47 0D 0A 1A 0A
-        if data.len() >= 8
-            && data[0] == 0x89
-            && data[1] == 0x50
-            && data[2] == 0x4E
-            && data[3] == 0x47
-        {
-            return Self::Png;
-        }
-
-        // GIF magic: GIF87a or GIF89a
-        if data[0] == b'G' && data[1] == b'I' && data[2] == b'F' {
-            return Self::Gif;
-        }
-
-        // BMP magic: BM
-        if data[0] == b'B' && data[1] == b'M' {
-            return Self::Bmp;
-        }
-
-        Self::Unknown
-    }
-
-    /// Returns the MIME type for this format.
-    pub const fn mime_type(&self) -> &'static str {
-        match self {
-            Self::Png => "image/png",
-            Self::Gif => "image/gif",
-            Self::Bmp => "image/bmp",
-            Self::Unknown => "application/octet-stream",
-        }
-    }
-
-    /// Returns the file extension for this format.
-    pub const fn extension(&self) -> &'static str {
-        match self {
-            Self::Png => "png",
-            Self::Gif => "gif",
-            Self::Bmp => "bmp",
-            Self::Unknown => "bin",
+    pub const fn detect(data: &[u8]) -> Self {
+        match data {
+            // PNG magic: 89 50 4E 47 0D 0A 1A 0A
+            [0x89, 0x50, 0x4E, 0x47, ..] => Self::Png,
+            // GIF magic: GIF87a or GIF89a
+            [b'G', b'I', b'F', ..] => Self::Gif,
+            // BMP magic: BM
+            [b'B', b'M', ..] => Self::Bmp,
+            // Unknown or insufficient data
+            _ => Self::Unknown,
         }
     }
 }
@@ -73,32 +38,19 @@ impl PreviewFormat {
 /// Preview image of the document.
 #[derive(Debug, Clone, Default)]
 pub struct PreviewImage {
-    /// Image format.
-    pub format: PreviewFormat,
     /// Raw image data.
     pub data: Vec<u8>,
 }
 
 impl PreviewImage {
     /// Creates a preview image from raw bytes.
-    pub fn from_bytes(data: Vec<u8>) -> Self {
-        let format = PreviewFormat::detect(&data);
-        Self { format, data }
+    pub const fn from_bytes(data: Vec<u8>) -> Self {
+        Self { data }
     }
 
-    /// Returns true if the preview image is empty.
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
-
-    /// Returns the image data length.
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
-
-    /// Returns the raw image bytes.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
+    #[inline]
+    pub fn format(&self) -> PreviewFormat {
+        PreviewFormat::detect(&self.data)
     }
 }
 
@@ -114,30 +66,14 @@ pub struct PreviewText {
 impl PreviewText {
     /// Creates preview text from UTF-16 bytes.
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
-        let mut chars = Vec::with_capacity(data.len() / 2);
-        for chunk in data.chunks(2) {
-            if chunk.len() == 2 {
-                let code_unit = u16::from_le_bytes([chunk[0], chunk[1]]);
-                if code_unit == 0 {
-                    break;
-                }
-                chars.push(code_unit);
-            }
-        }
+        let text: Vec<_> = data
+            .chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+            .take_while(|&code_unit| code_unit != 0)
+            .collect();
+        let text = String::from_utf16_lossy(&text);
 
-        Ok(Self {
-            text: String::from_utf16_lossy(&chars),
-        })
-    }
-
-    /// Returns true if the preview text is empty.
-    pub fn is_empty(&self) -> bool {
-        self.text.is_empty()
-    }
-
-    /// Returns the text content.
-    pub fn as_str(&self) -> &str {
-        &self.text
+        Ok(Self { text })
     }
 }
 
@@ -159,16 +95,17 @@ mod tests {
             PreviewFormat::detect(&[b'B', b'M', 0x00, 0x00]),
             PreviewFormat::Bmp
         );
-        assert_eq!(PreviewFormat::detect(&[0x00, 0x00, 0x00]), PreviewFormat::Unknown);
+        assert_eq!(
+            PreviewFormat::detect(&[0x00, 0x00, 0x00]),
+            PreviewFormat::Unknown
+        );
     }
 
     #[test]
     fn test_preview_image() {
         let png_data = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-        let preview = PreviewImage::from_bytes(png_data.clone());
-        assert_eq!(preview.format, PreviewFormat::Png);
-        assert_eq!(preview.len(), 8);
-        assert_eq!(preview.as_bytes(), &png_data);
+        let preview = PreviewImage::from_bytes(png_data);
+        assert_eq!(preview.format(), PreviewFormat::Png);
     }
 
     #[test]
@@ -176,6 +113,6 @@ mod tests {
         // "Hello" in UTF-16LE
         let data = [0x48, 0x00, 0x65, 0x00, 0x6C, 0x00, 0x6C, 0x00, 0x6F, 0x00];
         let preview = PreviewText::from_bytes(&data).unwrap();
-        assert_eq!(preview.as_str(), "Hello");
+        assert_eq!(preview.text, "Hello");
     }
 }

@@ -60,9 +60,10 @@ impl ParameterType {
 }
 
 /// Parameter item value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum ParameterValue {
     /// Null value.
+    #[default]
     Null,
     /// Boolean value.
     Bool(bool),
@@ -80,12 +81,6 @@ pub enum ParameterValue {
     Array(Vec<ParameterSet>),
 }
 
-impl Default for ParameterValue {
-    fn default() -> Self {
-        Self::Null
-    }
-}
-
 /// Parameter item (key-value pair).
 #[derive(Debug, Clone, Default)]
 pub struct ParameterItem {
@@ -98,11 +93,6 @@ pub struct ParameterItem {
 }
 
 impl ParameterItem {
-    /// Creates a new parameter item.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Returns the item ID.
     pub const fn id(&self) -> u16 {
         self.id
@@ -114,7 +104,7 @@ impl ParameterItem {
     }
 
     /// Returns the item value.
-    pub fn value(&self) -> &ParameterValue {
+    pub const fn value(&self) -> &ParameterValue {
         &self.value
     }
 
@@ -326,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_parameter_item_new() {
-        let item = ParameterItem::new();
+        let item = ParameterItem::default();
         assert_eq!(item.id(), 0);
         assert_eq!(item.item_type(), ParameterType::Unknown);
     }

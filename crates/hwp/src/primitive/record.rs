@@ -56,7 +56,6 @@ pub enum RecordTagId {
     DistributeDocumentData = 0x01C,
 
     // 0x01D is reserved
-
     /// Compatible document settings.
     CompatibleDocument = 0x01E,
 
@@ -67,12 +66,10 @@ pub enum RecordTagId {
     TrackChange = 0x020,
 
     // 0x021 - 0x05B are reserved or version-specific
-
     /// Memo shape.
     MemoShape = 0x05C,
 
     // 0x05D is reserved
-
     /// Forbidden characters.
     ForbiddenCharacter = 0x05E,
 
@@ -155,7 +152,6 @@ pub enum RecordTagId {
     Equation = 0x058,
 
     // 0x059 is reserved
-
     /// Text art (WordArt-like).
     ShapeComponentTextArt = 0x05A,
 
@@ -163,18 +159,15 @@ pub enum RecordTagId {
     FormObject = 0x05B,
 
     // MemoShape = 0x05C (already defined above)
-
     /// Memo list header.
     MemoList = 0x05D,
 
     // ForbiddenCharacter = 0x05E (already defined above)
-
     /// Chart data.
     ChartData = 0x05F,
 
     // TrackChangeContent = 0x060 (already defined above)
     // TrackChangeAuthor = 0x061 (already defined above)
-
     /// Video data.
     VideoData = 0x062,
 
@@ -184,7 +177,7 @@ pub enum RecordTagId {
 
 impl RecordTagId {
     /// Tries to convert a u16 value to a RecordTagId.
-    pub fn from_u16(value: u16) -> Option<Self> {
+    pub const fn from_u16(value: u16) -> Option<Self> {
         match value {
             0x010 => Some(Self::DocumentProperties),
             0x011 => Some(Self::IdMappings),
@@ -312,7 +305,7 @@ impl RecordHeader {
 
     /// Returns the tag ID as enum, if recognized.
     #[inline]
-    pub fn tag_id(&self) -> Option<RecordTagId> {
+    pub const fn tag_id(&self) -> Option<RecordTagId> {
         RecordTagId::from_u16(self.tag_id_raw())
     }
 
@@ -342,7 +335,6 @@ impl RecordHeader {
             None => self.size_field(),
         }
     }
-
 }
 
 impl fmt::Debug for RecordHeader {
@@ -363,11 +355,7 @@ mod tests {
     impl RecordHeader {
         /// Returns the total header size in bytes (4 or 8).
         const fn header_size(&self) -> usize {
-            if self.extended_size.is_some() {
-                8
-            } else {
-                4
-            }
+            if self.extended_size.is_some() { 8 } else { 4 }
         }
     }
 
@@ -399,7 +387,10 @@ mod tests {
             RecordTagId::from_u16(0x010),
             Some(RecordTagId::DocumentProperties)
         );
-        assert_eq!(RecordTagId::from_u16(0x042), Some(RecordTagId::ParagraphHeader));
+        assert_eq!(
+            RecordTagId::from_u16(0x042),
+            Some(RecordTagId::ParagraphHeader)
+        );
         assert_eq!(RecordTagId::from_u16(0xFFF), None);
     }
 }

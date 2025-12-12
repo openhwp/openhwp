@@ -261,11 +261,6 @@ pub struct ControlData {
 }
 
 impl ControlData {
-    /// Creates a new empty control data.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Parses control data from a byte slice.
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         let mut reader = ByteReader::new(data);
@@ -278,8 +273,7 @@ impl ControlData {
 
         // Parse all parameter sets in the data
         while reader.remaining() >= 4 {
-            let set = ParameterSet::from_reader(reader)?;
-            sets.push(set);
+            sets.push(ParameterSet::from_reader(reader)?);
         }
 
         Ok(Self { sets })
@@ -303,11 +297,6 @@ impl ControlData {
     /// Gets an integer value from the first set.
     pub fn get_integer(&self, item_id: u16) -> Option<i64> {
         self.sets.first().and_then(|set| set.get_integer(item_id))
-    }
-
-    /// Returns true if there are no parameter sets.
-    pub fn is_empty(&self) -> bool {
-        self.sets.is_empty()
     }
 }
 
@@ -339,7 +328,10 @@ mod tests {
         assert_eq!(ParameterItemType::from_raw(4), ParameterItemType::Int4);
         assert_eq!(ParameterItemType::from_raw(7), ParameterItemType::UInt4);
         assert_eq!(ParameterItemType::from_raw(8), ParameterItemType::Bool);
-        assert_eq!(ParameterItemType::from_raw(0x8000), ParameterItemType::Unknown);
+        assert_eq!(
+            ParameterItemType::from_raw(0x8000),
+            ParameterItemType::Unknown
+        );
     }
 
     #[test]
@@ -361,11 +353,5 @@ mod tests {
         let set = ParameterSet::new(0x1234);
         assert_eq!(set.id, 0x1234);
         assert!(set.is_empty());
-    }
-
-    #[test]
-    fn test_control_data_new() {
-        let data = ControlData::new();
-        assert!(data.is_empty());
     }
 }

@@ -23,7 +23,7 @@ impl Run {
     }
 
     /// 글자 모양 ID로 런 생성
-    pub fn with_char_shape(char_shape_id: CharShapeId) -> Self {
+    pub const fn with_char_shape(char_shape_id: CharShapeId) -> Self {
         Self {
             char_shape_id: Some(char_shape_id),
             contents: Vec::new(),
@@ -75,7 +75,7 @@ impl Run {
     }
 
     /// 내용 수
-    pub fn content_count(&self) -> usize {
+    pub const fn content_count(&self) -> usize {
         self.contents.len()
     }
 

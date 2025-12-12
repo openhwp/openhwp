@@ -25,7 +25,12 @@ pub struct Spacing {
 impl Spacing {
     /// 새 Spacing 생성
     pub const fn new(left: HwpUnit16, right: HwpUnit16, top: HwpUnit16, bottom: HwpUnit16) -> Self {
-        Self { left, right, top, bottom }
+        Self {
+            left,
+            right,
+            top,
+            bottom,
+        }
     }
 
     /// ByteReader에서 파싱 (4 x HwpUnit16).
@@ -39,7 +44,7 @@ impl Spacing {
     }
 
     /// primitive::Spacing<HwpUnit>으로 변환
-    pub fn to_hwp_unit_spacing(self) -> primitive::Spacing<primitive::HwpUnit> {
+    pub const fn to_hwp_unit_spacing(self) -> primitive::Spacing<primitive::HwpUnit> {
         primitive::Spacing {
             left: self.left.to_hwp_unit(),
             right: self.right.to_hwp_unit(),

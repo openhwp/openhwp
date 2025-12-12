@@ -2,8 +2,8 @@
 //!
 //! 편집 명령의 실행 이력을 관리하여 Undo/Redo 기능을 제공합니다.
 
-use crate::command::{Command, CommandResult};
 use crate::Document;
+use crate::command::{Command, CommandResult};
 
 /// 명령 히스토리
 ///
@@ -20,7 +20,7 @@ pub struct CommandHistory {
 
 impl CommandHistory {
     /// 새 히스토리 생성
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
@@ -29,7 +29,7 @@ impl CommandHistory {
     }
 
     /// 최대 크기 설정
-    pub fn with_max_size(max_size: usize) -> Self {
+    pub const fn with_max_size(max_size: usize) -> Self {
         Self {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
@@ -38,7 +38,11 @@ impl CommandHistory {
     }
 
     /// 명령 실행 및 히스토리에 추가
-    pub fn execute(&mut self, mut command: Box<dyn Command>, doc: &mut Document) -> CommandResult<()> {
+    pub fn execute(
+        &mut self,
+        mut command: Box<dyn Command>,
+        doc: &mut Document,
+    ) -> CommandResult<()> {
         command.execute(doc)?;
         self.undo_stack.push(command);
         self.redo_stack.clear(); // 새 명령 실행 시 Redo 스택 초기화
@@ -74,22 +78,22 @@ impl CommandHistory {
     }
 
     /// Undo 가능 여부
-    pub fn can_undo(&self) -> bool {
+    pub const fn can_undo(&self) -> bool {
         !self.undo_stack.is_empty()
     }
 
     /// Redo 가능 여부
-    pub fn can_redo(&self) -> bool {
+    pub const fn can_redo(&self) -> bool {
         !self.redo_stack.is_empty()
     }
 
     /// Undo 스택 크기
-    pub fn undo_count(&self) -> usize {
+    pub const fn undo_count(&self) -> usize {
         self.undo_stack.len()
     }
 
     /// Redo 스택 크기
-    pub fn redo_count(&self) -> usize {
+    pub const fn redo_count(&self) -> usize {
         self.redo_stack.len()
     }
 

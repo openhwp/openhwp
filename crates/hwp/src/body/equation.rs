@@ -117,15 +117,10 @@ pub struct Equation {
 }
 
 impl Equation {
-    /// Creates a new equation with properties.
-    pub fn new(properties: EquationProperties) -> Self {
-        Self { properties }
-    }
-
     /// Parses equation from reader.
     pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
         let properties = EquationProperties::from_reader(reader)?;
-        Ok(Self::new(properties))
+        Ok(Self { properties })
     }
 
     /// Returns the equation script (markup text).
@@ -134,12 +129,12 @@ impl Equation {
     }
 
     /// Returns the base font size in points.
-    pub fn font_size_points(&self) -> f32 {
+    pub const fn font_size_points(&self) -> f32 {
         self.properties.base_font_size as f32 / 100.0
     }
 
     /// Returns the text color as ARGB.
-    pub fn text_color(&self) -> u32 {
+    pub const fn text_color(&self) -> u32 {
         self.properties.text_color
     }
 

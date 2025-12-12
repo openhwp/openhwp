@@ -108,12 +108,8 @@ impl HwpDocument {
         };
 
         // Read and parse DocInfo
-        let doc_info = Self::read_doc_info(
-            &mut cfb,
-            &header,
-            password,
-            distribution_data.as_deref(),
-        )?;
+        let doc_info =
+            Self::read_doc_info(&mut cfb, &header, password, distribution_data.as_deref())?;
 
         // Read sections
         let section_count = doc_info
@@ -124,18 +120,10 @@ impl HwpDocument {
 
         let mut sections = Vec::with_capacity(section_count);
         for i in 0..section_count {
-            match Self::read_section(
-                &mut cfb,
-                &header,
-                i,
-                password,
-                distribution_data.as_deref(),
-            ) {
+            match Self::read_section(&mut cfb, &header, i, password, distribution_data.as_deref()) {
                 Ok(section) => sections.push(section),
-                Err(_) => {
-                    // Some documents may have fewer sections than declared
-                    break;
-                }
+                // Some documents may have fewer sections than declared
+                Err(_) => break,
             }
         }
 
@@ -235,9 +223,11 @@ impl HwpDocument {
             format!("/BodyText/Section{}", index)
         };
 
-        let mut stream = cfb.open_stream(&stream_name).map_err(|_| Error::MissingStream {
-            name: stream_name.clone(),
-        })?;
+        let mut stream = cfb
+            .open_stream(&stream_name)
+            .map_err(|_| Error::MissingStream {
+                name: stream_name.clone(),
+            })?;
         let mut data = Vec::new();
         stream.read_to_end(&mut data)?;
 
@@ -297,35 +287,30 @@ impl HwpDocument {
         // Read JScriptVersion
         if let Ok(mut stream) = cfb.open_stream("/Scripts/JScriptVersion") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                scripts.version = ScriptVersion::from_bytes(&data)?;
-            }
+            stream.read_to_end(&mut data)?;
+            scripts.version = ScriptVersion::from_bytes(&data)?;
         }
 
         // Read DefaultJScript
         if let Ok(mut stream) = cfb.open_stream("/Scripts/DefaultJScript") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                scripts.header = ScriptHeader::from_bytes(&data)?;
-            }
+            stream.read_to_end(&mut data)?;
+            scripts.header = ScriptHeader::from_bytes(&data)?;
         }
 
-        // Try to read script source files (JScript0, JScript1, etc.)
-        // Limit to reasonable number to avoid potential infinite loops from corrupt data
+        // Read script sources (JScript0, JScript1, etc.)
         let max_scripts = scripts.header.script_count.min(100);
         for i in 0..max_scripts {
             let stream_name = format!("/Scripts/JScript{}", i);
-            if let Ok(mut stream) = cfb.open_stream(&stream_name) {
-                let mut data = Vec::new();
-                if stream.read_to_end(&mut data).is_err() || data.is_empty() {
-                    continue;
-                }
+            let Ok(mut stream) = cfb.open_stream(&stream_name) else {
+                continue;
+            };
+
+            let mut data = Vec::new();
+            if stream.read_to_end(&mut data).is_ok() && !data.is_empty() {
                 if let Ok(source) = ScriptSource::from_bytes(&format!("JScript{}", i), &data) {
                     scripts.sources.push(source);
                 }
-            } else {
-                // Stop if stream doesn't exist
-                break;
             }
         }
 
@@ -339,33 +324,29 @@ impl HwpDocument {
         // Read _LinkDoc
         if let Ok(mut stream) = cfb.open_stream("/DocOptions/_LinkDoc") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                doc_options.set_link_doc(LinkDoc::from_bytes(&data)?);
-            }
+            stream.read_to_end(&mut data)?;
+            doc_options.set_link_doc(LinkDoc::from_bytes(&data)?);
         }
 
         // Read DrmLicense
         if let Ok(mut stream) = cfb.open_stream("/DocOptions/DrmLicense") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                doc_options.set_drm_license(DrmLicense::from_bytes(&data)?);
-            }
+            stream.read_to_end(&mut data)?;
+            doc_options.set_drm_license(DrmLicense::from_bytes(&data)?);
         }
 
         // Read DrmRootSect
         if let Ok(mut stream) = cfb.open_stream("/DocOptions/DrmRootSect") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                doc_options.set_drm_root_sect(data);
-            }
+            stream.read_to_end(&mut data)?;
+            doc_options.set_drm_root_sect(data);
         }
 
         // Read CertDrmHeader
         if let Ok(mut stream) = cfb.open_stream("/DocOptions/CertDrmHeader") {
             let mut data = Vec::new();
-            if stream.read_to_end(&mut data).is_ok() {
-                doc_options.set_cert_drm_header(data);
-            }
+            stream.read_to_end(&mut data)?;
+            doc_options.set_cert_drm_header(data);
         }
 
         Ok(doc_options)
@@ -393,7 +374,8 @@ impl HwpDocument {
                 // Try to read the stream
                 if let Ok(mut stream) = cfb.open_stream(&full_path) {
                     let mut data = Vec::new();
-                    if stream.read_to_end(&mut data).is_ok() && !data.is_empty() {
+                    stream.read_to_end(&mut data)?;
+                    if !data.is_empty() {
                         // Decompress if needed (BinData follows storage compression setting)
                         let final_data = if header.properties().is_compressed() {
                             // Try decompression, fall back to raw data if it fails
@@ -411,12 +393,12 @@ impl HwpDocument {
     }
 
     /// Returns the file header.
-    pub fn header(&self) -> &FileHeader {
+    pub const fn header(&self) -> &FileHeader {
         &self.header
     }
 
     /// Returns the document information.
-    pub fn doc_info(&self) -> &DocInfo {
+    pub const fn doc_info(&self) -> &DocInfo {
         &self.doc_info
     }
 
@@ -426,17 +408,17 @@ impl HwpDocument {
     }
 
     /// Returns the HWP version.
-    pub fn version(&self) -> Version {
+    pub const fn version(&self) -> Version {
         self.header.version()
     }
 
     /// Returns true if this is a distribution document.
-    pub fn is_distribution_document(&self) -> bool {
+    pub const fn is_distribution_document(&self) -> bool {
         self.header.is_distribution()
     }
 
     /// Returns true if this is an encrypted document.
-    pub fn is_encrypted(&self) -> bool {
+    pub const fn is_encrypted(&self) -> bool {
         self.header.is_encrypted()
     }
 
@@ -452,7 +434,7 @@ impl HwpDocument {
     }
 
     /// Returns the number of sections.
-    pub fn section_count(&self) -> usize {
+    pub const fn section_count(&self) -> usize {
         self.sections.len()
     }
 
@@ -523,9 +505,7 @@ impl HwpDocument {
 
     /// Returns the document author from summary info.
     pub fn author(&self) -> Option<&str> {
-        self.summary_info
-            .as_ref()
-            .and_then(|s| s.author.as_deref())
+        self.summary_info.as_ref().and_then(|s| s.author.as_deref())
     }
 
     /// Returns the document subject from summary info.

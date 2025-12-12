@@ -6,8 +6,8 @@ use primitive::{Color, FontId, HwpUnit, LanguageType, OutlineType, Percent, Stri
 
 // Re-export primitive types
 pub use primitive::{
-    CharShadowStyle as ShadowStyle, EmphasisStyle, FontFamily, FontType,
-    SubstituteFont, UnderlineStyle,
+    CharShadowStyle as ShadowStyle, EmphasisStyle, FontFamily, FontType, SubstituteFont,
+    UnderlineStyle,
 };
 
 /// 글자 모양 정의
@@ -112,25 +112,25 @@ impl CharShape {
     }
 
     /// 글자 크기 설정 (포인트)
-    pub fn with_font_size_pt(mut self, pt: f64) -> Self {
+    pub const fn with_font_size_pt(mut self, pt: f64) -> Self {
         self.font_size = HwpUnit::from_pt(pt);
         self
     }
 
     /// 굵게 설정
-    pub fn with_bold(mut self, bold: bool) -> Self {
+    pub const fn with_bold(mut self, bold: bool) -> Self {
         self.bold = bold;
         self
     }
 
     /// 기울임 설정
-    pub fn with_italic(mut self, italic: bool) -> Self {
+    pub const fn with_italic(mut self, italic: bool) -> Self {
         self.italic = italic;
         self
     }
 
     /// 색상 설정
-    pub fn with_color(mut self, color: Color) -> Self {
+    pub const fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
@@ -183,7 +183,7 @@ impl FontSet {
     }
 
     /// 특정 언어의 폰트 설정
-    pub fn set(&mut self, language: LanguageType, font_ref: FontRef) {
+    pub const fn set(&mut self, language: LanguageType, font_ref: FontRef) {
         match language {
             LanguageType::Korean => self.korean = Some(font_ref),
             LanguageType::English => self.english = Some(font_ref),
@@ -213,7 +213,7 @@ pub struct FontRef {
 
 impl FontRef {
     /// 폰트 참조 생성
-    pub fn new(id: FontId) -> Self {
+    pub const fn new(id: FontId) -> Self {
         Self {
             id,
             width_ratio: Percent::HUNDRED,
@@ -265,5 +265,3 @@ impl Font {
         }
     }
 }
-
-// SubstituteFont, FontType, FontFamily re-exported from primitive

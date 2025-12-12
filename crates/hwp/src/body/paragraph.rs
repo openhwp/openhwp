@@ -65,11 +65,6 @@ pub struct ParagraphText {
 }
 
 impl ParagraphText {
-    /// Creates from raw UTF-16 characters.
-    pub fn new(raw_chars: Vec<u16>) -> Self {
-        Self { raw_chars }
-    }
-
     /// Parses paragraph text from reader.
     pub fn from_reader(reader: &mut ByteReader, char_count: u32) -> Result<Self> {
         let mut raw_chars = Vec::with_capacity(char_count as usize);
@@ -157,12 +152,6 @@ impl ParagraphText {
         }
 
         result
-    }
-
-    /// Returns true if this paragraph text is empty or contains only a paragraph break.
-    pub fn is_empty(&self) -> bool {
-        self.raw_chars.is_empty()
-            || (self.raw_chars.len() == 1 && self.raw_chars[0] == 13)
     }
 }
 
@@ -294,7 +283,7 @@ pub struct Paragraph {
 
 impl Paragraph {
     /// Creates a new paragraph from header data.
-    pub fn new(
+    pub const fn new(
         character_count: u32,
         control_mask: u32,
         paragraph_shape_id: u16,

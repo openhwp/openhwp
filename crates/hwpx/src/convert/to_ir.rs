@@ -4,14 +4,6 @@
 //! 스타일 정보(폰트, 글자 모양, 문단 모양, 스타일)를 모두 IR로 변환합니다.
 
 use crate::Document as HwpxDocument;
-use primitive::{
-    Alignment, BorderFillId, CharShapeId, Color, EmphasisType, FieldType as IrFieldType, FontId,
-    HeaderFooterApplyTo, HorizontalRelativeTo as IrHorizontalRelativeTo, HwpUnit, ImageFlip, Insets,
-    LineCap as IrLineCap, LineBreakKorean, LineBreakLatin, LineType as IrLineType, NumberFormat,
-    OutlineType, ParaShapeId, Percent, Point as IrPoint, ShadowType, Size, StrikethroughType,
-    StyleId, StyleType, TextWrapSide as IrTextWrapSide, TextWrapType as IrTextWrapType,
-    UnderlinePosition, VerticalAlignment, VerticalRelativeTo as IrVerticalRelativeTo,
-};
 use crate::header::{
     bullet::Bullet as HwpxBullet,
     character_shape::{
@@ -65,6 +57,15 @@ use ir::{
         Table as IrTable, TableCell as IrTableCell, TableRow as IrTableRow,
         TableZone as IrTableZone,
     },
+};
+use primitive::{
+    Alignment, BorderFillId, CharShapeId, Color, EmphasisType, FieldType as IrFieldType, FontId,
+    HeaderFooterApplyTo, HorizontalRelativeTo as IrHorizontalRelativeTo, HwpUnit, ImageFlip,
+    Insets, LineBreakKorean, LineBreakLatin, LineCap as IrLineCap, LineType as IrLineType,
+    NumberFormat, OutlineType, ParaShapeId, Percent, Point as IrPoint, ShadowType, Size,
+    StrikethroughType, StyleId, StyleType, TextWrapSide as IrTextWrapSide,
+    TextWrapType as IrTextWrapType, UnderlinePosition, VerticalAlignment,
+    VerticalRelativeTo as IrVerticalRelativeTo,
 };
 
 use super::ToIrContext;
@@ -657,7 +658,7 @@ fn convert_bullet(bullet: &HwpxBullet) -> IrBullet {
 }
 
 /// HWPX NumberFormatType1을 IR NumberFormat으로 변환
-fn convert_number_format_type1_to_ir(
+const fn convert_number_format_type1_to_ir(
     format: crate::core::enums::NumberFormatType1,
 ) -> primitive::NumberFormat {
     use crate::core::enums::NumberFormatType1;
@@ -690,9 +691,9 @@ fn convert_fill_brush(fill_brush: Option<&crate::core::types::FillBrush>) -> ir:
         Fill, GradientFill, GradientStop, ImageFill, PatternFill, PatternType as IrPatternType,
         SolidFill,
     };
+    use primitive::BinaryDataId;
     use primitive::Color;
     use primitive::{GradientType as IrGradientType, ImageFillMode};
-    use primitive::BinaryDataId;
 
     // 색상 변환 헬퍼
     let convert_color = |color: &RgbColor| -> Color {
@@ -837,8 +838,8 @@ fn convert_border_fill(bf: &crate::header::border_fill::BorderFill) -> ir::borde
     use crate::core::types::RgbColor;
     use ir::border_fill::{Border, BorderFill as IrBorderFill};
     use primitive::Color;
-    use primitive::LineType;
     use primitive::HwpUnit;
+    use primitive::LineType;
 
     // 색상 변환 헬퍼
     let convert_color = |color: &RgbColor| -> Color {
@@ -1225,10 +1226,12 @@ fn find_column_definition(
 }
 
 /// PageProperty → IR PageDefinition 변환
-fn convert_page_property(page_pr: &crate::paragraph::PageProperty) -> ir::section::PageDefinition {
+const fn convert_page_property(
+    page_pr: &crate::paragraph::PageProperty,
+) -> ir::section::PageDefinition {
     use crate::paragraph::enums::{GutterType, PaperOrientation};
-    use primitive::{GutterPosition, PageMargins, PageOrientation};
     use ir::section::PageDefinition;
+    use primitive::{GutterPosition, PageMargins, PageOrientation};
 
     // 용지 방향
     let orientation = match page_pr.orientation {
@@ -1370,8 +1373,11 @@ fn convert_hwpx_endnote_shape(
 }
 
 /// HWPX LineStyleType2 → IR LineType 변환
-fn convert_line_style_to_ir(style: &crate::core::enums::LineStyleType2) -> primitive::LineType {
+const fn convert_line_style_to_ir(
+    style: &crate::core::enums::LineStyleType2,
+) -> primitive::LineType {
     use crate::core::enums::LineStyleType2;
+
     match style {
         LineStyleType2::None => primitive::LineType::None,
         LineStyleType2::Solid => primitive::LineType::Solid,
@@ -1386,8 +1392,9 @@ fn convert_line_style_to_ir(style: &crate::core::enums::LineStyleType2) -> primi
 }
 
 /// HWPX LineWidth → IR line width (0.1mm 단위) 변환
-fn convert_line_width_to_ir(width: &crate::core::enums::LineWidth) -> u8 {
+const fn convert_line_width_to_ir(width: &crate::core::enums::LineWidth) -> u8 {
     use crate::core::enums::LineWidth;
+
     match width {
         LineWidth::Mm0_1 => 1,
         LineWidth::Mm0_12 => 1,
@@ -1409,24 +1416,25 @@ fn convert_line_width_to_ir(width: &crate::core::enums::LineWidth) -> u8 {
 }
 
 /// 주석 구분선 길이 변환 (HWPX → IR HwpUnit)
-fn convert_note_line_length(length: i32) -> primitive::HwpUnit {
+const fn convert_note_line_length(length: i32) -> primitive::HwpUnit {
     match length {
-        0 => primitive::HwpUnit::ZERO,                    // 구분선 없음
-        -1 => primitive::HwpUnit::from_mm(50.0),          // 5cm
-        -2 => primitive::HwpUnit::from_mm(20.0),          // 2cm
-        -3 => primitive::HwpUnit::from_mm(56.0),          // 단 크기의 1/3 (약 170mm/3)
-        -4 => primitive::HwpUnit::from_mm(170.0),         // 단 크기 전체 (A4 기준 약 170mm)
+        0 => primitive::HwpUnit::ZERO,                      // 구분선 없음
+        -1 => primitive::HwpUnit::from_mm(50.0),            // 5cm
+        -2 => primitive::HwpUnit::from_mm(20.0),            // 2cm
+        -3 => primitive::HwpUnit::from_mm(56.0),            // 단 크기의 1/3 (약 170mm/3)
+        -4 => primitive::HwpUnit::from_mm(170.0),           // 단 크기 전체 (A4 기준 약 170mm)
         _ if length > 0 => primitive::HwpUnit::new(length), // HwpUnit 절대값 그대로 사용
-        _ => primitive::HwpUnit::from_mm(20.0),           // 기본값 2cm
+        _ => primitive::HwpUnit::from_mm(20.0),             // 기본값 2cm
     }
 }
 
 /// HWPX NumberFormatType2 → IR NumberFormat 변환
-fn convert_hwpx_number_format_type(
+const fn convert_hwpx_number_format_type(
     format_type: &crate::core::enums::NumberFormatType2,
 ) -> primitive::NumberFormat {
     use crate::core::enums::NumberFormatType2;
     use primitive::NumberFormat;
+
     match format_type {
         NumberFormatType2::Digit => NumberFormat::Digit,
         NumberFormatType2::CircledDigit => NumberFormat::CircledDigit,
@@ -1579,8 +1587,7 @@ fn convert_run(run: &crate::paragraph::Run) -> Result<IrRun, ConversionError> {
 
     // 런 내용 변환
     for content in &run.contents {
-        let ir_contents = convert_run_content(content)?;
-        ir_run.contents.extend(ir_contents);
+        ir_run.contents.extend(convert_run_content(content)?);
     }
 
     Ok(ir_run)
@@ -1887,9 +1894,7 @@ fn convert_run_content(
                 position_type,
                 size_ratio: dutmal.size_ratio,
                 option: dutmal.option,
-                style_id_ref: dutmal
-                    .style_id_ref
-                    .map(|id| primitive::StyleId::new(id.0)),
+                style_id_ref: dutmal.style_id_ref.map(|id| primitive::StyleId::new(id.0)),
                 alignment,
             };
 
@@ -2045,15 +2050,8 @@ fn detect_binary_format(data: &[u8], path: &str) -> BinaryFormat {
         [b'G', b'I', b'F', b'8'] => BinaryFormat::Gif,
         [b'B', b'M', _, _] => BinaryFormat::Bmp,
         [0xD0, 0xCF, 0x11, 0xE0] => BinaryFormat::Ole,
-        _ => {
-            // TIFF 체크
-            if (data[0..4] == [0x49, 0x49, 0x2A, 0x00]) || (data[0..4] == [0x4D, 0x4D, 0x00, 0x2A])
-            {
-                BinaryFormat::Tiff
-            } else {
-                BinaryFormat::Unknown
-            }
-        }
+        [0x49, 0x49, 0x2A, 0x00] | [0x4D, 0x4D, 0x00, 0x2A] => BinaryFormat::Tiff,
+        _ => BinaryFormat::Unknown,
     }
 }
 
@@ -2157,9 +2155,12 @@ fn convert_extensions(hwpx: &HwpxDocument, _ctx: &mut ToIrContext) -> Extensions
 
 // 열거형 변환 헬퍼 함수들
 
-fn convert_hwpx_underline_type(shape: &crate::core::enums::LineStyleType2) -> primitive::UnderlineType {
+const fn convert_hwpx_underline_type(
+    shape: &crate::core::enums::LineStyleType2,
+) -> primitive::UnderlineType {
     use crate::core::enums::LineStyleType2;
     use primitive::UnderlineType;
+
     match shape {
         LineStyleType2::Solid => UnderlineType::Single,
         LineStyleType2::DoubleSlim
@@ -2174,7 +2175,7 @@ fn convert_hwpx_underline_type(shape: &crate::core::enums::LineStyleType2) -> pr
     }
 }
 
-fn convert_hwpx_underline_position(pos: &HwpxUnderlinePosition) -> UnderlinePosition {
+const fn convert_hwpx_underline_position(pos: &HwpxUnderlinePosition) -> UnderlinePosition {
     match pos {
         HwpxUnderlinePosition::Bottom => UnderlinePosition::Bottom,
         HwpxUnderlinePosition::Top => UnderlinePosition::Top,
@@ -2183,10 +2184,11 @@ fn convert_hwpx_underline_position(pos: &HwpxUnderlinePosition) -> UnderlinePosi
     }
 }
 
-fn convert_hwpx_strikethrough_type(
+const fn convert_hwpx_strikethrough_type(
     shape: &crate::core::enums::LineStyleType2,
 ) -> StrikethroughType {
     use crate::core::enums::LineStyleType2;
+
     match shape {
         LineStyleType2::None => StrikethroughType::None,
         LineStyleType2::Solid
@@ -2203,8 +2205,9 @@ fn convert_hwpx_strikethrough_type(
     }
 }
 
-fn convert_hwpx_outline_type(outline: &crate::core::enums::LineStyleType1) -> OutlineType {
+const fn convert_hwpx_outline_type(outline: &crate::core::enums::LineStyleType1) -> OutlineType {
     use crate::core::enums::LineStyleType1;
+
     match outline {
         LineStyleType1::None => OutlineType::None,
         LineStyleType1::Solid => OutlineType::Outline,
@@ -2212,7 +2215,7 @@ fn convert_hwpx_outline_type(outline: &crate::core::enums::LineStyleType1) -> Ou
     }
 }
 
-fn convert_hwpx_emphasis_type(emphasis: &EmphasisMarkType) -> EmphasisType {
+const fn convert_hwpx_emphasis_type(emphasis: &EmphasisMarkType) -> EmphasisType {
     match emphasis {
         EmphasisMarkType::None => EmphasisType::None,
         EmphasisMarkType::DotAbove => EmphasisType::Dot,
@@ -2227,7 +2230,7 @@ fn convert_hwpx_emphasis_type(emphasis: &EmphasisMarkType) -> EmphasisType {
     }
 }
 
-fn convert_hwpx_shadow_type(shadow: &HwpxShadowType) -> ShadowType {
+const fn convert_hwpx_shadow_type(shadow: &HwpxShadowType) -> ShadowType {
     match shadow {
         HwpxShadowType::None => ShadowType::None,
         HwpxShadowType::Drop => ShadowType::BottomRightDiscrete,
@@ -2235,7 +2238,7 @@ fn convert_hwpx_shadow_type(shadow: &HwpxShadowType) -> ShadowType {
     }
 }
 
-fn convert_hwpx_alignment(align: &HorizontalAlignment) -> Alignment {
+const fn convert_hwpx_alignment(align: &HorizontalAlignment) -> Alignment {
     match align {
         HorizontalAlignment::Justify => Alignment::Justify,
         HorizontalAlignment::Left => Alignment::Left,
@@ -2246,7 +2249,7 @@ fn convert_hwpx_alignment(align: &HorizontalAlignment) -> Alignment {
     }
 }
 
-fn convert_hwpx_vertical_alignment(align: &HwpxVerticalAlignment) -> VerticalAlignment {
+const fn convert_hwpx_vertical_alignment(align: &HwpxVerticalAlignment) -> VerticalAlignment {
     match align {
         HwpxVerticalAlignment::Baseline => VerticalAlignment::Baseline,
         HwpxVerticalAlignment::Top => VerticalAlignment::Top,
@@ -2255,7 +2258,7 @@ fn convert_hwpx_vertical_alignment(align: &HwpxVerticalAlignment) -> VerticalAli
     }
 }
 
-fn convert_hwpx_line_spacing_type(spacing_type: &HwpxLineSpacingType) -> LineSpacingType {
+const fn convert_hwpx_line_spacing_type(spacing_type: &HwpxLineSpacingType) -> LineSpacingType {
     match spacing_type {
         HwpxLineSpacingType::Percent => LineSpacingType::Percent,
         HwpxLineSpacingType::Fixed => LineSpacingType::Fixed,
@@ -2264,14 +2267,14 @@ fn convert_hwpx_line_spacing_type(spacing_type: &HwpxLineSpacingType) -> LineSpa
     }
 }
 
-fn convert_hwpx_break_korean(break_type: &NonLatinWordBreak) -> LineBreakKorean {
+const fn convert_hwpx_break_korean(break_type: &NonLatinWordBreak) -> LineBreakKorean {
     match break_type {
         NonLatinWordBreak::KeepWord => LineBreakKorean::Word,
         NonLatinWordBreak::BreakWord => LineBreakKorean::Character,
     }
 }
 
-fn convert_hwpx_break_latin(break_type: &LatinWordBreak) -> LineBreakLatin {
+const fn convert_hwpx_break_latin(break_type: &LatinWordBreak) -> LineBreakLatin {
     match break_type {
         LatinWordBreak::KeepWord => LineBreakLatin::Word,
         LatinWordBreak::Hyphenation => LineBreakLatin::Hyphenation,
@@ -2438,7 +2441,7 @@ fn convert_hwpx_table_cell(
 // =============================================================================
 
 /// HWPX 이미지 뒤집기 변환
-fn convert_hwpx_image_flip(flip: &crate::paragraph::shape_common::Flip) -> ImageFlip {
+const fn convert_hwpx_image_flip(flip: &crate::paragraph::shape_common::Flip) -> ImageFlip {
     match (flip.horizontal, flip.vertical) {
         (true, true) => ImageFlip::Both,
         (true, false) => ImageFlip::Horizontal,
@@ -2448,9 +2451,12 @@ fn convert_hwpx_image_flip(flip: &crate::paragraph::shape_common::Flip) -> Image
 }
 
 /// HWPX 이미지 효과 변환
-fn convert_hwpx_image_effect(effect: &crate::core::enums::ImageEffect) -> primitive::ImageEffect {
+const fn convert_hwpx_image_effect(
+    effect: &crate::core::enums::ImageEffect,
+) -> primitive::ImageEffect {
     use crate::core::enums::ImageEffect as HwpxEffect;
     use primitive::ImageEffect as IrEffect;
+
     match effect {
         HwpxEffect::RealPicture => IrEffect::Original,
         HwpxEffect::GrayScale => IrEffect::Grayscale,
@@ -2575,7 +2581,7 @@ fn convert_hwpx_picture(picture: &crate::paragraph::Picture) -> Result<IrPicture
 }
 
 /// HWPX AdvancedShadowEffect → IR PictureShadow 변환
-fn convert_hwpx_shadow_to_ir(
+const fn convert_hwpx_shadow_to_ir(
     shadow: &crate::paragraph::effects::AdvancedShadowEffect,
 ) -> ir::picture::PictureShadow {
     use ir::picture::{PictureShadow, PictureShadowType};
@@ -2594,7 +2600,10 @@ fn convert_hwpx_shadow_to_ir(
     };
 
     // 거리로 오프셋 계산
-    let distance = shadow.distance.unwrap_or(100.0) as i32;
+    let distance = match shadow.distance {
+        Some(d) => d as i32,
+        None => 100, // 기본값 100
+    };
     let (offset_x, offset_y) = match shadow_type {
         PictureShadowType::TopLeft => (-distance, -distance),
         PictureShadowType::TopRight => (distance, -distance),
@@ -2620,13 +2629,17 @@ fn convert_hwpx_shadow_to_ir(
         color,
         offset_x: HwpUnit::new(offset_x),
         offset_y: HwpUnit::new(offset_y),
-        alpha: shadow.alpha.unwrap_or(0.5) as f64,
+        alpha: match shadow.alpha {
+            Some(alpha) => alpha as f64,
+            None => 0.5,
+        },
     }
 }
 
 /// HWPX 라인 스타일 변환
-fn convert_hwpx_line_style(style: &crate::core::enums::LineStyleType2) -> IrLineType {
+const fn convert_hwpx_line_style(style: &crate::core::enums::LineStyleType2) -> IrLineType {
     use crate::core::enums::LineStyleType2;
+
     match style {
         LineStyleType2::None => IrLineType::None,
         LineStyleType2::Solid => IrLineType::Solid,
@@ -2722,10 +2735,7 @@ fn convert_hwpx_line(line: &crate::paragraph::Line) -> Result<IrShape, Conversio
     });
 
     // draw_text가 있으면 ShapeText로 변환
-    let text = line
-        .draw_text
-        .as_ref()
-        .map(convert_draw_text_to_shape_text);
+    let text = line.draw_text.as_ref().map(convert_draw_text_to_shape_text);
 
     // ObjectCommon 생성
     let common = create_drawing_object_common(DrawingObjectCommonParams {
@@ -2748,7 +2758,7 @@ fn convert_hwpx_line(line: &crate::paragraph::Line) -> Result<IrShape, Conversio
         line: convert_hwpx_shape_line_style(&line.line_shape),
         fill: convert_fill_brush(line.fill_brush.as_ref()),
         shadow: line.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: line.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: line.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -2762,10 +2772,7 @@ fn convert_hwpx_rectangle(rect: &crate::paragraph::Rectangle) -> Result<IrShape,
     });
 
     // draw_text가 있으면 ShapeText로 변환
-    let text = rect
-        .draw_text
-        .as_ref()
-        .map(convert_draw_text_to_shape_text);
+    let text = rect.draw_text.as_ref().map(convert_draw_text_to_shape_text);
 
     // ObjectCommon 생성
     let common = create_drawing_object_common(DrawingObjectCommonParams {
@@ -2788,7 +2795,7 @@ fn convert_hwpx_rectangle(rect: &crate::paragraph::Rectangle) -> Result<IrShape,
         line: convert_hwpx_shape_line_style(&rect.line_shape),
         fill: convert_fill_brush(rect.fill_brush.as_ref()),
         shadow: rect.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: rect.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: rect.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -2840,7 +2847,7 @@ fn convert_hwpx_ellipse(ellipse: &crate::paragraph::Ellipse) -> Result<IrShape, 
         line: convert_hwpx_shape_line_style(&ellipse.line_shape),
         fill: convert_fill_brush(ellipse.fill_brush.as_ref()),
         shadow: ellipse.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: ellipse.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: ellipse.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -2865,10 +2872,7 @@ fn convert_hwpx_arc(arc: &crate::paragraph::Arc) -> Result<IrShape, ConversionEr
     });
 
     // draw_text가 있으면 ShapeText로 변환
-    let text = arc
-        .draw_text
-        .as_ref()
-        .map(convert_draw_text_to_shape_text);
+    let text = arc.draw_text.as_ref().map(convert_draw_text_to_shape_text);
 
     // ObjectCommon 생성
     let common = create_drawing_object_common(DrawingObjectCommonParams {
@@ -2891,7 +2895,7 @@ fn convert_hwpx_arc(arc: &crate::paragraph::Arc) -> Result<IrShape, ConversionEr
         line: convert_hwpx_shape_line_style(&arc.line_shape),
         fill: convert_fill_brush(arc.fill_brush.as_ref()),
         shadow: arc.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: arc.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: arc.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -2936,7 +2940,7 @@ fn convert_hwpx_polygon(polygon: &crate::paragraph::Polygon) -> Result<IrShape, 
         line: convert_hwpx_shape_line_style(&polygon.line_shape),
         fill: convert_fill_brush(polygon.fill_brush.as_ref()),
         shadow: polygon.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: polygon.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: polygon.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -3005,7 +3009,7 @@ fn convert_hwpx_curve(curve: &crate::paragraph::Curve) -> Result<IrShape, Conver
         line: convert_hwpx_shape_line_style(&curve.line_shape),
         fill: convert_fill_brush(curve.fill_brush.as_ref()),
         shadow: curve.shadow.as_ref().map(convert_hwpx_shape_shadow),
-        rotation: curve.rotation_info.angle as f64 / 10.0,  // HWPX는 0.1도 단위
+        rotation: curve.rotation_info.angle as f64 / 10.0, // HWPX는 0.1도 단위
         text,
     })
 }
@@ -3073,10 +3077,11 @@ fn convert_hwpx_footer(
 }
 
 /// HWPX 페이지 적용 타입 변환
-fn convert_hwpx_page_apply_type(
+const fn convert_hwpx_page_apply_type(
     apply_type: &crate::paragraph::PageStartsOn,
 ) -> HeaderFooterApplyTo {
     use crate::paragraph::PageStartsOn;
+
     match apply_type {
         PageStartsOn::Both => HeaderFooterApplyTo::Both,
         PageStartsOn::Even => HeaderFooterApplyTo::Even,
@@ -3237,7 +3242,7 @@ fn convert_hwpx_auto_number(
 }
 
 /// HWPX 새 번호 변환
-fn convert_hwpx_new_number(
+const fn convert_hwpx_new_number(
     new_num: &crate::paragraph::AutoNumberNewNumber,
 ) -> Result<ir::control::NewNumber, ConversionError> {
     use crate::paragraph::AutoNumberKind;
@@ -3305,7 +3310,7 @@ fn convert_hwpx_page_number(
 }
 
 /// HWPX PageNumberPosition → IR PageNumberPosition 변환
-fn convert_hwpx_page_number_position(
+const fn convert_hwpx_page_number_position(
     pos: &crate::paragraph::enums::PageNumberPosition,
 ) -> primitive::PageNumberPosition {
     use crate::paragraph::enums::PageNumberPosition as HwpxPos;
@@ -3406,7 +3411,7 @@ fn convert_draw_text_to_shape_text(draw_text: &crate::paragraph::DrawText) -> Ir
 }
 
 /// HWPX ParagraphVerticalAlignment → IR VerticalAlignment 변환
-fn convert_paragraph_list_vert_align(
+const fn convert_paragraph_list_vert_align(
     align: &crate::paragraph::ParagraphVerticalAlignment,
 ) -> VerticalAlignment {
     use crate::paragraph::ParagraphVerticalAlignment;
@@ -3419,7 +3424,9 @@ fn convert_paragraph_list_vert_align(
 }
 
 /// HWPX TextDirection → IR TextDirection 변환
-fn convert_text_direction(direction: &crate::paragraph::TextDirection) -> primitive::TextDirection {
+const fn convert_text_direction(
+    direction: &crate::paragraph::TextDirection,
+) -> primitive::TextDirection {
     use crate::paragraph::TextDirection;
     use primitive::TextDirection as IrTextDir;
 
@@ -3553,7 +3560,7 @@ fn convert_hwpx_chart(chart: &crate::paragraph::Chart) -> Result<IrChart, Conver
 }
 
 /// HWPX RgbColor → IR Color 변환 헬퍼
-fn rgb_color_to_ir(color: &crate::core::types::RgbColor) -> primitive::Color {
+const fn rgb_color_to_ir(color: &crate::core::types::RgbColor) -> primitive::Color {
     primitive::Color {
         red: color.r,
         green: color.g,
@@ -4119,7 +4126,9 @@ fn convert_arrow_style(
 }
 
 /// HWPX ArrowSize → IR ArrowSize 변환
-fn convert_hwpx_arrow_size(hwpx_size: &crate::core::enums::ArrowSize) -> primitive::ArrowSize {
+const fn convert_hwpx_arrow_size(
+    hwpx_size: &crate::core::enums::ArrowSize,
+) -> primitive::ArrowSize {
     use crate::core::enums::ArrowSize as HwpxArrowSize;
     use primitive::ArrowSize;
 
@@ -4703,7 +4712,7 @@ fn create_drawing_object_common(params: DrawingObjectCommonParams<'_>) -> Object
 }
 
 /// HWPX ShapeNumberingType → IR ObjectNumberingType 변환
-fn convert_numbering_type(
+const fn convert_numbering_type(
     hwpx_type: crate::paragraph::shape_common::ShapeNumberingType,
 ) -> Option<IrObjectNumberingType> {
     use crate::paragraph::shape_common::ShapeNumberingType;

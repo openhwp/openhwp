@@ -11,30 +11,13 @@ pub struct ByteWriter {
 
 impl ByteWriter {
     /// 새 ByteWriter를 생성합니다.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { buffer: Vec::new() }
-    }
-
-    /// 지정된 용량으로 ByteWriter를 생성합니다.
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            buffer: Vec::with_capacity(capacity),
-        }
     }
 
     /// 내부 버퍼를 반환합니다.
     pub fn into_bytes(self) -> Vec<u8> {
         self.buffer
-    }
-
-    /// 현재 길이를 반환합니다.
-    pub fn len(&self) -> usize {
-        self.buffer.len()
-    }
-
-    /// 버퍼가 비어있는지 확인합니다.
-    pub fn is_empty(&self) -> bool {
-        self.buffer.is_empty()
     }
 
     /// u8을 씁니다.
@@ -67,24 +50,9 @@ impl ByteWriter {
         self.buffer.extend_from_slice(&value.to_le_bytes());
     }
 
-    /// u64를 리틀 엔디안으로 씁니다.
-    pub fn write_u64(&mut self, value: u64) {
-        self.buffer.extend_from_slice(&value.to_le_bytes());
-    }
-
     /// 바이트 슬라이스를 씁니다.
     pub fn write_bytes(&mut self, bytes: &[u8]) {
         self.buffer.extend_from_slice(bytes);
-    }
-
-    /// 고정 길이 바이트 배열을 씁니다. 부족하면 0으로 패딩합니다.
-    pub fn write_fixed(&mut self, bytes: &[u8], len: usize) {
-        if bytes.len() >= len {
-            self.buffer.extend_from_slice(&bytes[..len]);
-        } else {
-            self.buffer.extend_from_slice(bytes);
-            self.buffer.resize(self.buffer.len() + len - bytes.len(), 0);
-        }
     }
 
     /// HWP 문자열(UTF-16LE, 길이 포함)을 씁니다.
@@ -94,14 +62,6 @@ impl ByteWriter {
         self.write_u16(utf16.len() as u16);
 
         // UTF-16LE 데이터
-        for ch in utf16 {
-            self.write_u16(ch);
-        }
-    }
-
-    /// HWP 문자열(UTF-16LE, 길이 없음)을 씁니다.
-    pub fn write_hwp_string_no_len(&mut self, s: &str) {
-        let utf16: Vec<u16> = s.encode_utf16().collect();
         for ch in utf16 {
             self.write_u16(ch);
         }
@@ -130,12 +90,6 @@ impl ByteWriter {
     pub fn write_record(&mut self, tag: RecordTagId, level: u16, data: &[u8]) {
         self.write_record_header(tag, level, data.len() as u32);
         self.write_bytes(data);
-    }
-}
-
-impl Default for ByteWriter {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

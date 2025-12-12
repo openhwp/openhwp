@@ -2,7 +2,7 @@
 //!
 //! KS X 6101:2024 - core.xsd를 근거로 한 AI 생성 설명입니다. 실제 스키마(`docs/hwpx/schemas/core.xsd`)와 차이가 있으면 TODO로 남겨 보완하세요.
 
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 
 use super::enums::{GradationType, HatchStyle, ImageBrushMode, ImageEffect, ValueUnit};
 
@@ -138,23 +138,23 @@ impl HwpUnit {
     }
 
     /// 포인트로 변환 (10pt = 1000 hwpunit)
-    pub fn to_pt(&self) -> f64 {
+    pub const fn to_pt(&self) -> f64 {
         self.0 as f64 / 100.0
     }
 
     /// 포인트로부터 생성 (10pt = 1000 hwpunit)
-    pub fn from_pt(pt: f64) -> Self {
+    pub const fn from_pt(pt: f64) -> Self {
         Self((pt * 100.0) as i32)
     }
 
     /// 밀리미터로 변환
-    pub fn to_mm(&self) -> f64 {
+    pub const fn to_mm(&self) -> f64 {
         // 1 inch = 7200 hwpunit, 1 inch = 25.4 mm
         self.0 as f64 * 25.4 / 7200.0
     }
 
     /// 밀리미터로부터 생성
-    pub fn from_mm(mm: f64) -> Self {
+    pub const fn from_mm(mm: f64) -> Self {
         Self((mm * 7200.0 / 25.4) as i32)
     }
 
@@ -397,12 +397,12 @@ impl RgbColor {
     }
 
     /// 검정색 (함수 버전, serde default용)
-    pub fn black() -> Self {
+    pub const fn black() -> Self {
         Self::BLACK
     }
 
     /// 흰색 (함수 버전, serde default용)
-    pub fn white() -> Self {
+    pub const fn white() -> Self {
         Self::WHITE
     }
 
@@ -504,12 +504,12 @@ impl OptionalRgbColor {
     }
 
     /// 흰색 (기본값용)
-    pub fn white() -> Self {
+    pub const fn white() -> Self {
         Self(Some(RgbColor::WHITE))
     }
 
     /// 검정색 (기본값용)
-    pub fn black() -> Self {
+    pub const fn black() -> Self {
         Self(Some(RgbColor::BLACK))
     }
 
@@ -860,12 +860,12 @@ impl Default for GradationStep {
 
 impl GradationStep {
     /// 새로운 그라데이션 번짐 정도 생성 (0~255)
-    pub fn new(value: u8) -> Self {
+    pub const fn new(value: u8) -> Self {
         Self(value)
     }
 
     /// 값 반환
-    pub fn value(&self) -> u8 {
+    pub const fn value(&self) -> u8 {
         self.0
     }
 }
@@ -882,7 +882,7 @@ impl Default for GradationStepCenter {
 
 impl GradationStepCenter {
     /// 새로운 그라데이션 번짐 정도 중심 생성 (0~100)
-    pub fn new(value: u8) -> Option<Self> {
+    pub const fn new(value: u8) -> Option<Self> {
         if value <= 100 {
             Some(Self(value))
         } else {
@@ -891,7 +891,7 @@ impl GradationStepCenter {
     }
 
     /// 값 반환
-    pub fn value(&self) -> u8 {
+    pub const fn value(&self) -> u8 {
         self.0
     }
 }

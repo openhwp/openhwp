@@ -71,10 +71,10 @@ pub use document::HwpDocument;
 pub use error::{Error, Result};
 
 // 주요 타입 재export
+pub use ::primitive::Version;
 pub use body::Section;
 pub use doc_info::DocInfo;
 pub use header::FileHeader;
-pub use ::primitive::Version;
 
 // 본문(Body) 타입 - HWP 스펙에 정의된 타입들
 pub use body::{
@@ -223,7 +223,7 @@ pub use doc_info::{
 };
 
 // 미리보기 및 요약 정보 타입
-pub use preview::{PreviewFormat, PreviewImage, PreviewText};
+pub use preview::{PreviewImage, PreviewText};
 pub use script::{ScriptHeader, ScriptSource, ScriptVersion, Scripts};
 pub use summary::SummaryInfo;
 

@@ -21,7 +21,7 @@ pub struct Border {
 
 impl Border {
     /// 테두리 없음
-    pub fn none() -> Self {
+    pub const fn none() -> Self {
         Self {
             line_type: LineType::None,
             width: HwpUnit::ZERO,
@@ -30,7 +30,7 @@ impl Border {
     }
 
     /// 실선 테두리
-    pub fn solid(width: HwpUnit, color: Color) -> Self {
+    pub const fn solid(width: HwpUnit, color: Color) -> Self {
         Self {
             line_type: LineType::Solid,
             width,
@@ -39,7 +39,7 @@ impl Border {
     }
 
     /// 테두리가 없는지 확인
-    pub fn is_none(&self) -> bool {
+    pub const fn is_none(&self) -> bool {
         matches!(self.line_type, LineType::None) || self.width.value() == 0
     }
 }

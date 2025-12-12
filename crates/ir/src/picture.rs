@@ -2,9 +2,9 @@
 //!
 //! 문서 내 이미지를 정의합니다.
 
-use primitive::Color;
 use crate::control::ObjectCommon;
 use primitive::BinaryDataId;
+use primitive::Color;
 use primitive::{HwpUnit, ImageEffect, ImageFlip, Insets, LineType, Size};
 
 /// 그림
@@ -82,7 +82,7 @@ impl ImageCrop {
     }
 
     /// 모든 방향 동일하게 자르기
-    pub fn all(value: HwpUnit) -> Self {
+    pub const fn all(value: HwpUnit) -> Self {
         Self {
             left: value,
             right: value,
@@ -92,7 +92,7 @@ impl ImageCrop {
     }
 
     /// 자르기가 있는지 확인
-    pub fn has_crop(&self) -> bool {
+    pub const fn has_crop(&self) -> bool {
         self.left.value() != 0
             || self.right.value() != 0
             || self.top.value() != 0

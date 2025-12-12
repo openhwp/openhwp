@@ -48,7 +48,7 @@ impl Panose {
     }
 
     /// PANOSE 정보를 10바이트 배열로 변환
-    pub fn to_bytes(self) -> [u8; 10] {
+    pub const fn to_bytes(self) -> [u8; 10] {
         [
             self.family_type as u8,
             self.serif_style as u8,

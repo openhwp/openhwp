@@ -3,11 +3,11 @@
 //! 표, 셀, 문단 등의 테두리와 배경 채우기를 정의합니다.
 
 // Re-export primitive types for convenience
+use primitive::Color;
 pub use primitive::{
     Border, DiagonalType, Fill, FillType, GradientFill, GradientStop, GradientType, ImageFill,
     ImageFillMode, PatternFill, PatternType, SolidFill,
 };
-use primitive::Color;
 
 /// 테두리/채우기 정의
 #[derive(Debug, Clone, Default)]

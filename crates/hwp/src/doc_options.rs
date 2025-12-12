@@ -159,10 +159,8 @@ impl DocOptions {
     }
 
     /// Returns true if any DRM information is present.
-    pub fn has_drm(&self) -> bool {
-        self.drm_license.is_some()
-            || self.drm_root_sect.is_some()
-            || self.cert_drm_header.is_some()
+    pub const fn has_drm(&self) -> bool {
+        self.drm_license.is_some() || self.drm_root_sect.is_some() || self.cert_drm_header.is_some()
     }
 
     /// Returns true if the document has linked documents.

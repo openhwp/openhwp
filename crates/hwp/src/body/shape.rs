@@ -8,8 +8,8 @@ use crate::doc_info::{
 };
 use crate::error::Result;
 use crate::primitive::ColorReference;
-use primitive::HwpUnit;
 use crate::util::ByteReader;
+use primitive::HwpUnit;
 
 /// Line end cap style.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -449,7 +449,7 @@ impl CurveShape {
 }
 
 /// Shape type enumeration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum ShapeType {
     /// Line shape.
     Line(LineShape),
@@ -466,13 +466,8 @@ pub enum ShapeType {
     /// Container (grouped shapes).
     Container(Vec<Shape>),
     /// Unknown shape type.
+    #[default]
     Unknown,
-}
-
-impl Default for ShapeType {
-    fn default() -> Self {
-        Self::Unknown
-    }
 }
 
 /// Shape text box properties (표 90: 그리기 개체 글상자용 텍스트 속성).
@@ -551,7 +546,8 @@ impl Shape {
 
     /// Returns true if the shape needs more paragraphs.
     pub fn needs_more_paragraphs(&self) -> bool {
-        self.expected_paragraph_count > 0 && self.paragraphs.len() < self.expected_paragraph_count as usize
+        self.expected_paragraph_count > 0
+            && self.paragraphs.len() < self.expected_paragraph_count as usize
     }
 
     /// Sets the expected paragraph count from ListHeader.
@@ -560,12 +556,12 @@ impl Shape {
     }
 
     /// Returns the rotation angle in degrees.
-    pub fn rotation(&self) -> i16 {
+    pub const fn rotation(&self) -> i16 {
         self.element_properties.rotation
     }
 
     /// Returns the center point.
-    pub fn center(&self) -> Point {
+    pub const fn center(&self) -> Point {
         Point {
             x: self.element_properties.center_x,
             y: self.element_properties.center_y,

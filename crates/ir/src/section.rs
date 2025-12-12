@@ -122,7 +122,6 @@ impl Default for PageDefinition {
     }
 }
 
-
 /// 단 정의
 #[derive(Debug, Clone)]
 pub struct ColumnDefinition {
@@ -193,7 +192,7 @@ pub struct HeaderFooter {
 
 impl HeaderFooter {
     /// 머리글/바닥글 생성
-    pub fn new(apply_to: HeaderFooterApplyTo) -> Self {
+    pub const fn new(apply_to: HeaderFooterApplyTo) -> Self {
         Self {
             apply_to,
             paragraphs: Vec::new(),
@@ -248,7 +247,7 @@ impl Default for NoteShape {
             suffix: Some(")".to_string()),
             start_number: 1,
             user_character: None,
-            separator_length: HwpUnit::from_mm(20.0),  // 기본값 2cm (약 1/3 페이지)
+            separator_length: HwpUnit::from_mm(20.0), // 기본값 2cm (약 1/3 페이지)
             separator_position: None,
             separator_line_type: LineType::Solid,
             separator_line_width: 1,

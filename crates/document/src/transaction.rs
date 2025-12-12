@@ -3,8 +3,8 @@
 //! 여러 명령을 하나의 원자적 단위로 묶어 실행합니다.
 //! 트랜잭션 내 명령이 하나라도 실패하면 전체가 롤백됩니다.
 
-use crate::command::{Command, CommandResult};
 use crate::Document;
+use crate::command::{Command, CommandResult};
 
 /// 트랜잭션
 ///
@@ -76,12 +76,12 @@ impl Transaction {
     }
 
     /// 명령 수
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.commands.len()
     }
 
     /// 비어있는지 확인
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.commands.is_empty()
     }
 }
@@ -231,7 +231,10 @@ mod tests {
 
         let transaction = Transaction::new("Complex operation")
             .with(Box::new(InsertText::new(Position::new(0, 0, 0, 5), "!")))
-            .with(Box::new(InsertText::new(Position::new(0, 0, 0, 0), "Say: ")));
+            .with(Box::new(InsertText::new(
+                Position::new(0, 0, 0, 0),
+                "Say: ",
+            )));
 
         history.execute(Box::new(transaction), &mut doc).unwrap();
         assert_eq!(doc.to_plain_text(), "Say: Hello! World");

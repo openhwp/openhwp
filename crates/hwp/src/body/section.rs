@@ -4,10 +4,6 @@
 
 #![allow(clippy::collapsible_if)]
 
-use crate::error::Result;
-use crate::primitive::RecordTagId;
-use crate::util::ByteReader;
-
 use super::chart::ChartData;
 use super::container::ShapeContainer;
 use super::control::{Control, ControlContent, ControlId, ControlType};
@@ -16,14 +12,12 @@ use super::equation::Equation;
 use super::field::{Field, FieldType};
 use super::footnote::{Endnote, EndnoteShape, Footnote, FootnoteShape};
 use super::form_object::FormObject;
-use super::hyperlink::Hyperlink;
-use super::page::{PageBorderFill, PageDefinition};
 use super::header_footer::{Footer, Header, HeaderFooterTarget};
+use super::hyperlink::Hyperlink;
 use super::list_header::ListHeader;
 use super::memo::{Memo, MemoShape};
-use super::paragraph::{
-    CharacterShapeReference, LineSegment, Paragraph, ParagraphText, RangeTag,
-};
+use super::page::{PageBorderFill, PageDefinition};
+use super::paragraph::{CharacterShapeReference, LineSegment, Paragraph, ParagraphText, RangeTag};
 use super::parse_record_header;
 use super::picture::{ImageFlip, OleObject, Picture, PictureProperties};
 use super::section_definition::{ColumnDefinition, SectionDefinition};
@@ -34,6 +28,9 @@ use super::shape::{
 use super::table::{Table, TableCell};
 use super::text_art::TextArt;
 use super::video::VideoData;
+use crate::error::Result;
+use crate::primitive::RecordTagId;
+use crate::util::ByteReader;
 
 /// Parsing context for nested content.
 ///
@@ -74,10 +71,12 @@ enum ParsingContext {
 
 impl ParsingContext {
     /// Returns the expected paragraph count for this context.
-    fn paragraph_count(&self) -> Option<u16> {
+    const fn paragraph_count(&self) -> Option<u16> {
         match self {
             Self::Section => None,
-            Self::TableCell { paragraph_count, .. } => Some(*paragraph_count),
+            Self::TableCell {
+                paragraph_count, ..
+            } => Some(*paragraph_count),
             Self::HeaderFooter { paragraph_count } => Some(*paragraph_count),
             Self::FootnoteEndnote { paragraph_count } => Some(*paragraph_count),
             Self::TextBox { paragraph_count } => Some(*paragraph_count),
@@ -149,11 +148,20 @@ impl Section {
                 Some(RecordTagId::ParagraphHeader) => {
                     // Save previous paragraph
                     if let Some(para) = current_paragraph.take() {
-                        Self::save_paragraph(&mut section, &mut context_stack, &mut nested_paragraphs, &mut cell_paragraph_counts, &mut current_control, para);
+                        Self::save_paragraph(
+                            &mut section,
+                            &mut context_stack,
+                            &mut nested_paragraphs,
+                            &mut cell_paragraph_counts,
+                            &mut current_control,
+                            para,
+                        );
                     }
 
-                    current_paragraph =
-                        Some(Paragraph::from_reader(&mut record_reader, header.data_size())?);
+                    current_paragraph = Some(Paragraph::from_reader(
+                        &mut record_reader,
+                        header.data_size(),
+                    )?);
                 }
 
                 Some(RecordTagId::ParagraphText) => {
@@ -168,7 +176,8 @@ impl Section {
                     if let Some(ref mut para) = current_paragraph {
                         let count = header.data_size() / 8;
                         for _ in 0..count {
-                            let reference = CharacterShapeReference::from_reader(&mut record_reader)?;
+                            let reference =
+                                CharacterShapeReference::from_reader(&mut record_reader)?;
                             para.add_character_shape_reference(reference);
                         }
                     }
@@ -284,7 +293,8 @@ impl Section {
                                     // This is a table cell - read cell properties after ListHeader
                                     // Cell properties follow ListHeader in the record
                                     let cell = if record_reader.remaining() >= TableCell::SIZE {
-                                        TableCell::from_reader(&mut record_reader).unwrap_or_default()
+                                        TableCell::from_reader(&mut record_reader)
+                                            .unwrap_or_default()
                                     } else {
                                         TableCell::default()
                                     };
@@ -500,8 +510,13 @@ impl Section {
                 Some(RecordTagId::ShapeComponentPicture) => {
                     if let Some(ref mut ctrl) = current_control {
                         // 개체 요소 공통 속성(표 83)에서 flip/rotation 파싱
-                        let (flip, rotation) = if let Ok(elem_props) = ShapeElementProperties::from_reader(&mut record_reader) {
-                            let flip = match (elem_props.is_flipped_horizontal(), elem_props.is_flipped_vertical()) {
+                        let (flip, rotation) = if let Ok(elem_props) =
+                            ShapeElementProperties::from_reader(&mut record_reader)
+                        {
+                            let flip = match (
+                                elem_props.is_flipped_horizontal(),
+                                elem_props.is_flipped_vertical(),
+                            ) {
                                 (false, false) => ImageFlip::None,
                                 (true, false) => ImageFlip::Horizontal,
                                 (false, true) => ImageFlip::Vertical,
@@ -654,7 +669,14 @@ impl Section {
             }
         }
         if let Some(para) = current_paragraph.take() {
-            Self::save_paragraph(&mut section, &mut context_stack, &mut nested_paragraphs, &mut cell_paragraph_counts, &mut None, para);
+            Self::save_paragraph(
+                &mut section,
+                &mut context_stack,
+                &mut nested_paragraphs,
+                &mut cell_paragraph_counts,
+                &mut None,
+                para,
+            );
         }
 
         Ok(section)
@@ -811,7 +833,7 @@ impl Section {
     }
 
     /// Returns a mutable reference to the paragraphs.
-    pub fn paragraphs_mut(&mut self) -> &mut Vec<Paragraph> {
+    pub const fn paragraphs_mut(&mut self) -> &mut Vec<Paragraph> {
         &mut self.paragraphs
     }
 
@@ -825,7 +847,7 @@ impl Section {
     }
 
     /// Returns the number of paragraphs.
-    pub fn paragraph_count(&self) -> usize {
+    pub const fn paragraph_count(&self) -> usize {
         self.paragraphs.len()
     }
 
@@ -855,7 +877,7 @@ impl Section {
     }
 
     /// Returns the number of memos.
-    pub fn memo_count(&self) -> usize {
+    pub const fn memo_count(&self) -> usize {
         self.memos.len()
     }
 }

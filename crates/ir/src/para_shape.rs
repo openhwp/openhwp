@@ -8,9 +8,7 @@ use primitive::{
 };
 
 // Re-export primitive types
-pub use primitive::{
-    LineSpacingType, ParagraphBorder, ParagraphNumbering, Tab, TabDef,
-};
+pub use primitive::{LineSpacingType, ParagraphBorder, ParagraphNumbering, Tab, TabDef};
 
 /// 문단 모양 정의
 #[derive(Debug, Clone)]
@@ -122,25 +120,25 @@ impl ParaShape {
     }
 
     /// 정렬 설정
-    pub fn with_alignment(mut self, alignment: Alignment) -> Self {
+    pub const fn with_alignment(mut self, alignment: Alignment) -> Self {
         self.alignment = alignment;
         self
     }
 
     /// 왼쪽 여백 설정
-    pub fn with_margin_left(mut self, margin: HwpUnit) -> Self {
+    pub const fn with_margin_left(mut self, margin: HwpUnit) -> Self {
         self.margin_left = margin;
         self
     }
 
     /// 오른쪽 여백 설정
-    pub fn with_margin_right(mut self, margin: HwpUnit) -> Self {
+    pub const fn with_margin_right(mut self, margin: HwpUnit) -> Self {
         self.margin_right = margin;
         self
     }
 
     /// 첫 줄 들여쓰기 설정
-    pub fn with_first_line_indent(mut self, indent: HwpUnit) -> Self {
+    pub const fn with_first_line_indent(mut self, indent: HwpUnit) -> Self {
         self.first_line_indent = indent;
         self
     }
@@ -166,7 +164,7 @@ impl Default for LineSpacing {
 
 impl LineSpacing {
     /// 비율 줄 간격 (예: 160%)
-    pub fn percent(value: f64) -> Self {
+    pub const fn percent(value: f64) -> Self {
         Self {
             spacing_type: LineSpacingType::Percent,
             value: LineSpacingValue::Percent(Percent::new(value)),
@@ -174,7 +172,7 @@ impl LineSpacing {
     }
 
     /// 고정 줄 간격
-    pub fn fixed(value: HwpUnit) -> Self {
+    pub const fn fixed(value: HwpUnit) -> Self {
         Self {
             spacing_type: LineSpacingType::Fixed,
             value: LineSpacingValue::Fixed(value),
@@ -182,15 +180,13 @@ impl LineSpacing {
     }
 
     /// 최소 줄 간격
-    pub fn at_least(value: HwpUnit) -> Self {
+    pub const fn at_least(value: HwpUnit) -> Self {
         Self {
             spacing_type: LineSpacingType::AtLeast,
             value: LineSpacingValue::Fixed(value),
         }
     }
 }
-
-// LineSpacingType re-exported from primitive
 
 /// 줄 간격 값
 #[derive(Debug, Clone)]
@@ -206,5 +202,3 @@ impl Default for LineSpacingValue {
         Self::Percent(Percent::new(160.0))
     }
 }
-
-// ParagraphNumbering, TabDef, Tab, ParagraphBorder re-exported from primitive

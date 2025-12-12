@@ -35,7 +35,7 @@ impl Paragraph {
     }
 
     /// 런 수
-    pub fn run_count(&self) -> usize {
+    pub const fn run_count(&self) -> usize {
         self.runs.len()
     }
 }

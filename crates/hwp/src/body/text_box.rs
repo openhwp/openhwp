@@ -48,12 +48,15 @@ pub struct TextBox {
 
 impl TextBox {
     /// Creates a new text box.
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            vertical_align: VerticalAlignment::Top,
+            paragraphs: Vec::new(),
+        }
     }
 
     /// Creates a text box with vertical alignment.
-    pub fn with_alignment(vertical_align: VerticalAlignment) -> Self {
+    pub const fn with_alignment(vertical_align: VerticalAlignment) -> Self {
         Self {
             vertical_align,
             paragraphs: Vec::new(),
@@ -156,12 +159,16 @@ pub struct Caption {
 
 impl Caption {
     /// Creates a new caption.
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            direction: CaptionDirection::Below,
+            gap: 0,
+            paragraphs: Vec::new(),
+        }
     }
 
     /// Creates a caption with direction and gap.
-    pub fn with_direction(direction: CaptionDirection, gap: i32) -> Self {
+    pub const fn with_direction(direction: CaptionDirection, gap: i32) -> Self {
         Self {
             direction,
             gap,

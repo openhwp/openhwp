@@ -64,7 +64,6 @@ impl TableZone {
     }
 }
 
-
 /// Table cell information.
 #[derive(Debug, Clone, Default)]
 pub struct TableCell {
@@ -196,7 +195,7 @@ impl TableProperties {
     }
 
     /// Returns total number of cells.
-    pub fn cell_count(&self) -> usize {
+    pub const fn cell_count(&self) -> usize {
         self.row_count as usize * self.column_count as usize
     }
 }
@@ -212,7 +211,7 @@ pub struct Table {
 
 impl Table {
     /// Creates a new table with properties.
-    pub fn new(properties: TableProperties) -> Self {
+    pub const fn new(properties: TableProperties) -> Self {
         Self {
             properties,
             cells: Vec::new(),
@@ -231,12 +230,12 @@ impl Table {
     }
 
     /// Returns the number of rows.
-    pub fn row_count(&self) -> u16 {
+    pub const fn row_count(&self) -> u16 {
         self.properties.row_count
     }
 
     /// Returns the number of columns.
-    pub fn column_count(&self) -> u16 {
+    pub const fn column_count(&self) -> u16 {
         self.properties.column_count
     }
 

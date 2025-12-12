@@ -42,8 +42,7 @@ fn convert_section(ir_section: &ir::Section, doc: &mut Document) -> Section {
 
     // 문단 변환
     for ir_para in &ir_section.paragraphs {
-        let para_id = convert_paragraph(ir_para, doc);
-        section.paragraphs.push(para_id);
+        section.paragraphs.push(convert_paragraph(ir_para, doc));
     }
 
     section
@@ -62,17 +61,12 @@ fn convert_paragraph(ir_para: &ir::Paragraph, doc: &mut Document) -> crate::Para
             primitive::BreakType::Section => BreakType::Section,
         },
         instance_id: ir_para.instance_id,
-        range_tags: ir_para
-            .range_tags
-            .iter()
-            .map(convert_range_tag)
-            .collect(),
+        range_tags: ir_para.range_tags.iter().map(convert_range_tag).collect(),
     };
 
     // 런 변환
     for ir_run in &ir_para.runs {
-        let run_id = convert_run(ir_run, doc);
-        para.runs.push(run_id);
+        para.runs.push(convert_run(ir_run, doc));
     }
 
     doc.arena.insert_paragraph(para)
@@ -105,8 +99,7 @@ fn convert_run(ir_run: &ir::paragraph::Run, doc: &mut Document) -> crate::RunId 
 
     // 런 내용 변환
     for ir_content in &ir_run.contents {
-        let content = convert_run_content(ir_content, doc);
-        run.contents.push(content);
+        run.contents.push(convert_run_content(ir_content, doc));
     }
 
     doc.arena.insert_run(run)
@@ -168,12 +161,14 @@ fn convert_control(ir_ctrl: &ir::control::Control, doc: &mut Document) -> Contro
         ir::control::Control::IndexMark(im) => Control::IndexMark(convert_index_mark(im)),
         ir::control::Control::AutoNumber(an) => Control::AutoNumber(convert_auto_number(an)),
         ir::control::Control::NewNumber(nn) => Control::NewNumber(convert_new_number(nn)),
-        ir::control::Control::HiddenComment(hc) => Control::HiddenComment(convert_hidden_comment(hc, doc)),
+        ir::control::Control::HiddenComment(hc) => {
+            Control::HiddenComment(convert_hidden_comment(hc, doc))
+        }
         ir::control::Control::Chart(c) => Control::Chart(convert_chart(c)),
         ir::control::Control::Video(v) => Control::Video(convert_video(v)),
         ir::control::Control::FormObject(fo) => Control::FormObject(convert_form_object(fo)),
         ir::control::Control::TextArt(ta) => Control::TextArt(convert_text_art(ta)),
-        ir::control::Control::Memo(_) => Control::Unknown(Vec::new()),       // TODO
+        ir::control::Control::Memo(_) => Control::Unknown(Vec::new()), // TODO
         ir::control::Control::Unknown(data) => Control::Unknown(data.data.clone()),
     }
 }
@@ -190,7 +185,7 @@ fn convert_video(ir_video: &ir::control::Video) -> crate::control::Video {
 }
 
 /// VideoType 변환
-fn convert_video_type(ir_type: ir::control::VideoType) -> crate::control::VideoType {
+const fn convert_video_type(ir_type: ir::control::VideoType) -> crate::control::VideoType {
     match ir_type {
         ir::control::VideoType::Embedded => crate::control::VideoType::Embedded,
         ir::control::VideoType::Linked => crate::control::VideoType::Linked,
@@ -212,7 +207,7 @@ fn convert_chart(ir_chart: &ir::control::Chart) -> crate::control::Chart {
 }
 
 /// ChartType 변환
-fn convert_chart_type(ir_type: ir::control::ChartType) -> crate::control::ChartType {
+const fn convert_chart_type(ir_type: ir::control::ChartType) -> crate::control::ChartType {
     match ir_type {
         ir::control::ChartType::Bar => crate::control::ChartType::Bar,
         ir::control::ChartType::Column => crate::control::ChartType::Bar, // 열 차트를 막대로 매핑
@@ -255,7 +250,10 @@ fn convert_form_object_type(ir_form: &ir::control::FormObject) -> crate::control
                 ir_form.button_value,
                 Some(ir::control::ButtonValue::Checked)
             );
-            crate::control::FormObjectType::RadioButton { group_name, checked }
+            crate::control::FormObjectType::RadioButton {
+                group_name,
+                checked,
+            }
         }
         ir::control::FormObjectType::ComboBox => {
             let items: Vec<String> = ir_form
@@ -265,13 +263,10 @@ fn convert_form_object_type(ir_form: &ir::control::FormObject) -> crate::control
                 .collect();
             // selected_value와 매칭되는 항목의 인덱스를 찾음
             let selected = if let Some(ref selected_value) = ir_form.selected_value {
-                ir_form
-                    .items
-                    .iter()
-                    .position(|item| {
-                        item.value.as_ref() == Some(selected_value)
-                            || item.display_text.as_ref() == Some(selected_value)
-                    })
+                ir_form.items.iter().position(|item| {
+                    item.value.as_ref() == Some(selected_value)
+                        || item.display_text.as_ref() == Some(selected_value)
+                })
             } else {
                 None
             };
@@ -285,13 +280,10 @@ fn convert_form_object_type(ir_form: &ir::control::FormObject) -> crate::control
                 .collect();
             // selected_value와 매칭되는 항목의 인덱스를 찾음
             let selected = if let Some(ref selected_value) = ir_form.selected_value {
-                ir_form
-                    .items
-                    .iter()
-                    .position(|item| {
-                        item.value.as_ref() == Some(selected_value)
-                            || item.display_text.as_ref() == Some(selected_value)
-                    })
+                ir_form.items.iter().position(|item| {
+                    item.value.as_ref() == Some(selected_value)
+                        || item.display_text.as_ref() == Some(selected_value)
+                })
             } else {
                 None
             };
@@ -300,7 +292,10 @@ fn convert_form_object_type(ir_form: &ir::control::FormObject) -> crate::control
         ir::control::FormObjectType::Edit => {
             let multiline = ir_form.multiline;
             let password = ir_form.password_char.is_some();
-            crate::control::FormObjectType::Edit { multiline, password }
+            crate::control::FormObjectType::Edit {
+                multiline,
+                password,
+            }
         }
         ir::control::FormObjectType::ScrollBar => {
             let min = ir_form.min.unwrap_or(0);
@@ -318,7 +313,10 @@ fn convert_text_art(ir_text_art: &ir::control::TextArt) -> crate::control::TextA
     crate::control::TextArt {
         common: convert_object_common(&ir_text_art.common),
         text: ir_text_art.text.clone(),
-        font_name: ir_text_art.font_name.clone().unwrap_or_else(|| "굴림".to_string()),
+        font_name: ir_text_art
+            .font_name
+            .clone()
+            .unwrap_or_else(|| "굴림".to_string()),
         font_style: convert_font_style(ir_text_art.font_style),
         shape: convert_text_art_shape(ir_text_art.shape),
         // IR은 u32 (50-500), Document는 Percent로 변환
@@ -332,7 +330,7 @@ fn convert_text_art(ir_text_art: &ir::control::TextArt) -> crate::control::TextA
 }
 
 /// FontStyle 변환
-fn convert_font_style(ir_style: ir::control::TextArtFontStyle) -> crate::control::FontStyle {
+const fn convert_font_style(ir_style: ir::control::TextArtFontStyle) -> crate::control::FontStyle {
     match ir_style {
         ir::control::TextArtFontStyle::Regular => crate::control::FontStyle::Regular,
         ir::control::TextArtFontStyle::Bold => crate::control::FontStyle::Bold,
@@ -342,7 +340,9 @@ fn convert_font_style(ir_style: ir::control::TextArtFontStyle) -> crate::control
 }
 
 /// TextArtShape 변환
-fn convert_text_art_shape(ir_shape: ir::control::TextArtShapeType) -> crate::control::TextArtShape {
+const fn convert_text_art_shape(
+    ir_shape: ir::control::TextArtShapeType,
+) -> crate::control::TextArtShape {
     match ir_shape {
         ir::control::TextArtShapeType::Rectangle => crate::control::TextArtShape::Rectangle,
         ir::control::TextArtShapeType::Circle => crate::control::TextArtShape::Circle,
@@ -356,7 +356,9 @@ fn convert_text_art_shape(ir_shape: ir::control::TextArtShapeType) -> crate::con
 }
 
 /// TextArtAlignment 변환
-fn convert_text_art_alignment(ir_alignment: ir::control::TextArtAlignment) -> primitive::Alignment {
+const fn convert_text_art_alignment(
+    ir_alignment: ir::control::TextArtAlignment,
+) -> primitive::Alignment {
     match ir_alignment {
         ir::control::TextArtAlignment::Left => primitive::Alignment::Left,
         ir::control::TextArtAlignment::Center => primitive::Alignment::Center,
@@ -375,12 +377,20 @@ fn convert_hyperlink(ir_hyperlink: &ir::control::Hyperlink) -> crate::control::H
 }
 
 /// HyperlinkTarget 변환
-fn convert_hyperlink_target(ir_target: &ir::control::HyperlinkTarget) -> crate::control::HyperlinkTarget {
+fn convert_hyperlink_target(
+    ir_target: &ir::control::HyperlinkTarget,
+) -> crate::control::HyperlinkTarget {
     match ir_target {
         ir::control::HyperlinkTarget::Url(url) => crate::control::HyperlinkTarget::Url(url.clone()),
-        ir::control::HyperlinkTarget::Email(email) => crate::control::HyperlinkTarget::Email(email.clone()),
-        ir::control::HyperlinkTarget::File(file) => crate::control::HyperlinkTarget::File(file.clone()),
-        ir::control::HyperlinkTarget::Bookmark(bookmark) => crate::control::HyperlinkTarget::Bookmark(bookmark.clone()),
+        ir::control::HyperlinkTarget::Email(email) => {
+            crate::control::HyperlinkTarget::Email(email.clone())
+        }
+        ir::control::HyperlinkTarget::File(file) => {
+            crate::control::HyperlinkTarget::File(file.clone())
+        }
+        ir::control::HyperlinkTarget::Bookmark(bookmark) => {
+            crate::control::HyperlinkTarget::Bookmark(bookmark.clone())
+        }
     }
 }
 
@@ -393,7 +403,9 @@ fn convert_auto_number(ir_auto_number: &ir::control::AutoNumber) -> crate::contr
 }
 
 /// AutoNumberType 변환
-fn convert_auto_number_type(ir_type: ir::control::AutoNumberType) -> crate::control::AutoNumberType {
+const fn convert_auto_number_type(
+    ir_type: ir::control::AutoNumberType,
+) -> crate::control::AutoNumberType {
     match ir_type {
         ir::control::AutoNumberType::Page => crate::control::AutoNumberType::Page,
         ir::control::AutoNumberType::Footnote => crate::control::AutoNumberType::Footnote,
@@ -441,41 +453,21 @@ fn convert_object_common(ir_common: &ir::control::ObjectCommon) -> crate::contro
 }
 
 /// IR TextWrap 변환
-fn convert_text_wrap(ir_wrap: &ir::control::TextWrap) -> crate::control::TextWrap {
+const fn convert_text_wrap(ir_wrap: &ir::control::TextWrap) -> crate::control::TextWrap {
     crate::control::TextWrap {
-        wrap_type: convert_text_wrap_type(ir_wrap.wrap_type),
-        wrap_side: convert_text_wrap_side(ir_wrap.wrap_side),
+        wrap_type: ir_wrap.wrap_type,
+        wrap_side: ir_wrap.wrap_side,
         margin: ir::Insets::all(ir_wrap.margin),
-        vertical_rel: convert_vertical_rel(ir_wrap.vertical_rel),
-        horizontal_rel: convert_horizontal_rel(ir_wrap.horizontal_rel),
+        vertical_rel: ir_wrap.vertical_rel,
+        horizontal_rel: ir_wrap.horizontal_rel,
         treat_as_char: ir_wrap.treat_as_char,
         flow_with_text: ir_wrap.flow_with_text,
         allow_overlap: ir_wrap.allow_overlap,
     }
 }
 
-/// TextWrapType 변환 (now same type via re-export)
-fn convert_text_wrap_type(ir_type: primitive::TextWrapType) -> crate::control::TextWrapType {
-    ir_type
-}
-
-/// TextWrapSide 변환 (now same type via re-export)
-fn convert_text_wrap_side(ir_side: primitive::TextWrapSide) -> crate::control::TextWrapSide {
-    ir_side
-}
-
-/// VerticalRelativeTo 변환 (now same type via re-export)
-fn convert_vertical_rel(ir_rel: primitive::VerticalRelativeTo) -> crate::control::VerticalRelativeTo {
-    ir_rel
-}
-
-/// HorizontalRelativeTo 변환 (now same type via re-export)
-fn convert_horizontal_rel(ir_rel: primitive::HorizontalRelativeTo) -> crate::control::HorizontalRelativeTo {
-    ir_rel
-}
-
 /// Caption 변환
-fn convert_caption(ir_caption: &ir::control::Caption) -> crate::control::Caption {
+const fn convert_caption(ir_caption: &ir::control::Caption) -> crate::control::Caption {
     crate::control::Caption {
         position: convert_caption_position(ir_caption.position),
         width: ir_caption.width,
@@ -485,7 +477,9 @@ fn convert_caption(ir_caption: &ir::control::Caption) -> crate::control::Caption
 }
 
 /// CaptionPosition 변환 (ir still has its own CaptionPosition, so we need mapping)
-fn convert_caption_position(ir_pos: ir::control::CaptionPosition) -> crate::control::CaptionPosition {
+const fn convert_caption_position(
+    ir_pos: ir::control::CaptionPosition,
+) -> crate::control::CaptionPosition {
     match ir_pos {
         ir::control::CaptionPosition::Left => crate::control::CaptionPosition::Left,
         ir::control::CaptionPosition::Right => crate::control::CaptionPosition::Right,
@@ -495,7 +489,10 @@ fn convert_caption_position(ir_pos: ir::control::CaptionPosition) -> crate::cont
 }
 
 /// IR Picture 변환
-fn convert_picture(ir_picture: &ir::picture::Picture, _doc: &mut Document) -> crate::control::Picture {
+fn convert_picture(
+    ir_picture: &ir::picture::Picture,
+    _doc: &mut Document,
+) -> crate::control::Picture {
     crate::control::Picture {
         common: convert_object_common(&ir_picture.common),
         binary_id: ir_picture.binary_id.clone(),
@@ -512,13 +509,16 @@ fn convert_picture(ir_picture: &ir::picture::Picture, _doc: &mut Document) -> cr
         brightness: ir_picture.brightness,
         contrast: ir_picture.contrast,
         alpha: ((ir_picture.alpha * 100.0) as u8).min(100),
-        border: ir_picture.border.as_ref().map(convert_line_style_from_picture_border),
+        border: ir_picture
+            .border
+            .as_ref()
+            .map(convert_line_style_from_picture_border),
         shadow: ir_picture.shadow.as_ref().map(convert_shadow_from_picture),
     }
 }
 
 /// ImageFlip 변환
-fn convert_image_flip(ir_flip: primitive::ImageFlip) -> crate::control::ImageFlip {
+const fn convert_image_flip(ir_flip: primitive::ImageFlip) -> crate::control::ImageFlip {
     match ir_flip {
         primitive::ImageFlip::None => crate::control::ImageFlip::None,
         primitive::ImageFlip::Horizontal => crate::control::ImageFlip::Horizontal,
@@ -528,7 +528,7 @@ fn convert_image_flip(ir_flip: primitive::ImageFlip) -> crate::control::ImageFli
 }
 
 /// ImageEffect 변환
-fn convert_image_effect(ir_effect: primitive::ImageEffect) -> crate::control::ImageEffect {
+const fn convert_image_effect(ir_effect: primitive::ImageEffect) -> crate::control::ImageEffect {
     match ir_effect {
         primitive::ImageEffect::Original => crate::control::ImageEffect::Original,
         primitive::ImageEffect::Grayscale => crate::control::ImageEffect::Grayscale,
@@ -538,7 +538,9 @@ fn convert_image_effect(ir_effect: primitive::ImageEffect) -> crate::control::Im
 }
 
 /// PictureBorder를 LineStyle로 변환
-fn convert_line_style_from_picture_border(ir_border: &ir::picture::PictureBorder) -> crate::control::LineStyle {
+const fn convert_line_style_from_picture_border(
+    ir_border: &ir::picture::PictureBorder,
+) -> crate::control::LineStyle {
     crate::control::LineStyle {
         line_type: ir_border.line_type,
         width: ir_border.width,
@@ -620,7 +622,10 @@ fn convert_shape_type(ir_type: &ir::shape::ShapeType) -> crate::control::ShapeTy
             end_arrow: Some(convert_arrow(&connector.end_arrow)),
         },
         ir::shape::ShapeType::Group(shapes) => crate::control::ShapeType::Group {
-            children: shapes.iter().map(|s| convert_shape(s, &mut Document::new())).collect(),
+            children: shapes
+                .iter()
+                .map(|s| convert_shape(s, &mut Document::new()))
+                .collect(),
         },
     }
 }
@@ -635,7 +640,7 @@ fn convert_arrow(ir_arrow: &ir::shape::Arrow) -> crate::control::Arrow {
 }
 
 /// ArrowType 변환
-fn convert_arrow_type(ir_type: primitive::ArrowType) -> crate::control::ArrowType {
+const fn convert_arrow_type(ir_type: primitive::ArrowType) -> crate::control::ArrowType {
     match ir_type {
         primitive::ArrowType::None => crate::control::ArrowType::None,
         primitive::ArrowType::Arrow => crate::control::ArrowType::Normal,
@@ -648,7 +653,7 @@ fn convert_arrow_type(ir_type: primitive::ArrowType) -> crate::control::ArrowTyp
 }
 
 /// ArrowSize 변환
-fn convert_arrow_size(ir_size: primitive::ArrowSize) -> crate::control::ArrowSize {
+const fn convert_arrow_size(ir_size: primitive::ArrowSize) -> crate::control::ArrowSize {
     match ir_size {
         primitive::ArrowSize::Small => crate::control::ArrowSize::Small,
         primitive::ArrowSize::Medium => crate::control::ArrowSize::Medium,
@@ -657,7 +662,7 @@ fn convert_arrow_size(ir_size: primitive::ArrowSize) -> crate::control::ArrowSiz
 }
 
 /// ArcType 변환
-fn convert_arc_type(ir_type: ir::shape::ArcType) -> crate::control::ArcType {
+const fn convert_arc_type(ir_type: ir::shape::ArcType) -> crate::control::ArcType {
     match ir_type {
         ir::shape::ArcType::Full => crate::control::ArcType::Arc,
         ir::shape::ArcType::Arc => crate::control::ArcType::Arc,
@@ -675,7 +680,9 @@ fn convert_curve_point(ir_point: &ir::shape::CurvePoint) -> crate::control::Curv
 }
 
 /// CurvePointType 변환
-fn convert_curve_point_type(ir_type: ir::shape::CurvePointType) -> crate::control::CurvePointType {
+const fn convert_curve_point_type(
+    ir_type: ir::shape::CurvePointType,
+) -> crate::control::CurvePointType {
     match ir_type {
         ir::shape::CurvePointType::Normal => crate::control::CurvePointType::Normal,
         ir::shape::CurvePointType::Control1 => crate::control::CurvePointType::Control1,
@@ -684,7 +691,9 @@ fn convert_curve_point_type(ir_type: ir::shape::CurvePointType) -> crate::contro
 }
 
 /// ConnectorType 변환
-fn convert_connector_type(ir_type: ir::shape::ConnectorType) -> crate::control::ConnectorType {
+const fn convert_connector_type(
+    ir_type: ir::shape::ConnectorType,
+) -> crate::control::ConnectorType {
     match ir_type {
         ir::shape::ConnectorType::Straight => crate::control::ConnectorType::Straight,
         ir::shape::ConnectorType::Elbow => crate::control::ConnectorType::Elbow,
@@ -708,7 +717,7 @@ fn convert_line_style(ir_line: &ir::shape::LineStyle) -> crate::control::LineSty
 }
 
 /// LineCap 변환
-fn convert_line_cap(ir_cap: primitive::LineCap) -> crate::control::LineCap {
+const fn convert_line_cap(ir_cap: primitive::LineCap) -> crate::control::LineCap {
     match ir_cap {
         primitive::LineCap::Flat => crate::control::LineCap::Flat,
         primitive::LineCap::Round => crate::control::LineCap::Round,
@@ -717,7 +726,9 @@ fn convert_line_cap(ir_cap: primitive::LineCap) -> crate::control::LineCap {
 }
 
 /// OutlineStyle 변환
-fn convert_outline_style(ir_style: primitive::LineOutlineStyle) -> crate::control::OutlineStyle {
+const fn convert_outline_style(
+    ir_style: primitive::LineOutlineStyle,
+) -> crate::control::OutlineStyle {
     match ir_style {
         primitive::LineOutlineStyle::Normal => crate::control::OutlineStyle::Normal,
         primitive::LineOutlineStyle::Outer => crate::control::OutlineStyle::Outer,
@@ -732,10 +743,12 @@ fn convert_fill(ir_fill: &ir::border_fill::Fill) -> crate::control::Fill {
             color: ir::Color::WHITE,
             alpha: 0,
         }),
-        ir::border_fill::Fill::Solid(solid) => crate::control::Fill::Solid(crate::control::SolidFill {
-            color: solid.color,
-            alpha: solid.color.alpha,
-        }),
+        ir::border_fill::Fill::Solid(solid) => {
+            crate::control::Fill::Solid(crate::control::SolidFill {
+                color: solid.color,
+                alpha: solid.color.alpha,
+            })
+        }
         ir::border_fill::Fill::Gradient(gradient) => {
             crate::control::Fill::Gradient(crate::control::GradientFill {
                 gradient_type: convert_gradient_type(gradient.gradient_type),
@@ -746,16 +759,18 @@ fn convert_fill(ir_fill: &ir::border_fill::Fill) -> crate::control::Fill {
                 step_center: gradient.step_center as i32,
             })
         }
-        ir::border_fill::Fill::Image(image) => crate::control::Fill::Image(crate::control::ImageFill {
-            fill_type: convert_image_fill_mode(image.mode),
-            binary_id: image.binary_id.clone(),
-            effect: convert_image_effect(image.effect),
-            brightness: image.brightness,
-            contrast: image.contrast,
-        }),
+        ir::border_fill::Fill::Image(image) => {
+            crate::control::Fill::Image(crate::control::ImageFill {
+                fill_type: image.mode,
+                binary_id: image.binary_id.clone(),
+                effect: image.effect,
+                brightness: image.brightness,
+                contrast: image.contrast,
+            })
+        }
         ir::border_fill::Fill::Pattern(pattern) => {
             crate::control::Fill::Pattern(crate::control::PatternFill {
-                pattern_type: convert_pattern_type(pattern.pattern_type),
+                pattern_type: pattern.pattern_type,
                 foreground: pattern.foreground,
                 background: pattern.background,
             })
@@ -764,7 +779,7 @@ fn convert_fill(ir_fill: &ir::border_fill::Fill) -> crate::control::Fill {
 }
 
 /// GradientType 변환
-fn convert_gradient_type(ir_type: primitive::GradientType) -> crate::control::GradientType {
+const fn convert_gradient_type(ir_type: primitive::GradientType) -> crate::control::GradientType {
     match ir_type {
         primitive::GradientType::Linear => crate::control::GradientType::Linear,
         primitive::GradientType::Radial => crate::control::GradientType::Radial,
@@ -774,21 +789,13 @@ fn convert_gradient_type(ir_type: primitive::GradientType) -> crate::control::Gr
 }
 
 /// GradientStop 변환
-fn convert_gradient_stop(ir_stop: &ir::border_fill::GradientStop) -> crate::control::GradientStop {
+const fn convert_gradient_stop(
+    ir_stop: &ir::border_fill::GradientStop,
+) -> crate::control::GradientStop {
     crate::control::GradientStop {
         position: ir_stop.position,
         color: ir_stop.color,
     }
-}
-
-/// ImageFillMode 변환 (now same type via re-export)
-fn convert_image_fill_mode(ir_mode: primitive::ImageFillMode) -> crate::control::ImageFillType {
-    ir_mode
-}
-
-/// PatternType 변환 (now same type via re-export)
-fn convert_pattern_type(ir_type: ir::border_fill::PatternType) -> crate::control::PatternType {
-    ir_type
 }
 
 /// ShapeShadow를 Shadow로 변환
@@ -806,7 +813,10 @@ fn convert_shadow_from_shape(ir_shadow: &ir::shape::ShapeShadow) -> crate::contr
 }
 
 /// ShapeText 변환
-fn convert_shape_text(ir_text: &ir::shape::ShapeText, doc: &mut Document) -> crate::control::ShapeText {
+fn convert_shape_text(
+    ir_text: &ir::shape::ShapeText,
+    doc: &mut Document,
+) -> crate::control::ShapeText {
     let mut paragraph_ids = Vec::new();
     for ir_para in &ir_text.paragraphs {
         let para_id = convert_paragraph(ir_para, doc);
@@ -823,7 +833,7 @@ fn convert_shape_text(ir_text: &ir::shape::ShapeText, doc: &mut Document) -> cra
 }
 
 /// TextDirection 변환
-fn convert_text_direction(ir_dir: primitive::TextDirection) -> crate::control::TextDirection {
+const fn convert_text_direction(ir_dir: primitive::TextDirection) -> crate::control::TextDirection {
     match ir_dir {
         primitive::TextDirection::Horizontal => crate::control::TextDirection::Horizontal,
         primitive::TextDirection::Vertical => crate::control::TextDirection::Vertical,
@@ -833,7 +843,10 @@ fn convert_text_direction(ir_dir: primitive::TextDirection) -> crate::control::T
 }
 
 /// IR Equation 변환
-fn convert_equation(ir_equation: &ir::control::Equation, _doc: &mut Document) -> crate::control::Equation {
+fn convert_equation(
+    ir_equation: &ir::control::Equation,
+    _doc: &mut Document,
+) -> crate::control::Equation {
     crate::control::Equation {
         common: convert_object_common(&ir_equation.common),
         script: ir_equation.script.clone(),
@@ -845,7 +858,9 @@ fn convert_equation(ir_equation: &ir::control::Equation, _doc: &mut Document) ->
 }
 
 /// EquationFormat 변환
-fn convert_equation_format(ir_format: ir::control::EquationFormat) -> crate::control::EquationFormat {
+const fn convert_equation_format(
+    ir_format: ir::control::EquationFormat,
+) -> crate::control::EquationFormat {
     match ir_format {
         ir::control::EquationFormat::HwpScript => crate::control::EquationFormat::HwpScript,
         ir::control::EquationFormat::MathML => crate::control::EquationFormat::MathML,
@@ -864,7 +879,10 @@ fn convert_ole(ir_ole: &ir::control::OleObject, _doc: &mut Document) -> crate::c
 }
 
 /// IR TextBox 변환
-fn convert_textbox(ir_textbox: &ir::control::TextBox, doc: &mut Document) -> crate::control::TextBox {
+fn convert_textbox(
+    ir_textbox: &ir::control::TextBox,
+    doc: &mut Document,
+) -> crate::control::TextBox {
     let mut paragraph_ids = Vec::new();
     for ir_para in &ir_textbox.paragraphs {
         let para_id = convert_paragraph(ir_para, doc);
@@ -899,15 +917,22 @@ fn convert_note(ir_note: &ir::control::Note, doc: &mut Document) -> crate::contr
 }
 
 /// NoteNumberPosition 변환
-fn convert_note_number_position(ir_pos: primitive::NoteNumberPosition) -> crate::section::NoteNumberPosition {
+const fn convert_note_number_position(
+    ir_pos: primitive::NoteNumberPosition,
+) -> crate::section::NoteNumberPosition {
     match ir_pos {
-        primitive::NoteNumberPosition::Superscript => crate::section::NoteNumberPosition::Superscript,
+        primitive::NoteNumberPosition::Superscript => {
+            crate::section::NoteNumberPosition::Superscript
+        }
         primitive::NoteNumberPosition::Subscript => crate::section::NoteNumberPosition::Subscript,
     }
 }
 
 /// IR HiddenComment 변환
-fn convert_hidden_comment(ir_comment: &ir::control::HiddenComment, doc: &mut Document) -> crate::control::HiddenComment {
+fn convert_hidden_comment(
+    ir_comment: &ir::control::HiddenComment,
+    doc: &mut Document,
+) -> crate::control::HiddenComment {
     let mut paragraph_ids = Vec::new();
     for ir_para in &ir_comment.paragraphs {
         let para_id = convert_paragraph(ir_para, doc);
@@ -992,7 +1017,7 @@ fn convert_compose(ir_compose: &ir::paragraph::Compose) -> crate::control::Compo
 }
 
 /// ComposeType 변환
-fn convert_compose_type(ir_type: ir::paragraph::ComposeType) -> crate::control::ComposeType {
+const fn convert_compose_type(ir_type: ir::paragraph::ComposeType) -> crate::control::ComposeType {
     match ir_type {
         ir::paragraph::ComposeType::Spread => crate::control::ComposeType::Spread,
         ir::paragraph::ComposeType::Overlap => crate::control::ComposeType::Overlap,
@@ -1000,7 +1025,9 @@ fn convert_compose_type(ir_type: ir::paragraph::ComposeType) -> crate::control::
 }
 
 /// ComposeCircleType 변환
-fn convert_compose_circle_type(ir_type: ir::paragraph::ComposeCircleType) -> crate::control::CircleType {
+const fn convert_compose_circle_type(
+    ir_type: ir::paragraph::ComposeCircleType,
+) -> crate::control::CircleType {
     match ir_type {
         ir::paragraph::ComposeCircleType::Char => crate::control::CircleType::None,
         ir::paragraph::ComposeCircleType::ShapeCircle => crate::control::CircleType::Circle,
@@ -1021,7 +1048,9 @@ fn convert_dutmal(ir_dutmal: &ir::paragraph::Dutmal) -> crate::control::Dutmal {
 }
 
 /// DutmalPosition 변환
-fn convert_dutmal_position(ir_pos: ir::paragraph::DutmalPosition) -> crate::control::DutmalPosition {
+const fn convert_dutmal_position(
+    ir_pos: ir::paragraph::DutmalPosition,
+) -> crate::control::DutmalPosition {
     match ir_pos {
         ir::paragraph::DutmalPosition::Top => crate::control::DutmalPosition::Top,
         ir::paragraph::DutmalPosition::Bottom => crate::control::DutmalPosition::Bottom,
@@ -1029,7 +1058,9 @@ fn convert_dutmal_position(ir_pos: ir::paragraph::DutmalPosition) -> crate::cont
 }
 
 /// DutmalAlignment 변환
-fn convert_dutmal_alignment(ir_align: ir::paragraph::DutmalAlignment) -> primitive::Alignment {
+const fn convert_dutmal_alignment(
+    ir_align: ir::paragraph::DutmalAlignment,
+) -> primitive::Alignment {
     match ir_align {
         ir::paragraph::DutmalAlignment::Justify => primitive::Alignment::Justify,
         ir::paragraph::DutmalAlignment::Left => primitive::Alignment::Left,
@@ -1104,8 +1135,14 @@ mod tests {
 
         let doc_auto_number = convert_auto_number(&ir_auto_number);
 
-        assert!(matches!(doc_auto_number.number_type, crate::control::AutoNumberType::Page));
-        assert!(matches!(doc_auto_number.number_format, primitive::NumberFormat::Digit));
+        assert!(matches!(
+            doc_auto_number.number_type,
+            crate::control::AutoNumberType::Page
+        ));
+        assert!(matches!(
+            doc_auto_number.number_format,
+            primitive::NumberFormat::Digit
+        ));
     }
 
     #[test]
@@ -1124,7 +1161,10 @@ mod tests {
 
         let doc_new_number = convert_new_number(&ir_new_number);
 
-        assert!(matches!(doc_new_number.number_type, crate::control::AutoNumberType::Picture));
+        assert!(matches!(
+            doc_new_number.number_type,
+            crate::control::AutoNumberType::Picture
+        ));
         assert_eq!(doc_new_number.number, 42);
     }
 
@@ -1167,13 +1207,19 @@ mod tests {
         let doc_video = convert_video(&ir_video);
 
         // IR의 YouTube는 Document의 Web으로 변환
-        assert!(matches!(doc_video.video_type, crate::control::VideoType::Web));
+        assert!(matches!(
+            doc_video.video_type,
+            crate::control::VideoType::Web
+        ));
         assert_eq!(doc_video.video_id.as_ref().unwrap().value(), "video1");
         assert_eq!(
             doc_video.source_url.as_ref().unwrap(),
             "https://youtube.com/watch?v=test"
         );
-        assert_eq!(doc_video.preview_image_id.as_ref().unwrap().value(), "preview1");
+        assert_eq!(
+            doc_video.preview_image_id.as_ref().unwrap().value(),
+            "preview1"
+        );
     }
 
     #[test]
@@ -1188,7 +1234,10 @@ mod tests {
 
         // IR의 String chart_id가 BinaryDataId로 변환
         assert_eq!(doc_chart.chart_id.value(), "chart_data_123");
-        assert!(matches!(doc_chart.chart_type, crate::control::ChartType::Pie));
+        assert!(matches!(
+            doc_chart.chart_type,
+            crate::control::ChartType::Pie
+        ));
     }
 
     #[test]

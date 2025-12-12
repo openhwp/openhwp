@@ -56,29 +56,6 @@ pub struct NoteShapeBase {
     pub beneath_text: bool,
 }
 
-impl Default for NoteShapeBase {
-    fn default() -> Self {
-        Self {
-            number_format: NumberFormat::Digit,
-            numbering: crate::NoteNumbering::Continuous,
-            superscript: true,
-            prefix: None,
-            suffix: Some(")".to_string()),
-            start_number: 1,
-            user_character: None,
-            separator_length: HwpUnit::from_mm(20.0),
-            separator_position: None,
-            separator_line_type: LineType::Solid,
-            separator_line_width: 1,
-            separator_line_color: Color::BLACK,
-            space_above: HwpUnit::from_mm(5.0),
-            space_below: HwpUnit::from_mm(2.0),
-            space_between: HwpUnit::from_mm(3.0),
-            beneath_text: false,
-        }
-    }
-}
-
 /// 각주 구분선
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -91,15 +68,4 @@ pub struct NoteSeparatorLine {
     pub color: Color,
     /// 선 길이 (퍼센트)
     pub length: crate::Percent,
-}
-
-impl Default for NoteSeparatorLine {
-    fn default() -> Self {
-        Self {
-            line_type: LineType::Solid,
-            width: HwpUnit::from_pt(0.5),
-            color: Color::BLACK,
-            length: crate::Percent::new(33.0), // 약 1/3 페이지
-        }
-    }
 }

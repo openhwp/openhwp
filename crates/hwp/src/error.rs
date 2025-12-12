@@ -41,26 +41,6 @@ pub enum Error {
         name: String,
     },
 
-    /// Invalid record header encountered.
-    InvalidRecordHeader {
-        /// Offset where the invalid header was found.
-        offset: u64,
-    },
-
-    /// Unknown record tag encountered.
-    UnknownRecordTag {
-        /// The unknown tag ID.
-        tag_id: u16,
-        /// Offset where the unknown tag was found.
-        offset: u64,
-    },
-
-    /// Record data is malformed or truncated.
-    MalformedRecord {
-        /// Description of what went wrong.
-        description: String,
-    },
-
     /// Decompression failed.
     DecompressionFailed {
         /// Description of the decompression error.
@@ -76,17 +56,6 @@ pub enum Error {
         expected: usize,
         /// Actual number of bytes available.
         actual: usize,
-    },
-
-    /// Invalid control ID encountered.
-    InvalidControlId(u32),
-
-    /// Reference to non-existent ID mapping.
-    InvalidIdReference {
-        /// Type of reference (e.g., "font", "style").
-        reference_type: String,
-        /// The invalid ID.
-        id: u32,
     },
 }
 
@@ -113,15 +82,6 @@ impl fmt::Display for Error {
             Error::MissingStream { name } => {
                 write!(f, "Missing stream: {}", name)
             }
-            Error::InvalidRecordHeader { offset } => {
-                write!(f, "Invalid record header at offset {}", offset)
-            }
-            Error::UnknownRecordTag { tag_id, offset } => {
-                write!(f, "Unknown record tag {} at offset {}", tag_id, offset)
-            }
-            Error::MalformedRecord { description } => {
-                write!(f, "Malformed record: {}", description)
-            }
             Error::DecompressionFailed { description } => {
                 write!(f, "Decompression failed: {}", description)
             }
@@ -132,12 +92,6 @@ impl fmt::Display for Error {
                     "Unexpected end of data: expected {} bytes, got {}",
                     expected, actual
                 )
-            }
-            Error::InvalidControlId(id) => {
-                write!(f, "Invalid control ID: 0x{:08X}", id)
-            }
-            Error::InvalidIdReference { reference_type, id } => {
-                write!(f, "Invalid {} reference: {}", reference_type, id)
             }
         }
     }

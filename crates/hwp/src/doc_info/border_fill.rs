@@ -32,7 +32,7 @@ impl BorderLineThickness {
     }
 
     /// Returns the thickness in millimeters.
-    pub fn value_mm(&self) -> f64 {
+    pub const fn value_mm(&self) -> f64 {
         self.value_hundredths_mm() as f64 / 100.0
     }
 }

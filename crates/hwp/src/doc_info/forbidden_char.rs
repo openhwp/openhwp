@@ -19,11 +19,6 @@ pub struct ForbiddenChar {
 }
 
 impl ForbiddenChar {
-    /// Creates a new forbidden char configuration.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Returns characters forbidden at line start.
     pub fn line_start_chars(&self) -> &str {
         &self.line_start_chars
@@ -105,14 +100,14 @@ mod tests {
 
     #[test]
     fn test_forbidden_char_new() {
-        let fc = ForbiddenChar::new();
+        let fc = ForbiddenChar::default();
         assert_eq!(fc.line_start_chars(), "");
         assert_eq!(fc.line_end_chars(), "");
     }
 
     #[test]
     fn test_forbidden_char_setters() {
-        let mut fc = ForbiddenChar::new();
+        let mut fc = ForbiddenChar::default();
         fc.set_line_start_chars(")]}」』】".to_string());
         fc.set_line_end_chars("([{「『【".to_string());
 
@@ -127,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_forbidden_char_korean() {
-        let mut fc = ForbiddenChar::new();
+        let mut fc = ForbiddenChar::default();
         // Korean closing punctuation
         fc.set_line_start_chars("。、」』】".to_string());
         // Korean opening punctuation

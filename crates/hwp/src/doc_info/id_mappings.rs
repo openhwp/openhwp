@@ -160,7 +160,7 @@ impl IdMappings {
 
     /// Returns the total number of all fonts.
     #[inline]
-    pub fn total_font_count(&self) -> i32 {
+    pub const fn total_font_count(&self) -> i32 {
         self.korean_font_count
             + self.english_font_count
             + self.chinese_font_count

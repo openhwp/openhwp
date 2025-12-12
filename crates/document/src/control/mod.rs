@@ -5,13 +5,11 @@
 mod common;
 
 pub use common::*;
+pub use primitive::{ArcType, ImageEffect, ImageFlip};
 
 use crate::id::ParagraphId;
 use crate::table::Table;
 use primitive::{Alignment, NumberFormat, VerticalAlignment};
-
-// Re-export from primitive (only types with matching variants)
-pub use primitive::{ArcType, ImageEffect, ImageFlip};
 
 /// 컨트롤
 #[derive(Debug, Clone)]
@@ -91,7 +89,6 @@ pub struct Picture {
     pub shadow: Option<Shadow>,
 }
 
-
 /// 도형
 #[derive(Debug, Clone)]
 pub struct Shape {
@@ -122,9 +119,7 @@ pub enum ShapeType {
         end_arrow: Option<Arrow>,
     },
     /// 사각형
-    Rectangle {
-        corner_radius: ir::HwpUnit,
-    },
+    Rectangle { corner_radius: ir::HwpUnit },
     /// 타원
     Ellipse {
         arc_type: ArcType,
@@ -138,9 +133,7 @@ pub enum ShapeType {
         end_angle: f64,
     },
     /// 다각형
-    Polygon {
-        points: Vec<ir::Point>,
-    },
+    Polygon { points: Vec<ir::Point> },
     /// 곡선
     Curve {
         points: Vec<CurvePoint>,
@@ -154,11 +147,8 @@ pub enum ShapeType {
         end_arrow: Option<Arrow>,
     },
     /// 그룹
-    Group {
-        children: Vec<Shape>,
-    },
+    Group { children: Vec<Shape> },
 }
-
 
 /// 곡선 점
 #[derive(Debug, Clone)]
@@ -389,12 +379,30 @@ pub struct FormObject {
 #[derive(Debug, Clone)]
 pub enum FormObjectType {
     Button,
-    CheckBox { checked: bool },
-    RadioButton { group_name: String, checked: bool },
-    ComboBox { items: Vec<String>, selected: Option<usize> },
-    ListBox { items: Vec<String>, selected: Option<usize> },
-    Edit { multiline: bool, password: bool },
-    ScrollBar { min: i32, max: i32, value: i32 },
+    CheckBox {
+        checked: bool,
+    },
+    RadioButton {
+        group_name: String,
+        checked: bool,
+    },
+    ComboBox {
+        items: Vec<String>,
+        selected: Option<usize>,
+    },
+    ListBox {
+        items: Vec<String>,
+        selected: Option<usize>,
+    },
+    Edit {
+        multiline: bool,
+        password: bool,
+    },
+    ScrollBar {
+        min: i32,
+        max: i32,
+        value: i32,
+    },
 }
 
 /// 비디오

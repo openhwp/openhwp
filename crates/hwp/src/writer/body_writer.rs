@@ -860,7 +860,7 @@ pub struct CurveShapeData {
 
 impl BodyWriter {
     /// 새 BodyWriter를 생성합니다.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             sections: Vec::new(),
         }
@@ -1076,7 +1076,12 @@ impl BodyWriter {
     }
 
     /// 공통 컨트롤 헤더 작성 헬퍼
-    fn write_ctrl_header(&self, writer: &mut ByteWriter, ctrl_id: &[u8; 4], common: &ObjectCommonData) {
+    fn write_ctrl_header(
+        &self,
+        writer: &mut ByteWriter,
+        ctrl_id: &[u8; 4],
+        common: &ObjectCommonData,
+    ) {
         let mut ctrl_header = ByteWriter::new();
         // Control ID
         ctrl_header.write_bytes(ctrl_id);
@@ -1223,7 +1228,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::Equation, 2, &eq_bytes);
     }
 
-    fn write_header_footer(&self, writer: &mut ByteWriter, data: &HeaderFooterData, is_header: bool) {
+    fn write_header_footer(
+        &self,
+        writer: &mut ByteWriter,
+        data: &HeaderFooterData,
+        is_header: bool,
+    ) {
         // CTRL_HEADER (daeh for header, toof for footer)
         let mut ctrl_header = ByteWriter::new();
         if is_header {
@@ -1517,7 +1527,7 @@ impl BodyWriter {
             ShapeTypeData::Line(_) => [b'e', b'n', b'i', b'l'], // "line" in LE
             ShapeTypeData::Rectangle(_) => [b't', b'c', b'e', b'r'], // "rect" in LE
             ShapeTypeData::Ellipse(_) => [b'l', b'l', b'e', b' '], // " ell" in LE
-            ShapeTypeData::Arc(_) => [b' ', b'c', b'r', b'a'], // "arc " in LE
+            ShapeTypeData::Arc(_) => [b' ', b'c', b'r', b'a'],  // "arc " in LE
             ShapeTypeData::Polygon(_) => [b'g', b'l', b'o', b'p'], // "poly" in LE (approximation)
             ShapeTypeData::Curve(_) => [b'v', b'r', b'u', b'c'], // "curv" in LE
             ShapeTypeData::Container(_) => [b' ', b'n', b'o', b'c'], // "con " in LE (container)
@@ -1546,9 +1556,12 @@ impl BodyWriter {
             }
         } else {
             // 단위 행렬
-            shape_comp.write_i32(65536); shape_comp.write_i32(0);
-            shape_comp.write_i32(0); shape_comp.write_i32(65536);
-            shape_comp.write_i32(0); shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
         }
 
         // Scale matrix
@@ -1558,9 +1571,12 @@ impl BodyWriter {
             }
         } else {
             // 단위 행렬
-            shape_comp.write_i32(65536); shape_comp.write_i32(0);
-            shape_comp.write_i32(0); shape_comp.write_i32(65536);
-            shape_comp.write_i32(0); shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
         }
 
         // Rotation matrix
@@ -1570,9 +1586,12 @@ impl BodyWriter {
             }
         } else {
             // 단위 행렬
-            shape_comp.write_i32(65536); shape_comp.write_i32(0);
-            shape_comp.write_i32(0); shape_comp.write_i32(65536);
-            shape_comp.write_i32(0); shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(65536);
+            shape_comp.write_i32(0);
+            shape_comp.write_i32(0);
         }
 
         let shape_comp_bytes = shape_comp.into_bytes();
@@ -1587,7 +1606,9 @@ impl BodyWriter {
             ShapeTypeData::Polygon(poly) => self.write_shape_polygon(writer, poly, shape),
             ShapeTypeData::Curve(curve) => self.write_shape_curve(writer, curve, shape),
             ShapeTypeData::Container(container) => self.write_shape_container(writer, container),
-            ShapeTypeData::Connector(connector) => self.write_shape_connector(writer, connector, shape),
+            ShapeTypeData::Connector(connector) => {
+                self.write_shape_connector(writer, connector, shape)
+            }
         }
     }
 
@@ -1618,7 +1639,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::ShapeComponentLine, 2, &data_bytes);
     }
 
-    fn write_shape_rectangle(&self, writer: &mut ByteWriter, rect: &RectangleShapeData, shape: &ShapeData) {
+    fn write_shape_rectangle(
+        &self,
+        writer: &mut ByteWriter,
+        rect: &RectangleShapeData,
+        shape: &ShapeData,
+    ) {
         let mut data = ByteWriter::new();
         data.write_u8(1); // ratio
         data.write_u32(rect.corner_radius); // corner_radius_x
@@ -1641,7 +1667,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::ShapeComponentRectangle, 2, &data_bytes);
     }
 
-    fn write_shape_ellipse(&self, writer: &mut ByteWriter, ellipse: &EllipseShapeData, shape: &ShapeData) {
+    fn write_shape_ellipse(
+        &self,
+        writer: &mut ByteWriter,
+        ellipse: &EllipseShapeData,
+        shape: &ShapeData,
+    ) {
         let mut data = ByteWriter::new();
         data.write_u32(0); // properties
         data.write_i32(0); // center_x
@@ -1688,7 +1719,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::ShapeComponentArc, 2, &data_bytes);
     }
 
-    fn write_shape_polygon(&self, writer: &mut ByteWriter, poly: &PolygonShapeData, shape: &ShapeData) {
+    fn write_shape_polygon(
+        &self,
+        writer: &mut ByteWriter,
+        poly: &PolygonShapeData,
+        shape: &ShapeData,
+    ) {
         let mut data = ByteWriter::new();
         data.write_u16(poly.points.len() as u16); // point_count
         for (x, y) in &poly.points {
@@ -1707,7 +1743,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::ShapeComponentPolygon, 2, &data_bytes);
     }
 
-    fn write_shape_curve(&self, writer: &mut ByteWriter, curve: &CurveShapeData, shape: &ShapeData) {
+    fn write_shape_curve(
+        &self,
+        writer: &mut ByteWriter,
+        curve: &CurveShapeData,
+        shape: &ShapeData,
+    ) {
         let mut data = ByteWriter::new();
         data.write_u16(curve.points.len() as u16); // point_count
         for (x, y, pt_type) in &curve.points {
@@ -1726,7 +1767,12 @@ impl BodyWriter {
         writer.write_record(RecordTagId::ShapeComponentCurve, 2, &data_bytes);
     }
 
-    fn write_shape_connector(&self, writer: &mut ByteWriter, connector: &ConnectorShapeData, shape: &ShapeData) {
+    fn write_shape_connector(
+        &self,
+        writer: &mut ByteWriter,
+        connector: &ConnectorShapeData,
+        shape: &ShapeData,
+    ) {
         // 연결선은 특수한 선 타입으로 처리
         let mut data = ByteWriter::new();
 
@@ -1778,15 +1824,14 @@ impl BodyWriter {
         match fill {
             FillInfo::None => 0xFFFFFF,
             FillInfo::Pattern(pattern) => pattern.background_color.value(),
-            FillInfo::Gradient(gradient) => {
-                gradient.colors.first()
-                    .map(|c| c.value())
-                    .unwrap_or(0xFFFFFF)
-            }
+            FillInfo::Gradient(gradient) => gradient
+                .colors
+                .first()
+                .map(|c| c.value())
+                .unwrap_or(0xFFFFFF),
             FillInfo::Image(_) => 0xFFFFFF,
         }
     }
-
 }
 
 impl Default for BodyWriter {
@@ -1804,9 +1849,9 @@ impl Default for PageDefinitionData {
             // 297mm = 11.69 inch = 84168 HwpUnit
             paper_width: 59544,
             paper_height: 84168,
-            margin_left: 8503,  // 30mm
-            margin_right: 8503, // 30mm
-            margin_top: 5669,   // 20mm
+            margin_left: 8503,   // 30mm
+            margin_right: 8503,  // 30mm
+            margin_top: 5669,    // 20mm
             margin_bottom: 4252, // 15mm
             margin_header: 4252, // 15mm
             margin_footer: 4252, // 15mm
@@ -1890,7 +1935,9 @@ mod tests {
     fn test_section_with_paragraph() {
         let mut body_writer = BodyWriter::new();
         let mut section = SectionData::default();
-        section.paragraphs.push(ParagraphData::with_text("Hello, World!"));
+        section
+            .paragraphs
+            .push(ParagraphData::with_text("Hello, World!"));
 
         body_writer.add_section(section);
 

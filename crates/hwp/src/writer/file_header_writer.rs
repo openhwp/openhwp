@@ -53,7 +53,7 @@ pub struct FileHeaderWriter {
 
 impl FileHeaderWriter {
     /// 새 FileHeaderWriter를 생성합니다.
-    pub fn new(version: Version, compressed: bool) -> Self {
+    pub const fn new(version: Version, compressed: bool) -> Self {
         Self {
             version,
             compressed,
@@ -80,19 +80,19 @@ impl FileHeaderWriter {
     }
 
     /// 배포용 문서로 설정합니다.
-    pub fn with_distribution(mut self, distribution: bool) -> Self {
+    pub const fn with_distribution(mut self, distribution: bool) -> Self {
         self.distribution = distribution;
         self
     }
 
     /// 스크립트 포함 여부를 설정합니다.
-    pub fn with_script(mut self, has_script: bool) -> Self {
+    pub const fn with_script(mut self, has_script: bool) -> Self {
         self.has_script = has_script;
         self
     }
 
     /// 문서 이력 존재 여부를 설정합니다.
-    pub fn with_document_history(mut self, has_history: bool) -> Self {
+    pub const fn with_document_history(mut self, has_history: bool) -> Self {
         self.has_document_history = has_history;
         self
     }
@@ -127,63 +127,27 @@ impl FileHeaderWriter {
         data
     }
 
-    fn build_properties(&self) -> u32 {
-        let mut props: u32 = 0;
+    const fn build_properties(&self) -> u32 {
+        let mut props = 0;
 
-        if self.compressed {
-            props |= 1 << 0;
-        }
-        if self.encrypted {
-            props |= 1 << 1;
-        }
-        if self.distribution {
-            props |= 1 << 2;
-        }
-        if self.has_script {
-            props |= 1 << 3;
-        }
-        if self.drm_protected {
-            props |= 1 << 4;
-        }
-        if self.has_xml_template {
-            props |= 1 << 5;
-        }
-        if self.has_document_history {
-            props |= 1 << 6;
-        }
-        if self.has_digital_signature {
-            props |= 1 << 7;
-        }
-        if self.certificate_encrypted {
-            props |= 1 << 8;
-        }
-        if self.signature_reserve {
-            props |= 1 << 9;
-        }
-        if self.certificate_drm {
-            props |= 1 << 10;
-        }
-        if self.ccl_document {
-            props |= 1 << 11;
-        }
-        if self.mobile_optimized {
-            props |= 1 << 12;
-        }
-        if self.privacy_protected {
-            props |= 1 << 13;
-        }
-        if self.track_changes {
-            props |= 1 << 14;
-        }
-        if self.kogl_document {
-            props |= 1 << 15;
-        }
-        if self.has_video_control {
-            props |= 1 << 16;
-        }
-        if self.has_toc_field {
-            props |= 1 << 17;
-        }
+        props |= (self.compressed as u32) << 0;
+        props |= (self.encrypted as u32) << 1;
+        props |= (self.distribution as u32) << 2;
+        props |= (self.has_script as u32) << 3;
+        props |= (self.drm_protected as u32) << 4;
+        props |= (self.has_xml_template as u32) << 5;
+        props |= (self.has_document_history as u32) << 6;
+        props |= (self.has_digital_signature as u32) << 7;
+        props |= (self.certificate_encrypted as u32) << 8;
+        props |= (self.signature_reserve as u32) << 9;
+        props |= (self.certificate_drm as u32) << 10;
+        props |= (self.ccl_document as u32) << 11;
+        props |= (self.mobile_optimized as u32) << 12;
+        props |= (self.privacy_protected as u32) << 13;
+        props |= (self.track_changes as u32) << 14;
+        props |= (self.kogl_document as u32) << 15;
+        props |= (self.has_video_control as u32) << 16;
+        props |= (self.has_toc_field as u32) << 17;
 
         props
     }

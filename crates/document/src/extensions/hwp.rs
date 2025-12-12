@@ -28,27 +28,27 @@ impl HwpExtension {
     }
 
     /// 암호화 여부
-    pub fn is_encrypted(&self) -> bool {
-        self.file_header
-            .as_ref()
-            .map(|h| h.flags.encrypted)
-            .unwrap_or(false)
+    pub const fn is_encrypted(&self) -> bool {
+        match &self.file_header {
+            Some(header) => header.flags.encrypted,
+            None => false,
+        }
     }
 
     /// 배포용 문서 여부
-    pub fn is_distributed(&self) -> bool {
-        self.file_header
-            .as_ref()
-            .map(|h| h.flags.distributed)
-            .unwrap_or(false)
+    pub const fn is_distributed(&self) -> bool {
+        match &self.file_header {
+            Some(header) => header.flags.distributed,
+            None => false,
+        }
     }
 
     /// 스크립트 포함 여부
-    pub fn has_scripts(&self) -> bool {
-        self.file_header
-            .as_ref()
-            .map(|h| h.flags.has_script)
-            .unwrap_or(false)
+    pub const fn has_scripts(&self) -> bool {
+        match &self.file_header {
+            Some(header) => header.flags.has_script,
+            None => false,
+        }
     }
 }
 
@@ -82,19 +82,23 @@ pub struct HwpVersion {
 
 impl HwpVersion {
     /// 5.0.0.0 이상인지 확인
-    pub fn is_5_0_or_later(&self) -> bool {
+    pub const fn is_5_0_or_later(&self) -> bool {
         self.major >= 5
     }
 
     /// 5.1.0.0 이상인지 확인 (HWPX 지원 시작)
-    pub fn is_5_1_or_later(&self) -> bool {
+    pub const fn is_5_1_or_later(&self) -> bool {
         self.major > 5 || (self.major == 5 && self.minor >= 1)
     }
 }
 
 impl std::fmt::Display for HwpVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}.{}", self.major, self.minor, self.build, self.revision)
+        write!(
+            f,
+            "{}.{}.{}.{}",
+            self.major, self.minor, self.build, self.revision
+        )
     }
 }
 

@@ -167,20 +167,6 @@ fn default_ratio() -> u8 {
     100
 }
 
-impl Default for LanguageRatio {
-    fn default() -> Self {
-        Self {
-            hangul: 100,
-            latin: 100,
-            hanja: 100,
-            japanese: 100,
-            other: 100,
-            symbol: 100,
-            user: 100,
-        }
-    }
-}
-
 /// [AI 생성] 언어별 자간
 ///
 /// 원본: `spacing` 요소의 익명 타입. 스크립트별 자간(%)을 지정합니다.
@@ -215,7 +201,6 @@ pub struct LanguageSpacing {
     #[serde(rename = "@user", default)]
     pub user: i8,
 }
-
 
 /// [AI 생성] 언어별 상대 크기
 ///
@@ -252,20 +237,6 @@ pub struct LanguageRelativeSize {
     pub user: u8,
 }
 
-impl Default for LanguageRelativeSize {
-    fn default() -> Self {
-        Self {
-            hangul: 100,
-            latin: 100,
-            hanja: 100,
-            japanese: 100,
-            other: 100,
-            symbol: 100,
-            user: 100,
-        }
-    }
-}
-
 /// [AI 생성] 언어별 오프셋
 ///
 /// 원본: `offset` 요소의 익명 타입. 스크립트별 수직 오프셋(%)을 지정합니다.
@@ -300,7 +271,6 @@ pub struct LanguageOffset {
     #[serde(rename = "@user", default)]
     pub user: i8,
 }
-
 
 /// [AI 생성] 밑줄 정보
 ///

@@ -5,8 +5,8 @@
 use crate::border_fill::BorderFill;
 use crate::char_shape::{CharShape, Font};
 use crate::para_shape::{ParaShape, TabDef};
-use primitive::{BorderFillId, CharShapeId, FontId, ParaShapeId, StyleId, StyleType, TabDefId};
 use primitive::{Alignment, NumberFormat};
+use primitive::{BorderFillId, CharShapeId, FontId, ParaShapeId, StyleId, StyleType, TabDefId};
 
 /// 스타일 정의
 #[derive(Debug, Clone)]
@@ -237,7 +237,7 @@ pub struct Bullet {
 
 impl Bullet {
     /// 글머리 기호 생성
-    pub fn new(char: char) -> Self {
+    pub const fn new(char: char) -> Self {
         Self {
             char,
             char_shape_id: None,

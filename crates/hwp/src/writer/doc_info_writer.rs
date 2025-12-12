@@ -324,7 +324,7 @@ impl DocInfoWriter {
     }
 
     /// 시작 페이지 번호를 설정합니다.
-    pub fn with_page_start_number(mut self, num: u16) -> Self {
+    pub const fn with_page_start_number(mut self, num: u16) -> Self {
         self.page_start_number = num;
         self
     }
@@ -694,12 +694,12 @@ impl DocInfoWriter {
         for level in &num.levels {
             // ParagraphHeadInfo 비트 필드 구성 (12 bytes)
             let mut properties: u32 = 0;
-            properties |= (level.alignment as u32) & 0x03;           // 비트 [1:0] 정렬
+            properties |= (level.alignment as u32) & 0x03; // 비트 [1:0] 정렬
             if level.use_instance_width {
-                properties |= 1 << 2;                                 // 비트 [2] 인스턴스 너비 사용
+                properties |= 1 << 2; // 비트 [2] 인스턴스 너비 사용
             }
             if level.auto_indent {
-                properties |= 1 << 3;                                 // 비트 [3] 자동 들여쓰기
+                properties |= 1 << 3; // 비트 [3] 자동 들여쓰기
             }
             properties |= ((level.number_format as u32) & 0x0F) << 12; // 비트 [15:12] 번호 형식
 
@@ -774,87 +774,6 @@ impl DocInfoWriter {
 
         let data_bytes = data.into_bytes();
         writer.write_record(RecordTagId::Style, 0, &data_bytes);
-    }
-}
-
-impl Default for DocInfoWriter {
-    fn default() -> Self {
-        Self::new(1)
-    }
-}
-
-impl Default for BorderFillData {
-    fn default() -> Self {
-        Self {
-            properties: 0,
-            left_border: BorderLine::default(),
-            right_border: BorderLine::default(),
-            top_border: BorderLine::default(),
-            bottom_border: BorderLine::default(),
-            diagonal: BorderLine::default(),
-            fill_type: 0,
-            background_color: 0xFFFFFF,
-        }
-    }
-}
-
-impl Default for CharShapeData {
-    fn default() -> Self {
-        Self {
-            font_ids: [0; 7],
-            font_ratios: [100; 7],
-            font_spacings: [0; 7],
-            relative_sizes: [100; 7],
-            positions: [0; 7],
-            font_size: 1000, // 10pt
-            properties: 0,
-            shadow_offset_x: 0,
-            shadow_offset_y: 0,
-            text_color: 0x000000,
-            underline_color: 0x000000,
-            shade_color: 0xFFFFFF,
-            shadow_color: 0x808080,
-            border_fill_id: None,
-            strikethrough_color: None,
-        }
-    }
-}
-
-impl Default for ParaShapeData {
-    fn default() -> Self {
-        Self {
-            properties1: 0,
-            margin_left: 0,
-            margin_right: 0,
-            indent: 0,
-            space_before: 0,
-            space_after: 0,
-            line_spacing: 160, // 160%
-            tab_def_id: 0,
-            numbering_bullet_id: 0,
-            border_fill_id: 0,
-            border_space_left: 0,
-            border_space_right: 0,
-            border_space_top: 0,
-            border_space_bottom: 0,
-            properties2: 0,
-            properties3: 0,
-            line_spacing2: 0,
-        }
-    }
-}
-
-impl Default for StyleData {
-    fn default() -> Self {
-        Self {
-            name: "바탕글".to_string(),
-            english_name: "Normal".to_string(),
-            style_type: 0, // 문단 스타일
-            next_style_id: 0,
-            lang_id: 0x0412, // Korean
-            para_shape_id: 0,
-            char_shape_id: 0,
-        }
     }
 }
 

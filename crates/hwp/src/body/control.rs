@@ -321,7 +321,7 @@ impl ControlId {
     }
 
     /// Returns the control type.
-    pub fn control_type(&self) -> ControlType {
+    pub const fn control_type(&self) -> ControlType {
         match *self {
             Self::SECTION_DEFINITION => ControlType::SectionDefinition,
             Self::COLUMN_DEFINITION => ControlType::ColumnDefinition,
@@ -342,20 +342,13 @@ impl ControlId {
             Self::HIDDEN_COMMENT => ControlType::HiddenComment,
             Self::TEXT_ART => ControlType::TextArt,
             Self::FORM_OBJECT => ControlType::FormObject,
-            _ => {
-                // Check if it's a field
-                let bytes = self.0.to_le_bytes();
-                if bytes[0] == b'%' {
-                    ControlType::Field
-                } else {
-                    ControlType::Unknown
-                }
-            }
+            _ if self.is_field() => ControlType::Field,
+            _ => ControlType::Unknown,
         }
     }
 
     /// Returns true if this is a field control.
-    pub fn is_field(&self) -> bool {
+    pub const fn is_field(&self) -> bool {
         let bytes = self.0.to_le_bytes();
         bytes[0] == b'%'
     }
@@ -382,7 +375,7 @@ pub struct Control {
 
 impl Control {
     /// Creates a new control.
-    pub fn new(id: ControlId) -> Self {
+    pub const fn new(id: ControlId) -> Self {
         Self {
             id,
             data: Vec::new(),
@@ -392,7 +385,7 @@ impl Control {
     }
 
     /// Creates a control with data.
-    pub fn with_data(id: ControlId, data: Vec<u8>) -> Self {
+    pub const fn with_data(id: ControlId, data: Vec<u8>) -> Self {
         Self {
             id,
             data,
@@ -407,7 +400,7 @@ impl Control {
     }
 
     /// Returns the control type.
-    pub fn control_type(&self) -> ControlType {
+    pub const fn control_type(&self) -> ControlType {
         self.id.control_type()
     }
 
@@ -444,7 +437,7 @@ impl Control {
     // === Convenience accessors for specific content types ===
 
     /// Returns the table content if this control contains a table.
-    pub fn as_table(&self) -> Option<&Table> {
+    pub const fn as_table(&self) -> Option<&Table> {
         match &self.content {
             Some(ControlContent::Table(table)) => Some(table),
             _ => None,
@@ -452,7 +445,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the table content.
-    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
+    pub const fn as_table_mut(&mut self) -> Option<&mut Table> {
         match &mut self.content {
             Some(ControlContent::Table(table)) => Some(table),
             _ => None,
@@ -460,7 +453,7 @@ impl Control {
     }
 
     /// Returns the shape content if this control contains a shape.
-    pub fn as_shape(&self) -> Option<&Shape> {
+    pub const fn as_shape(&self) -> Option<&Shape> {
         match &self.content {
             Some(ControlContent::Shape(shape)) => Some(shape),
             _ => None,
@@ -468,7 +461,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the shape content.
-    pub fn as_shape_mut(&mut self) -> Option<&mut Shape> {
+    pub const fn as_shape_mut(&mut self) -> Option<&mut Shape> {
         match &mut self.content {
             Some(ControlContent::Shape(shape)) => Some(shape),
             _ => None,
@@ -476,7 +469,7 @@ impl Control {
     }
 
     /// Returns the picture content if this control contains a picture.
-    pub fn as_picture(&self) -> Option<&Picture> {
+    pub const fn as_picture(&self) -> Option<&Picture> {
         match &self.content {
             Some(ControlContent::Picture(picture)) => Some(picture),
             _ => None,
@@ -484,7 +477,7 @@ impl Control {
     }
 
     /// Returns the equation content if this control contains an equation.
-    pub fn as_equation(&self) -> Option<&Equation> {
+    pub const fn as_equation(&self) -> Option<&Equation> {
         match &self.content {
             Some(ControlContent::Equation(equation)) => Some(equation),
             _ => None,
@@ -492,7 +485,7 @@ impl Control {
     }
 
     /// Returns the OLE object content if this control contains an OLE object.
-    pub fn as_ole_object(&self) -> Option<&OleObject> {
+    pub const fn as_ole_object(&self) -> Option<&OleObject> {
         match &self.content {
             Some(ControlContent::OleObject(ole)) => Some(ole),
             _ => None,
@@ -500,7 +493,7 @@ impl Control {
     }
 
     /// Returns the header content if this control contains a header.
-    pub fn as_header(&self) -> Option<&Header> {
+    pub const fn as_header(&self) -> Option<&Header> {
         match &self.content {
             Some(ControlContent::Header(header)) => Some(header),
             _ => None,
@@ -508,7 +501,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the header content.
-    pub fn as_header_mut(&mut self) -> Option<&mut Header> {
+    pub const fn as_header_mut(&mut self) -> Option<&mut Header> {
         match &mut self.content {
             Some(ControlContent::Header(header)) => Some(header),
             _ => None,
@@ -516,7 +509,7 @@ impl Control {
     }
 
     /// Returns the footer content if this control contains a footer.
-    pub fn as_footer(&self) -> Option<&Footer> {
+    pub const fn as_footer(&self) -> Option<&Footer> {
         match &self.content {
             Some(ControlContent::Footer(footer)) => Some(footer),
             _ => None,
@@ -524,7 +517,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the footer content.
-    pub fn as_footer_mut(&mut self) -> Option<&mut Footer> {
+    pub const fn as_footer_mut(&mut self) -> Option<&mut Footer> {
         match &mut self.content {
             Some(ControlContent::Footer(footer)) => Some(footer),
             _ => None,
@@ -532,7 +525,7 @@ impl Control {
     }
 
     /// Returns the footnote content if this control contains a footnote.
-    pub fn as_footnote(&self) -> Option<&Footnote> {
+    pub const fn as_footnote(&self) -> Option<&Footnote> {
         match &self.content {
             Some(ControlContent::Footnote(footnote)) => Some(footnote),
             _ => None,
@@ -540,7 +533,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the footnote content.
-    pub fn as_footnote_mut(&mut self) -> Option<&mut Footnote> {
+    pub const fn as_footnote_mut(&mut self) -> Option<&mut Footnote> {
         match &mut self.content {
             Some(ControlContent::Footnote(footnote)) => Some(footnote),
             _ => None,
@@ -548,7 +541,7 @@ impl Control {
     }
 
     /// Returns the endnote content if this control contains an endnote.
-    pub fn as_endnote(&self) -> Option<&Endnote> {
+    pub const fn as_endnote(&self) -> Option<&Endnote> {
         match &self.content {
             Some(ControlContent::Endnote(endnote)) => Some(endnote),
             _ => None,
@@ -556,7 +549,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the endnote content.
-    pub fn as_endnote_mut(&mut self) -> Option<&mut Endnote> {
+    pub const fn as_endnote_mut(&mut self) -> Option<&mut Endnote> {
         match &mut self.content {
             Some(ControlContent::Endnote(endnote)) => Some(endnote),
             _ => None,
@@ -564,7 +557,7 @@ impl Control {
     }
 
     /// Returns the hyperlink content if this control contains a hyperlink.
-    pub fn as_hyperlink(&self) -> Option<&Hyperlink> {
+    pub const fn as_hyperlink(&self) -> Option<&Hyperlink> {
         match &self.content {
             Some(ControlContent::Hyperlink(hyperlink)) => Some(hyperlink),
             _ => None,
@@ -572,7 +565,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the hyperlink content.
-    pub fn as_hyperlink_mut(&mut self) -> Option<&mut Hyperlink> {
+    pub const fn as_hyperlink_mut(&mut self) -> Option<&mut Hyperlink> {
         match &mut self.content {
             Some(ControlContent::Hyperlink(hyperlink)) => Some(hyperlink),
             _ => None,
@@ -580,7 +573,7 @@ impl Control {
     }
 
     /// Returns the field content if this control contains a field.
-    pub fn as_field(&self) -> Option<&Field> {
+    pub const fn as_field(&self) -> Option<&Field> {
         match &self.content {
             Some(ControlContent::Field(field)) => Some(field),
             _ => None,
@@ -588,7 +581,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the field content.
-    pub fn as_field_mut(&mut self) -> Option<&mut Field> {
+    pub const fn as_field_mut(&mut self) -> Option<&mut Field> {
         match &mut self.content {
             Some(ControlContent::Field(field)) => Some(field),
             _ => None,
@@ -596,7 +589,7 @@ impl Control {
     }
 
     /// Returns the text box content if this control contains a text box.
-    pub fn as_text_box(&self) -> Option<&TextBox> {
+    pub const fn as_text_box(&self) -> Option<&TextBox> {
         match &self.content {
             Some(ControlContent::TextBox(text_box)) => Some(text_box),
             _ => None,
@@ -604,7 +597,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the text box content.
-    pub fn as_text_box_mut(&mut self) -> Option<&mut TextBox> {
+    pub const fn as_text_box_mut(&mut self) -> Option<&mut TextBox> {
         match &mut self.content {
             Some(ControlContent::TextBox(text_box)) => Some(text_box),
             _ => None,
@@ -612,7 +605,7 @@ impl Control {
     }
 
     /// Returns the caption content if this control contains a caption.
-    pub fn as_caption(&self) -> Option<&Caption> {
+    pub const fn as_caption(&self) -> Option<&Caption> {
         match &self.content {
             Some(ControlContent::Caption(caption)) => Some(caption),
             _ => None,
@@ -620,7 +613,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the caption content.
-    pub fn as_caption_mut(&mut self) -> Option<&mut Caption> {
+    pub const fn as_caption_mut(&mut self) -> Option<&mut Caption> {
         match &mut self.content {
             Some(ControlContent::Caption(caption)) => Some(caption),
             _ => None,
@@ -628,7 +621,7 @@ impl Control {
     }
 
     /// Returns the memo content if this control contains a memo.
-    pub fn as_memo(&self) -> Option<&Memo> {
+    pub const fn as_memo(&self) -> Option<&Memo> {
         match &self.content {
             Some(ControlContent::Memo(memo)) => Some(memo),
             _ => None,
@@ -636,7 +629,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the memo content.
-    pub fn as_memo_mut(&mut self) -> Option<&mut Memo> {
+    pub const fn as_memo_mut(&mut self) -> Option<&mut Memo> {
         match &mut self.content {
             Some(ControlContent::Memo(memo)) => Some(memo),
             _ => None,
@@ -644,7 +637,7 @@ impl Control {
     }
 
     /// Returns the form object content if this control contains a form object.
-    pub fn as_form_object(&self) -> Option<&FormObject> {
+    pub const fn as_form_object(&self) -> Option<&FormObject> {
         match &self.content {
             Some(ControlContent::FormObject(form)) => Some(form),
             _ => None,
@@ -652,7 +645,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the form object content.
-    pub fn as_form_object_mut(&mut self) -> Option<&mut FormObject> {
+    pub const fn as_form_object_mut(&mut self) -> Option<&mut FormObject> {
         match &mut self.content {
             Some(ControlContent::FormObject(form)) => Some(form),
             _ => None,
@@ -660,7 +653,7 @@ impl Control {
     }
 
     /// Returns the text art content if this control contains text art.
-    pub fn as_text_art(&self) -> Option<&TextArt> {
+    pub const fn as_text_art(&self) -> Option<&TextArt> {
         match &self.content {
             Some(ControlContent::TextArt(art)) => Some(art),
             _ => None,
@@ -668,7 +661,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the text art content.
-    pub fn as_text_art_mut(&mut self) -> Option<&mut TextArt> {
+    pub const fn as_text_art_mut(&mut self) -> Option<&mut TextArt> {
         match &mut self.content {
             Some(ControlContent::TextArt(art)) => Some(art),
             _ => None,
@@ -676,7 +669,7 @@ impl Control {
     }
 
     /// Returns the chart content if this control contains a chart.
-    pub fn as_chart(&self) -> Option<&ChartData> {
+    pub const fn as_chart(&self) -> Option<&ChartData> {
         match &self.content {
             Some(ControlContent::Chart(chart)) => Some(chart),
             _ => None,
@@ -684,7 +677,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the chart content.
-    pub fn as_chart_mut(&mut self) -> Option<&mut ChartData> {
+    pub const fn as_chart_mut(&mut self) -> Option<&mut ChartData> {
         match &mut self.content {
             Some(ControlContent::Chart(chart)) => Some(chart),
             _ => None,
@@ -692,7 +685,7 @@ impl Control {
     }
 
     /// Returns the video content if this control contains a video.
-    pub fn as_video(&self) -> Option<&VideoData> {
+    pub const fn as_video(&self) -> Option<&VideoData> {
         match &self.content {
             Some(ControlContent::Video(video)) => Some(video),
             _ => None,
@@ -700,7 +693,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the video content.
-    pub fn as_video_mut(&mut self) -> Option<&mut VideoData> {
+    pub const fn as_video_mut(&mut self) -> Option<&mut VideoData> {
         match &mut self.content {
             Some(ControlContent::Video(video)) => Some(video),
             _ => None,
@@ -708,7 +701,7 @@ impl Control {
     }
 
     /// Returns the container content if this control contains grouped shapes.
-    pub fn as_container(&self) -> Option<&ShapeContainer> {
+    pub const fn as_container(&self) -> Option<&ShapeContainer> {
         match &self.content {
             Some(ControlContent::Container(container)) => Some(container),
             _ => None,
@@ -716,7 +709,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the container content.
-    pub fn as_container_mut(&mut self) -> Option<&mut ShapeContainer> {
+    pub const fn as_container_mut(&mut self) -> Option<&mut ShapeContainer> {
         match &mut self.content {
             Some(ControlContent::Container(container)) => Some(container),
             _ => None,
@@ -724,7 +717,7 @@ impl Control {
     }
 
     /// Returns the section definition content if this control contains a section definition.
-    pub fn as_section_definition(&self) -> Option<&SectionDefinition> {
+    pub const fn as_section_definition(&self) -> Option<&SectionDefinition> {
         match &self.content {
             Some(ControlContent::SectionDefinition(def)) => Some(def),
             _ => None,
@@ -732,7 +725,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the section definition content.
-    pub fn as_section_definition_mut(&mut self) -> Option<&mut SectionDefinition> {
+    pub const fn as_section_definition_mut(&mut self) -> Option<&mut SectionDefinition> {
         match &mut self.content {
             Some(ControlContent::SectionDefinition(def)) => Some(def),
             _ => None,
@@ -740,7 +733,7 @@ impl Control {
     }
 
     /// Returns the column definition content if this control contains a column definition.
-    pub fn as_column_definition(&self) -> Option<&ColumnDefinition> {
+    pub const fn as_column_definition(&self) -> Option<&ColumnDefinition> {
         match &self.content {
             Some(ControlContent::ColumnDefinition(def)) => Some(def),
             _ => None,
@@ -748,7 +741,7 @@ impl Control {
     }
 
     /// Returns a mutable reference to the column definition content.
-    pub fn as_column_definition_mut(&mut self) -> Option<&mut ColumnDefinition> {
+    pub const fn as_column_definition_mut(&mut self) -> Option<&mut ColumnDefinition> {
         match &mut self.content {
             Some(ControlContent::ColumnDefinition(def)) => Some(def),
             _ => None,

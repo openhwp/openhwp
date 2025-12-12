@@ -59,9 +59,4 @@ impl Document {
     pub fn add_binary_data(&mut self, path: String, data: Vec<u8>) {
         self.binary_data.insert(path, data);
     }
-
-    /// 섹션 수 반환
-    pub fn section_count(&self) -> usize {
-        self.sections.len()
-    }
 }

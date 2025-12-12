@@ -216,8 +216,10 @@ pub struct WarningCollector {
 
 impl WarningCollector {
     /// 새 수집기 생성
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            warnings: Vec::new(),
+        }
     }
 
     /// 경고 추가

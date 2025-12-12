@@ -83,7 +83,7 @@ pub struct Footnote {
 
 impl Footnote {
     /// Creates a new footnote.
-    pub fn new(number: u16) -> Self {
+    pub const fn new(number: u16) -> Self {
         Self {
             number,
             paragraphs: Vec::new(),
@@ -131,7 +131,7 @@ pub struct Endnote {
 
 impl Endnote {
     /// Creates a new endnote.
-    pub fn new(number: u16) -> Self {
+    pub const fn new(number: u16) -> Self {
         Self {
             number,
             paragraphs: Vec::new(),
@@ -209,11 +209,6 @@ pub struct FootnoteShape {
 }
 
 impl FootnoteShape {
-    /// Creates a new footnote shape with default values.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Parses footnote shape from reader.
     ///
     /// Format (per HWP spec 5.0 - HWPTAG_FOOTNOTE_SHAPE, 표 133):
@@ -241,7 +236,11 @@ impl FootnoteShape {
         let custom_symbol = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -253,7 +252,11 @@ impl FootnoteShape {
         let prefix = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -265,7 +268,11 @@ impl FootnoteShape {
         let suffix = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -385,11 +392,6 @@ pub struct EndnoteShape {
 }
 
 impl EndnoteShape {
-    /// Creates a new endnote shape with default values.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Parses endnote shape from reader (same format as FootnoteShape).
     pub fn from_reader(reader: &mut ByteReader) -> Result<Self> {
         let properties = reader.read_u32()?;
@@ -402,7 +404,11 @@ impl EndnoteShape {
         let custom_symbol = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -414,7 +420,11 @@ impl EndnoteShape {
         let prefix = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -426,7 +436,11 @@ impl EndnoteShape {
         let suffix = if reader.remaining() >= 2 {
             let ch = reader.read_u16()?;
             if ch != 0 {
-                Some(char::from_u32(ch as u32).map(|c| c.to_string()).unwrap_or_default())
+                Some(
+                    char::from_u32(ch as u32)
+                        .map(|c| c.to_string())
+                        .unwrap_or_default(),
+                )
             } else {
                 None
             }
@@ -506,10 +520,22 @@ mod tests {
     #[test]
     fn test_note_numbering_type() {
         assert_eq!(NoteNumberingType::from_raw(0), NoteNumberingType::Arabic);
-        assert_eq!(NoteNumberingType::from_raw(1), NoteNumberingType::UpperRoman);
-        assert_eq!(NoteNumberingType::from_raw(2), NoteNumberingType::LowerRoman);
-        assert_eq!(NoteNumberingType::from_raw(3), NoteNumberingType::UpperAlpha);
-        assert_eq!(NoteNumberingType::from_raw(4), NoteNumberingType::LowerAlpha);
+        assert_eq!(
+            NoteNumberingType::from_raw(1),
+            NoteNumberingType::UpperRoman
+        );
+        assert_eq!(
+            NoteNumberingType::from_raw(2),
+            NoteNumberingType::LowerRoman
+        );
+        assert_eq!(
+            NoteNumberingType::from_raw(3),
+            NoteNumberingType::UpperAlpha
+        );
+        assert_eq!(
+            NoteNumberingType::from_raw(4),
+            NoteNumberingType::LowerAlpha
+        );
     }
 
     #[test]
@@ -548,7 +574,7 @@ mod tests {
 
     #[test]
     fn test_footnote_shape_new() {
-        let shape = FootnoteShape::new();
+        let shape = FootnoteShape::default();
         assert_eq!(shape.numbering_type, NoteNumberingType::Arabic);
         assert_eq!(shape.placement, NotePlacement::EndOfPage);
         assert_eq!(shape.start_number, 0);
@@ -556,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_endnote_shape_new() {
-        let shape = EndnoteShape::new();
+        let shape = EndnoteShape::default();
         assert_eq!(shape.numbering_type, NoteNumberingType::Arabic);
         assert_eq!(shape.placement, NotePlacement::EndOfPage);
         assert_eq!(shape.start_number, 0);

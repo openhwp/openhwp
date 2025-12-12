@@ -95,7 +95,7 @@ pub struct TableRow {
 
 impl TableRow {
     /// 빈 행 생성
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             height: HwpUnit::ZERO,
             cells: Vec::new(),
@@ -174,7 +174,7 @@ impl TableCell {
     }
 
     /// 셀이 병합 셀의 시작점인지 확인
-    pub fn is_merge_origin(&self) -> bool {
+    pub const fn is_merge_origin(&self) -> bool {
         self.column_span > 1 || self.row_span > 1
     }
 }

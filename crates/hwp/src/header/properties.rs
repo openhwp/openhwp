@@ -224,12 +224,6 @@ impl EncryptionVersion {
     }
 }
 
-impl Default for EncryptionVersion {
-    fn default() -> Self {
-        Self::None
-    }
-}
-
 /// KOGL (Korea Open Government License) country code.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KoglCountry {
@@ -258,12 +252,6 @@ impl KoglCountry {
             Self::UnitedStates => 15,
             Self::Unknown(v) => v,
         }
-    }
-}
-
-impl Default for KoglCountry {
-    fn default() -> Self {
-        Self::Korea
     }
 }
 

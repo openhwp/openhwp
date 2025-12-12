@@ -101,11 +101,6 @@ pub struct ExtendedProperties {
 }
 
 impl FormObject {
-    /// Creates a new form object.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Creates a form object with type and name.
     pub fn with_type_and_name(object_type: FormObjectType, name: String) -> Self {
         Self {
@@ -206,11 +201,7 @@ impl FormObject {
         };
 
         // Parse extended properties based on form type
-        let extended_properties = Self::parse_extended_properties(
-            object_type,
-            properties,
-            reader,
-        )?;
+        let extended_properties = Self::parse_extended_properties(object_type, properties, reader)?;
 
         Ok(Self {
             object_type,
@@ -439,7 +430,7 @@ mod tests {
 
     #[test]
     fn test_form_object_new() {
-        let form = FormObject::new();
+        let form = FormObject::default();
         assert_eq!(form.object_type(), FormObjectType::Unknown);
         assert_eq!(form.name(), "");
         assert_eq!(form.default_value(), "");
@@ -448,14 +439,15 @@ mod tests {
 
     #[test]
     fn test_form_object_with_type_and_name() {
-        let form = FormObject::with_type_and_name(FormObjectType::TextField, "username".to_string());
+        let form =
+            FormObject::with_type_and_name(FormObjectType::TextField, "username".to_string());
         assert_eq!(form.object_type(), FormObjectType::TextField);
         assert_eq!(form.name(), "username");
     }
 
     #[test]
     fn test_form_object_setters() {
-        let mut form = FormObject::new();
+        let mut form = FormObject::default();
         form.set_default_value("default".to_string());
         form.set_tab_order(5);
         assert_eq!(form.default_value(), "default");

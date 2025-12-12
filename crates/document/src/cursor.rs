@@ -2,7 +2,6 @@
 //!
 //! 문서 내 위치 추적 및 선택 영역을 관리합니다.
 
-
 /// 문서 내 위치
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Position {
@@ -18,7 +17,7 @@ pub struct Position {
 
 impl Position {
     /// 새 위치 생성
-    pub fn new(section: usize, paragraph: usize, run: usize, offset: usize) -> Self {
+    pub const fn new(section: usize, paragraph: usize, run: usize, offset: usize) -> Self {
         Self {
             section_index: section,
             paragraph_index: paragraph,
@@ -67,7 +66,7 @@ impl Cursor {
     }
 
     /// 특정 위치에 커서 생성
-    pub fn at(position: Position) -> Self {
+    pub const fn at(position: Position) -> Self {
         Self {
             position,
             anchor: None,
@@ -75,7 +74,7 @@ impl Cursor {
     }
 
     /// 현재 위치 반환
-    pub fn position(&self) -> Position {
+    pub const fn position(&self) -> Position {
         self.position
     }
 
@@ -122,7 +121,7 @@ impl Cursor {
 
     /// 선택 영역이 있는지 확인
     pub fn has_selection(&self) -> bool {
-        self.anchor.is_some() && self.anchor != Some(self.position)
+        self.anchor != Some(self.position)
     }
 
     /// 커서를 문자 단위로 이동
@@ -154,7 +153,9 @@ impl Cursor {
         };
 
         // 현재 런에서 이동 가능한지 확인
-        if let Some(run) = para.runs.get(self.position.run_index)
+        if let Some(run) = para
+            .runs
+            .get(self.position.run_index)
             .and_then(|&run_id| doc.arena.get_run(run_id))
         {
             let run_len = run.text_length();
@@ -200,9 +201,17 @@ impl Cursor {
         if self.position.run_index > 0 {
             self.position.run_index -= 1;
             // 이전 런의 끝으로 이동
-            if let Some(run_len) = doc.sections.get(self.position.section_index).copied()
+            if let Some(run_len) = doc
+                .sections
+                .get(self.position.section_index)
+                .copied()
                 .and_then(|section_id| doc.arena.get_section(section_id))
-                .and_then(|section| section.paragraphs.get(self.position.paragraph_index).copied())
+                .and_then(|section| {
+                    section
+                        .paragraphs
+                        .get(self.position.paragraph_index)
+                        .copied()
+                })
                 .and_then(|para_id| doc.arena.get_paragraph(para_id))
                 .and_then(|para| para.runs.get(self.position.run_index).copied())
                 .and_then(|run_id| doc.arena.get_run(run_id))
@@ -216,13 +225,24 @@ impl Cursor {
         // 이전 문단으로 이동
         if self.position.paragraph_index > 0 {
             self.position.paragraph_index -= 1;
-            if let Some(para) = doc.sections.get(self.position.section_index).copied()
+            if let Some(para) = doc
+                .sections
+                .get(self.position.section_index)
+                .copied()
                 .and_then(|section_id| doc.arena.get_section(section_id))
-                .and_then(|section| section.paragraphs.get(self.position.paragraph_index).copied())
+                .and_then(|section| {
+                    section
+                        .paragraphs
+                        .get(self.position.paragraph_index)
+                        .copied()
+                })
                 .and_then(|para_id| doc.arena.get_paragraph(para_id))
             {
                 self.position.run_index = para.runs.len().saturating_sub(1);
-                if let Some(run_len) = para.runs.get(self.position.run_index).copied()
+                if let Some(run_len) = para
+                    .runs
+                    .get(self.position.run_index)
+                    .copied()
                     .and_then(|run_id| doc.arena.get_run(run_id))
                     .map(|run| run.text_length())
                 {
@@ -235,15 +255,24 @@ impl Cursor {
         // 이전 섹션으로 이동
         if self.position.section_index > 0 {
             self.position.section_index -= 1;
-            if let Some(section) = doc.sections.get(self.position.section_index).copied()
+            if let Some(section) = doc
+                .sections
+                .get(self.position.section_index)
+                .copied()
                 .and_then(|section_id| doc.arena.get_section(section_id))
             {
                 self.position.paragraph_index = section.paragraphs.len().saturating_sub(1);
-                if let Some(para) = section.paragraphs.get(self.position.paragraph_index).copied()
+                if let Some(para) = section
+                    .paragraphs
+                    .get(self.position.paragraph_index)
+                    .copied()
                     .and_then(|para_id| doc.arena.get_paragraph(para_id))
                 {
                     self.position.run_index = para.runs.len().saturating_sub(1);
-                    if let Some(run_len) = para.runs.get(self.position.run_index).copied()
+                    if let Some(run_len) = para
+                        .runs
+                        .get(self.position.run_index)
+                        .copied()
                         .and_then(|run_id| doc.arena.get_run(run_id))
                         .map(|run| run.text_length())
                     {
@@ -262,13 +291,24 @@ impl Cursor {
 
     /// 문단 끝으로 이동
     pub fn move_to_paragraph_end(&mut self, doc: &crate::Document) {
-        if let Some(para) = doc.sections.get(self.position.section_index).copied()
+        if let Some(para) = doc
+            .sections
+            .get(self.position.section_index)
+            .copied()
             .and_then(|section_id| doc.arena.get_section(section_id))
-            .and_then(|section| section.paragraphs.get(self.position.paragraph_index).copied())
+            .and_then(|section| {
+                section
+                    .paragraphs
+                    .get(self.position.paragraph_index)
+                    .copied()
+            })
             .and_then(|para_id| doc.arena.get_paragraph(para_id))
         {
             self.position.run_index = para.runs.len().saturating_sub(1);
-            if let Some(run_len) = para.runs.get(self.position.run_index).copied()
+            if let Some(run_len) = para
+                .runs
+                .get(self.position.run_index)
+                .copied()
                 .and_then(|run_id| doc.arena.get_run(run_id))
                 .map(|run| run.text_length())
             {
@@ -290,7 +330,10 @@ impl Cursor {
         }
 
         self.position.section_index = doc.sections.len() - 1;
-        if let Some(section) = doc.sections.get(self.position.section_index).copied()
+        if let Some(section) = doc
+            .sections
+            .get(self.position.section_index)
+            .copied()
             .and_then(|section_id| doc.arena.get_section(section_id))
         {
             self.position.paragraph_index = section.paragraphs.len().saturating_sub(1);

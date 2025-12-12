@@ -2,6 +2,8 @@
 //!
 //! Defines paragraph formatting including margins, alignment, and spacing.
 
+pub use primitive::HeadingType;
+
 use crate::error::Result;
 use crate::util::ByteReader;
 
@@ -109,8 +111,6 @@ impl VerticalAlignment {
         }
     }
 }
-
-pub use primitive::HeadingType;
 
 /// HeadingType raw 값 파싱 헬퍼
 pub const fn heading_type_from_raw(value: u32) -> HeadingType {

@@ -50,7 +50,7 @@ impl Document {
     }
 
     /// 섹션 수 반환
-    pub fn section_count(&self) -> usize {
+    pub const fn section_count(&self) -> usize {
         self.sections.len()
     }
 
@@ -166,7 +166,10 @@ mod tests {
         // 런 추가
         let run = Run::with_text("Hello, World!");
         let run_id = doc.arena.insert_run(run);
-        doc.arena.get_paragraph_mut(para_id).unwrap().add_run(run_id);
+        doc.arena
+            .get_paragraph_mut(para_id)
+            .unwrap()
+            .add_run(run_id);
 
         // 섹션을 문서에 추가
         doc.add_section(section);

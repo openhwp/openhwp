@@ -5,83 +5,79 @@
 //! 스타일 정보(폰트, 글자 모양, 문단 모양, 테두리/채우기, 스타일)를
 //! 모두 IR로 변환하여 완전한 문서 표현을 제공합니다.
 
-use crate::body::{
-    Control, ControlContent, ControlType, Table as HwpTable, TableCell as HwpTableCell, CellPadding,
-    Picture as HwpPicture, ImageFlip as HwpImageFlip, PictureEffectType,
-    Equation as HwpEquation,
-    Header as HwpHeader, Footer as HwpFooter, Footnote as HwpFootnote, Endnote as HwpEndnote,
-    Hyperlink as HwpHyperlink, HyperlinkType as HwpHyperlinkType, NoteNumberingType,
-    Shape as HwpShape, ShapeType as HwpShapeType,
-    ArcType as HwpArcType, CurveSegmentType as HwpCurveSegmentType,
-    Point as HwpPoint, ShapeBorderLine, ArrowType as HwpArrowType, ArrowSize as HwpArrowSize,
-    VideoData as HwpVideoData, OleObject as HwpOleObject, ChartData as HwpChartData,
-    FormObject as HwpFormObject, FormObjectType as HwpFormObjectType,
-    TextArt as HwpTextArt, TextArtShape as HwpTextArtShape, TextArtAlignment as HwpTextArtAlignment,
-    Field as HwpField, FieldType as HwpFieldType,
-    ShapeContainer as HwpShapeContainer,
-    Caption as HwpCaption, CaptionDirection as HwpCaptionDirection,
-};
+use super::{ColorConvert, ToIrContext};
+use crate::HwpDocument;
 use crate::body::control_data::ControlData;
+use crate::body::{
+    ArcType as HwpArcType, ArrowSize as HwpArrowSize, ArrowType as HwpArrowType,
+    Caption as HwpCaption, CaptionDirection as HwpCaptionDirection, CellPadding,
+    ChartData as HwpChartData, Control, ControlContent, ControlType,
+    CurveSegmentType as HwpCurveSegmentType, Endnote as HwpEndnote, Equation as HwpEquation,
+    Field as HwpField, FieldType as HwpFieldType, Footer as HwpFooter, Footnote as HwpFootnote,
+    FormObject as HwpFormObject, FormObjectType as HwpFormObjectType, Header as HwpHeader,
+    Hyperlink as HwpHyperlink, HyperlinkType as HwpHyperlinkType, ImageFlip as HwpImageFlip,
+    NoteNumberingType, OleObject as HwpOleObject, Picture as HwpPicture, PictureEffectType,
+    Point as HwpPoint, Shape as HwpShape, ShapeBorderLine, ShapeContainer as HwpShapeContainer,
+    ShapeType as HwpShapeType, Table as HwpTable, TableCell as HwpTableCell, TextArt as HwpTextArt,
+    TextArtAlignment as HwpTextArtAlignment, TextArtShape as HwpTextArtShape,
+    VideoData as HwpVideoData,
+};
 use crate::doc_info::{
     Alignment as HwpAlignment, BorderFill as HwpBorderFill, BreakLatinWord, BreakNonLatinWord,
     CharacterShape, FaceName, LineSpacingType as HwpLineSpacingType, ParagraphShape,
     Style as HwpStyle, VerticalAlignment as HwpVerticalAlignment,
 };
-use crate::HwpDocument;
-use primitive::{
-    Alignment, ArrowSize as IrArrowSize, ArrowType as IrArrowType, EmphasisType,
-    FieldType as IrFieldType, HeaderFooterApplyTo, HeadingType as IrHeadingType,
-    HorizontalRelativeTo as IrHorizontalRelativeTo,
-    ImageEffect, LineCap as IrLineCap, LineBreakKorean, LineBreakLatin, LineType as IrLineType,
-    NumberFormat, OutlineType, ShadowType, StrikethroughType, StyleType as IrStyleType,
-    TabLeader as IrTabLeader, TabType as IrTabType,
-    TextWrapSide as IrTextWrapSide, TextWrapType as IrTextWrapType,
-    UnderlinePosition, UnderlineType, VerticalAlignment,
-    VerticalRelativeTo as IrVerticalRelativeTo,
-    BorderFillId, CharShapeId, Color, FontId, HwpUnit, Insets, ParaShapeId, Percent,
-    Point as IrPoint, Size, StyleId,
-};
 use ir::{
-    char_shape::{CharShape, EmphasisStyle, Font, FontFamily, FontRef, FontSet, ShadowStyle, UnderlineStyle},
-    control::{
-        AutoNumber as IrAutoNumber, AutoNumberType as IrAutoNumberType,
-        Bookmark as IrBookmark, Control as IrControl, Equation as IrEquation, EquationFormat,
-        HeaderFooterControl, HiddenComment as IrHiddenComment, Hyperlink as IrHyperlink,
-        HyperlinkTarget, NewNumber as IrNewNumber, Note as IrNote, ObjectCommon,
-        TextWrap as IrTextWrap,
-        Video as IrVideo, VideoType as IrVideoType, OleObject as IrOleObject, Chart as IrChart, ChartType as IrChartType,
-        FormObject as IrFormObject, FormObjectType as IrFormObjectType,
-        TextArt as IrTextArt, TextArtFontStyle as IrTextArtFontStyle,
-        TextArtShapeType as IrTextArtShapeType, TextArtAlignment as IrTextArtAlignment,
-        Caption as IrCaption, CaptionPosition as IrCaptionPosition,
-    },
-    paragraph::{FieldStart as IrFieldStart, FieldEnd as IrFieldEnd},
-    para_shape::{LineSpacing, LineSpacingType, LineSpacingValue, ParaShape, TabDef},
-    picture::{ImageCrop as IrImageCrop, Picture as IrPicture, PictureBorder},
-    shape::{
-        Shape as IrShape, ShapeType as IrShapeType, LineShape as IrLineShape,
-        RectangleShape as IrRectangleShape, EllipseShape as IrEllipseShape,
-        ArcShape as IrArcShape, ArcType as IrArcType, PolygonShape as IrPolygonShape,
-        CurveShape as IrCurveShape, CurvePoint as IrCurvePoint, CurvePointType as IrCurvePointType,
-        LineStyle as IrLineStyle, Arrow as IrArrow, ShapeShadow as IrShapeShadow,
-    },
-    style::{Bullet as IrBullet, Numbering as IrNumbering, NumberingLevel as IrNumberingLevel, Style, StyleStore},
-    table::{Table as IrTable, TableRow as IrTableRow, TableCell as IrTableCell, TableZone as IrTableZone},
     BinaryData, BinaryDataId, BinaryDataStore, BinaryFormat, ConversionError, ConversionResult,
     Document as IrDocument, Extensions, HwpExtensions, Metadata, Paragraph as IrParagraph,
     Run as IrRun, Section as IrSection,
+    char_shape::{
+        CharShape, EmphasisStyle, Font, FontFamily, FontRef, FontSet, ShadowStyle, UnderlineStyle,
+    },
+    control::{
+        AutoNumber as IrAutoNumber, AutoNumberType as IrAutoNumberType, Bookmark as IrBookmark,
+        Caption as IrCaption, CaptionPosition as IrCaptionPosition, Chart as IrChart,
+        ChartType as IrChartType, Control as IrControl, Equation as IrEquation, EquationFormat,
+        FormObject as IrFormObject, FormObjectType as IrFormObjectType, HeaderFooterControl,
+        HiddenComment as IrHiddenComment, Hyperlink as IrHyperlink, HyperlinkTarget,
+        NewNumber as IrNewNumber, Note as IrNote, ObjectCommon, OleObject as IrOleObject,
+        TextArt as IrTextArt, TextArtAlignment as IrTextArtAlignment,
+        TextArtFontStyle as IrTextArtFontStyle, TextArtShapeType as IrTextArtShapeType,
+        TextWrap as IrTextWrap, Video as IrVideo, VideoType as IrVideoType,
+    },
+    para_shape::{LineSpacing, LineSpacingType, LineSpacingValue, ParaShape, TabDef},
+    paragraph::{FieldEnd as IrFieldEnd, FieldStart as IrFieldStart},
+    picture::{ImageCrop as IrImageCrop, Picture as IrPicture, PictureBorder},
+    shape::{
+        ArcShape as IrArcShape, ArcType as IrArcType, Arrow as IrArrow, CurvePoint as IrCurvePoint,
+        CurvePointType as IrCurvePointType, CurveShape as IrCurveShape,
+        EllipseShape as IrEllipseShape, LineShape as IrLineShape, LineStyle as IrLineStyle,
+        PolygonShape as IrPolygonShape, RectangleShape as IrRectangleShape, Shape as IrShape,
+        ShapeShadow as IrShapeShadow, ShapeType as IrShapeType,
+    },
+    style::{
+        Bullet as IrBullet, Numbering as IrNumbering, NumberingLevel as IrNumberingLevel, Style,
+        StyleStore,
+    },
+    table::{
+        Table as IrTable, TableCell as IrTableCell, TableRow as IrTableRow,
+        TableZone as IrTableZone,
+    },
+};
+use primitive::{
+    Alignment, ArrowSize as IrArrowSize, ArrowType as IrArrowType, BorderFillId, CharShapeId,
+    Color, EmphasisType, FieldType as IrFieldType, FontId, HeaderFooterApplyTo,
+    HeadingType as IrHeadingType, HorizontalRelativeTo as IrHorizontalRelativeTo, HwpUnit,
+    ImageEffect, Insets, LineBreakKorean, LineBreakLatin, LineCap as IrLineCap,
+    LineType as IrLineType, NumberFormat, OutlineType, ParaShapeId, Percent, Point as IrPoint,
+    ShadowType, Size, StrikethroughType, StyleId, StyleType as IrStyleType,
+    TabLeader as IrTabLeader, TabType as IrTabType, TextWrapSide as IrTextWrapSide,
+    TextWrapType as IrTextWrapType, UnderlinePosition, UnderlineType, VerticalAlignment,
+    VerticalRelativeTo as IrVerticalRelativeTo,
 };
 
-use super::{ColorConvert, ToIrContext};
-
-/// HWP → IR 변환 트레이트
-pub trait HwpToIr {
-    /// IR 문서로 변환
-    fn to_ir(&self) -> Result<ConversionResult<IrDocument>, ConversionError>;
-}
-
-impl HwpToIr for HwpDocument {
-    fn to_ir(&self) -> Result<ConversionResult<IrDocument>, ConversionError> {
+impl HwpDocument {
+    pub fn to_ir(&self) -> Result<ConversionResult<IrDocument>, ConversionError> {
         let mut ctx = ToIrContext::new();
         let doc = convert_document(self, &mut ctx)?;
         Ok(ctx.warnings.into_result(doc))
@@ -103,8 +99,8 @@ fn convert_document(
 
     // 섹션 변환
     for section in hwp.sections() {
-        let ir_section = convert_section(section, &mut doc)?;
-        doc.sections.push(ir_section);
+        let section = convert_section(section, &mut doc)?;
+        doc.sections.push(section);
     }
 
     // 바이너리 데이터 변환
@@ -122,16 +118,16 @@ fn convert_metadata(hwp: &HwpDocument) -> Metadata {
 
     // Public API를 통해 접근 가능한 메타데이터
     if let Some(title) = hwp.title() {
-        metadata.title = Some(title.to_string());
+        metadata.title = Some(title.to_owned());
     }
     if let Some(author) = hwp.author() {
-        metadata.author = Some(author.to_string());
+        metadata.author = Some(author.to_owned());
     }
     if let Some(subject) = hwp.subject() {
-        metadata.subject = Some(subject.to_string());
+        metadata.subject = Some(subject.to_owned());
     }
     if let Some(keywords) = hwp.keywords() {
-        metadata.keywords = keywords.split(',').map(|s| s.trim().to_string()).collect();
+        metadata.keywords = keywords.split(',').map(|s| s.trim().to_owned()).collect();
     }
 
     // 버전 정보
@@ -147,37 +143,35 @@ fn convert_metadata(hwp: &HwpDocument) -> Metadata {
 }
 
 /// 스타일 저장소 변환
-fn convert_styles(hwp: &HwpDocument, _ctx: &mut ToIrContext) -> Result<StyleStore, ConversionError> {
+fn convert_styles(
+    hwp: &HwpDocument,
+    _ctx: &mut ToIrContext,
+) -> Result<StyleStore, ConversionError> {
     let mut store = StyleStore::new();
 
     // 폰트 변환
     for face in hwp.font_faces() {
-        let ir_font = convert_font_face(face);
-        store.fonts.push(ir_font);
+        store.fonts.push(convert_font_face(face));
     }
 
     // 글자 모양 변환
     for shape in hwp.character_shapes() {
-        let ir_shape = convert_char_shape(shape);
-        store.char_shapes.push(ir_shape);
+        store.char_shapes.push(convert_char_shape(shape));
     }
 
     // 문단 모양 변환
     for shape in hwp.paragraph_shapes() {
-        let ir_shape = convert_para_shape(shape);
-        store.para_shapes.push(ir_shape);
+        store.para_shapes.push(convert_para_shape(shape));
     }
 
     // 테두리/채우기 변환
     for bf in hwp.border_fills() {
-        let ir_bf = convert_border_fill(bf);
-        store.border_fills.push(ir_bf);
+        store.border_fills.push(convert_border_fill(bf));
     }
 
     // 스타일 변환
     for style in hwp.styles() {
-        let ir_style = convert_style(style);
-        store.styles.push(ir_style);
+        store.styles.push(convert_style(style));
     }
 
     // 탭 정의 변환
@@ -315,10 +309,12 @@ fn convert_char_shape(shape: &CharacterShape) -> CharShape {
     };
 
     // 장평 (첫 번째 언어의 width_ratio 사용)
-    ir_shape.char_scale = Percent::new(shape.width_ratio(crate::doc_info::LanguageType::Korean) as f64);
+    ir_shape.char_scale =
+        Percent::new(shape.width_ratio(crate::doc_info::LanguageType::Korean) as f64);
 
     // 자간 (첫 번째 언어의 spacing 사용)
-    ir_shape.char_spacing = Percent::new(shape.spacing(crate::doc_info::LanguageType::Korean) as f64);
+    ir_shape.char_spacing =
+        Percent::new(shape.spacing(crate::doc_info::LanguageType::Korean) as f64);
 
     // 폰트 설정 (각 언어별)
     let mut fonts = FontSet::default();
@@ -330,7 +326,10 @@ fn convert_char_shape(shape: &CharacterShape) -> CharShape {
         crate::doc_info::LanguageType::Other,
         crate::doc_info::LanguageType::Symbol,
         crate::doc_info::LanguageType::User,
-    ].iter().enumerate() {
+    ]
+    .iter()
+    .enumerate()
+    {
         let font_id = shape.font_id(lang);
         let font_ref = FontRef {
             id: FontId::new(font_id as u32),
@@ -356,11 +355,19 @@ fn convert_char_shape(shape: &CharacterShape) -> CharShape {
     // 글자 배경색 (shade_color가 흰색이 아닌 경우에만 설정)
     let shade_color = shape.shade_color();
     if shade_color.red() != 255 || shade_color.green() != 255 || shade_color.blue() != 255 {
-        ir_shape.background_color = Some(Color::rgb(shade_color.red(), shade_color.green(), shade_color.blue()));
+        ir_shape.background_color = Some(Color::rgb(
+            shade_color.red(),
+            shade_color.green(),
+            shade_color.blue(),
+        ));
     }
 
     // 음영 색상 (shade_color를 그대로 저장)
-    ir_shape.shade_color = Some(Color::rgb(shade_color.red(), shade_color.green(), shade_color.blue()));
+    ir_shape.shade_color = Some(Color::rgb(
+        shade_color.red(),
+        shade_color.green(),
+        shade_color.blue(),
+    ));
 
     // 테두리/배경 참조 ID
     if let Some(border_fill_id) = shape.border_fill_id() {
@@ -467,7 +474,9 @@ fn convert_para_shape(shape: &ParagraphShape) -> ParaShape {
         let numbering_bullet_id = shape.numbering_bullet_id();
         ir_shape.numbering = Some(ir::para_shape::ParagraphNumbering {
             heading_type: heading_type_ir,
-            numbering_id: if heading_type_ir == IrHeadingType::Number || heading_type_ir == IrHeadingType::Outline {
+            numbering_id: if heading_type_ir == IrHeadingType::Number
+                || heading_type_ir == IrHeadingType::Outline
+            {
                 if numbering_bullet_id > 0 {
                     Some(numbering_bullet_id as u32)
                 } else {
@@ -569,7 +578,9 @@ fn convert_numbering(numbering: &crate::doc_info::Numbering) -> IrNumbering {
     IrNumbering {
         name: None, // HWP 번호 매기기에는 이름이 없음
         levels,
-        start_number: numbering.levels().first()
+        start_number: numbering
+            .levels()
+            .first()
             .map(|l| l.start_number)
             .unwrap_or(1),
     }
@@ -584,7 +595,8 @@ fn convert_bullet(bullet: &crate::doc_info::Bullet) -> IrBullet {
         } else {
             None
         },
-        is_checkbox: bullet.check_bullet_char() != '\0' && bullet.check_bullet_char() != bullet.bullet_char(),
+        is_checkbox: bullet.check_bullet_char() != '\0'
+            && bullet.check_bullet_char() != bullet.bullet_char(),
     }
 }
 
@@ -614,16 +626,16 @@ fn convert_hwp_number_format(format: u8) -> NumberFormat {
 /// FillInfo를 IR Fill로 변환
 fn convert_fill_info(fill_info: &crate::doc_info::FillInfo) -> ir::border_fill::Fill {
     use crate::doc_info::{
-        FillInfo, PatternType as HwpPatternType,
-        GradientType as HwpGradientType, ImageFillType as HwpImageFillType,
+        FillInfo, GradientType as HwpGradientType, ImageFillType as HwpImageFillType,
+        PatternType as HwpPatternType,
     };
     use ir::border_fill::{
-        Fill, SolidFill, GradientFill, ImageFill, PatternFill,
-        GradientStop, PatternType as IrPatternType,
+        Fill, GradientFill, GradientStop, ImageFill, PatternFill, PatternType as IrPatternType,
+        SolidFill,
     };
-    use primitive::{GradientType as IrGradientType, ImageFillMode};
-    use primitive::Color;
     use primitive::BinaryDataId;
+    use primitive::Color;
+    use primitive::{GradientType as IrGradientType, ImageFillMode};
 
     // 색상 변환 헬퍼
     let convert_color = |color: crate::primitive::ColorReference| -> Color {
@@ -669,7 +681,10 @@ fn convert_fill_info(fill_info: &crate::doc_info::FillInfo) -> ir::border_fill::
                 HwpGradientType::Rectangular => IrGradientType::Square,
             };
 
-            let stops: Vec<GradientStop> = gradient.colors.iter().enumerate()
+            let stops: Vec<GradientStop> = gradient
+                .colors
+                .iter()
+                .enumerate()
                 .map(|(i, color)| {
                     let position = if gradient.colors.len() == 1 {
                         0
@@ -762,8 +777,10 @@ fn convert_border_fill(bf: &HwpBorderFill) -> ir::border_fill::BorderFill {
             BorderLineStyle::ThinThickThin => LineType::Triple,
             BorderLineStyle::Wave => LineType::Wave,
             BorderLineStyle::DoubleWave => LineType::DoubleWave,
-            BorderLineStyle::Thick3D | BorderLineStyle::Thick3DReversed |
-            BorderLineStyle::Single3D | BorderLineStyle::Single3DReversed => LineType::Solid,
+            BorderLineStyle::Thick3D
+            | BorderLineStyle::Thick3DReversed
+            | BorderLineStyle::Single3D
+            | BorderLineStyle::Single3DReversed => LineType::Solid,
         }
     };
 
@@ -798,7 +815,9 @@ fn convert_border_fill(bf: &HwpBorderFill) -> ir::border_fill::BorderFill {
     let bottom = convert_border(3);
 
     // 대각선 변환
-    let diagonal_down = if bf.diagonal_style() != BorderLineStyle::Solid || bf.diagonal_thickness().value_hundredths_mm() > 0 {
+    let diagonal_down = if bf.diagonal_style() != BorderLineStyle::Solid
+        || bf.diagonal_thickness().value_hundredths_mm() > 0
+    {
         Some(Border {
             line_type: convert_line_type(bf.diagonal_style()),
             width: HwpUnit::from_mm(bf.diagonal_thickness().value_mm()),
@@ -827,6 +846,7 @@ fn convert_border_fill(bf: &HwpBorderFill) -> ir::border_fill::BorderFill {
 /// 스타일 변환
 fn convert_style(style: &HwpStyle) -> Style {
     use crate::doc_info::StyleType as HwpStyleType;
+
     let style_type = match style.style_type() {
         HwpStyleType::Paragraph => IrStyleType::Paragraph,
         HwpStyleType::Character => IrStyleType::Character,
@@ -857,7 +877,10 @@ struct SectionContext<'a> {
 }
 
 /// 섹션 변환
-fn convert_section(section: &crate::Section, ir_doc: &mut IrDocument) -> Result<IrSection, ConversionError> {
+fn convert_section(
+    section: &crate::Section,
+    ir_doc: &mut IrDocument,
+) -> Result<IrSection, ConversionError> {
     let mut ir_section = IrSection::default();
 
     // 페이지 정의 변환
@@ -944,9 +967,14 @@ fn convert_section(section: &crate::Section, ir_doc: &mut IrDocument) -> Result<
 }
 
 /// 단 정의 변환
-fn convert_column_definition(cold: &crate::body::ColumnDefinition) -> ir::section::ColumnDefinition {
+fn convert_column_definition(
+    cold: &crate::body::ColumnDefinition,
+) -> ir::section::ColumnDefinition {
     use crate::body::ColumnDirection as HwpColumnDirection;
-    use ir::section::{ColumnDefinition as IrColumnDefinition, ColumnDirection as IrColumnDirection, ColumnSeparator};
+    use ir::section::{
+        ColumnDefinition as IrColumnDefinition, ColumnDirection as IrColumnDirection,
+        ColumnSeparator,
+    };
 
     // 단 방향 변환
     let direction = match cold.direction() {
@@ -965,7 +993,8 @@ fn convert_column_definition(cold: &crate::body::ColumnDefinition) -> ir::sectio
     };
 
     // 단 너비 변환 (HWP 단위 → IR HwpUnit)
-    let widths: Vec<HwpUnit> = cold.column_widths
+    let widths: Vec<_> = cold
+        .column_widths
         .iter()
         .map(|&w| HwpUnit::new(w as i32))
         .collect();
@@ -1047,8 +1076,6 @@ fn convert_line_type(line_type: u8) -> primitive::LineType {
     }
 }
 
-// ColorConvert::to_ir을 사용합니다 (색상 변환 통합)
-
 /// 각주 모양 변환
 fn convert_footnote_shape(footnote_shape: &crate::FootnoteShape) -> ir::section::FootnoteShape {
     use primitive::{FootnotePlacement, NoteNumbering};
@@ -1116,7 +1143,7 @@ fn convert_endnote_shape(endnote_shape: &crate::EndnoteShape) -> ir::section::En
             start_number: endnote_shape.start_number as u32,
             user_character: endnote_shape.custom_symbol.clone(),
             separator_length: HwpUnit::ZERO, // 미주는 구분선 없음
-            separator_position: None, // 미주는 구분선 위치 없음
+            separator_position: None,        // 미주는 구분선 위치 없음
             separator_line_type: primitive::LineType::None,
             separator_line_width: 0,
             separator_line_color: primitive::Color::BLACK,
@@ -1142,7 +1169,6 @@ fn convert_note_numbering_type_to_format(numbering_type: NoteNumberingType) -> N
     }
 }
 
-
 /// RangeTag 변환 (HWP → IR)
 ///
 /// HWP의 RangeTag를 IR RangeTag로 변환합니다.
@@ -1156,13 +1182,14 @@ fn convert_note_numbering_type_to_format(numbering_type: NoteNumberingType) -> N
 fn convert_range_tag(range_tag: &crate::body::RangeTag) -> ir::paragraph::RangeTag {
     use ir::paragraph::{RangeTag as IrRangeTag, RangeTagType, TrackChangeInfo};
 
-    let tag = range_tag.tag;
-    let tag_type_byte = tag[2]; // 상위 바이트가 태그 종류
-    let tag_data_low = tag[0];
-    let tag_data_mid = tag[1];
+    let [
+        low,
+        mid,
+        byte, // 상위 바이트가 태그 종류
+    ] = range_tag.tag;
 
     // 태그 종류 결정
-    let tag_type = match tag_type_byte {
+    let tag_type = match byte {
         0 => RangeTagType::Bookmark,
         1 => RangeTagType::Hyperlink,
         2 => RangeTagType::TrackChangeInsert,
@@ -1172,9 +1199,12 @@ fn convert_range_tag(range_tag: &crate::body::RangeTag) -> ir::paragraph::RangeT
     };
 
     // 변경 추적 정보 추출 (TrackChangeInsert/Delete의 경우)
-    let track_change_info = if matches!(tag_type, RangeTagType::TrackChangeInsert | RangeTagType::TrackChangeDelete) {
+    let track_change_info = if matches!(
+        tag_type,
+        RangeTagType::TrackChangeInsert | RangeTagType::TrackChangeDelete
+    ) {
         // 하위 16비트를 변경 추적 ID로 사용
-        let track_change_id = u16::from_le_bytes([tag_data_low, tag_data_mid]) as u32;
+        let track_change_id = u16::from_le_bytes([low, mid]) as u32;
         Some(TrackChangeInfo {
             track_change_id,
             tag_id: None,
@@ -1185,8 +1215,8 @@ fn convert_range_tag(range_tag: &crate::body::RangeTag) -> ir::paragraph::RangeT
     };
 
     // 태그 데이터 문자열 생성 (16진수 표현)
-    let data = if tag_data_low != 0 || tag_data_mid != 0 {
-        Some(format!("{:02x}{:02x}", tag_data_mid, tag_data_low))
+    let data = if low != 0 || mid != 0 {
+        Some(format!("{:02x}{:02x}", mid, low))
     } else {
         None
     };
@@ -1201,7 +1231,10 @@ fn convert_range_tag(range_tag: &crate::body::RangeTag) -> ir::paragraph::RangeT
 }
 
 /// 문단 변환 (컨텍스트 포함)
-fn convert_paragraph_with_context(para: &crate::Paragraph, ctx: &SectionContext) -> Result<IrParagraph, ConversionError> {
+fn convert_paragraph_with_context(
+    para: &crate::Paragraph,
+    ctx: &SectionContext,
+) -> Result<IrParagraph, ConversionError> {
     let mut ir_para = IrParagraph::new();
 
     // 문단 모양 ID
@@ -1218,15 +1251,13 @@ fn convert_paragraph_with_context(para: &crate::Paragraph, ctx: &SectionContext)
 
     // RangeTag 변환 (범위 태그 - 변경 추적, 형광펜 등)
     for range_tag in para.range_tags() {
-        let ir_range_tag = convert_range_tag(range_tag);
-        ir_para.range_tags.push(ir_range_tag);
+        ir_para.range_tags.push(convert_range_tag(range_tag));
     }
 
     // 텍스트 변환 - plain_text() 메서드 사용
     let plain_text = para.plain_text();
     if !plain_text.is_empty() {
-        let run = IrRun::text(plain_text);
-        ir_para.runs.push(run);
+        ir_para.runs.push(IrRun::text(plain_text));
     }
 
     // 컨트롤 (표, 그림 등) 변환 및 Caption 연결
@@ -1257,15 +1288,20 @@ fn convert_paragraph_with_context(para: &crate::Paragraph, ctx: &SectionContext)
 
             // 필드 값(표시 텍스트)도 포함
             let mut run = IrRun::new();
-            run.contents.push(ir::paragraph::RunContent::FieldStart(field_start));
+            run.contents
+                .push(ir::paragraph::RunContent::FieldStart(field_start));
 
             // 필드의 표시 텍스트 추가 (있는 경우)
             let display_text = field.display_text();
             if !display_text.is_empty() {
-                run.contents.push(ir::paragraph::RunContent::Text(ir::paragraph::Text::new(display_text)));
+                run.contents
+                    .push(ir::paragraph::RunContent::Text(ir::paragraph::Text::new(
+                        display_text,
+                    )));
             }
 
-            run.contents.push(ir::paragraph::RunContent::FieldEnd(field_end));
+            run.contents
+                .push(ir::paragraph::RunContent::FieldEnd(field_end));
             ir_para.runs.push(run);
             continue;
             // Hyperlink 필드는 아래 일반 컨트롤 변환으로 처리
@@ -1276,25 +1312,15 @@ fn convert_paragraph_with_context(para: &crate::Paragraph, ctx: &SectionContext)
             // 보류된 Caption이 있으면 해당 컨트롤에 연결
             if let Some(caption) = pending_caption.take() {
                 match &mut ir_control {
-                    IrControl::Table(table) => {
-                        table.common.caption = Some(caption);
-                    }
-                    IrControl::Picture(picture) => {
-                        picture.common.caption = Some(caption);
-                    }
-                    IrControl::Equation(equation) => {
-                        equation.common.caption = Some(caption);
-                    }
-                    IrControl::Shape(shape) => {
-                        shape.common.caption = Some(caption);
-                    }
-                    _ => {
-                        // 다른 컨트롤 타입에는 Caption을 연결할 수 없음
-                    }
+                    IrControl::Table(table) => table.common.caption = Some(caption),
+                    IrControl::Picture(picture) => picture.common.caption = Some(caption),
+                    IrControl::Equation(equation) => equation.common.caption = Some(caption),
+                    IrControl::Shape(shape) => shape.common.caption = Some(caption),
+                    // 다른 컨트롤 타입에는 Caption을 연결할 수 없음
+                    _ => {}
                 }
             }
-            let run = IrRun::control(ir_control);
-            ir_para.runs.push(run);
+            ir_para.runs.push(IrRun::control(ir_control));
         }
     }
 
@@ -1335,7 +1361,10 @@ fn convert_paragraph_with_context(para: &crate::Paragraph, ctx: &SectionContext)
 }
 
 /// 컨트롤 변환 (섹션 컨텍스트 포함)
-fn convert_control_with_context(control: &Control, ctx: &SectionContext) -> Result<Option<IrControl>, ConversionError> {
+fn convert_control_with_context(
+    control: &Control,
+    ctx: &SectionContext,
+) -> Result<Option<IrControl>, ConversionError> {
     // 개체 공통 속성이 있는 컨트롤에서 ObjectCommon 파싱
     let object_common = parse_object_common(control.data());
 
@@ -1463,7 +1492,8 @@ fn convert_control_with_context(control: &Control, ctx: &SectionContext) -> Resu
                 footnote_shape: None,
                 endnote_shape: None,
             };
-            let ir_paragraphs: Vec<IrParagraph> = memo.paragraphs()
+            let ir_paragraphs: Vec<IrParagraph> = memo
+                .paragraphs()
                 .iter()
                 .map(|p| convert_paragraph_with_context(p, &empty_ctx))
                 .collect::<Result<Vec<_>, _>>()?;
@@ -1471,13 +1501,13 @@ fn convert_control_with_context(control: &Control, ctx: &SectionContext) -> Resu
             let ir_memo = ir::control::Memo {
                 paragraphs: ir_paragraphs,
                 author: None, // HWP 바이너리에는 작성자 정보가 없음
-                date: None, // HWP 바이너리에는 작성일 정보가 없음
+                date: None,   // HWP 바이너리에는 작성일 정보가 없음
                 width: Some(HwpUnit::new(memo.shape().width() as i32)),
-                line_width: None, // HWP에서 추출 불가
-                line_color: None, // TODO: MemoShape에서 border_color 파싱 필요
-                fill_color: None, // TODO: MemoShape에서 fill_color 파싱 필요
+                line_width: None,   // HWP에서 추출 불가
+                line_color: None,   // TODO: MemoShape에서 border_color 파싱 필요
+                fill_color: None,   // TODO: MemoShape에서 fill_color 파싱 필요
                 active_color: None, // HWP에는 없음
-                memo_type: None, // HWP에는 없음 (HWPX 전용)
+                memo_type: None,    // HWP에는 없음 (HWPX 전용)
             };
             Ok(Some(IrControl::Memo(Box::new(ir_memo))))
         }
@@ -1539,14 +1569,15 @@ fn convert_caption(caption: &HwpCaption) -> Result<IrCaption, ConversionError> {
         footnote_shape: None,
         endnote_shape: None,
     };
-    let paragraphs: Vec<IrParagraph> = caption.paragraphs()
+    let paragraphs: Vec<IrParagraph> = caption
+        .paragraphs()
         .iter()
         .filter_map(|para| convert_paragraph_with_context(para, &empty_ctx).ok())
         .collect();
 
     Ok(IrCaption {
         position,
-        width: HwpUnit::default(),  // 캡션 너비는 HWP에서 따로 지정하지 않음
+        width: HwpUnit::default(), // 캡션 너비는 HWP에서 따로 지정하지 않음
         gap: HwpUnit::new(caption.gap()),
         paragraphs,
     })
@@ -1611,8 +1642,7 @@ fn convert_table(table: &HwpTable) -> Result<IrTable, ConversionError> {
 
         // 해당 행의 셀들 변환
         for cell in table.cells_in_row(row_idx) {
-            let ir_cell = convert_table_cell(cell)?;
-            ir_row.cells.push(ir_cell);
+            ir_row.cells.push(convert_table_cell(cell)?);
         }
 
         ir_table.rows.push(ir_row);
@@ -1643,7 +1673,9 @@ fn convert_table_cell(cell: &HwpTableCell) -> Result<IrTableCell, ConversionErro
         endnote_shape: None,
     };
     for para in &cell.paragraphs {
-        ir_cell.paragraphs.push(convert_paragraph_with_context(para, &empty_ctx)?);
+        ir_cell
+            .paragraphs
+            .push(convert_paragraph_with_context(para, &empty_ctx)?);
     }
 
     Ok(ir_cell)
@@ -1690,8 +1722,7 @@ fn detect_binary_format(data: &[u8]) -> BinaryFormat {
         [0xD0, 0xCF, 0x11, 0xE0] => BinaryFormat::Ole,
         _ => {
             // TIFF 체크
-            if (data[0..4] == [0x49, 0x49, 0x2A, 0x00])
-                || (data[0..4] == [0x4D, 0x4D, 0x00, 0x2A])
+            if (data[0..4] == [0x49, 0x49, 0x2A, 0x00]) || (data[0..4] == [0x4D, 0x4D, 0x00, 0x2A])
             {
                 BinaryFormat::Tiff
             } else {
@@ -1716,7 +1747,8 @@ fn convert_extensions(hwp: &HwpDocument, ctx: &mut ToIrContext) -> Extensions {
 
     // 스크립트 확인
     if hwp.has_scripts() {
-        ctx.warnings.data_loss("스크립트는 HWPX로 변환 시 손실됩니다");
+        ctx.warnings
+            .data_loss("스크립트는 HWPX로 변환 시 손실됩니다");
     }
 
     ext.hwp = Some(hwp_ext);
@@ -1726,7 +1758,7 @@ fn convert_extensions(hwp: &HwpDocument, ctx: &mut ToIrContext) -> Extensions {
 
 // 열거형 변환 헬퍼 함수들
 
-fn convert_underline_type(shape: primitive::UnderlineShape) -> UnderlineType {
+const fn convert_underline_type(shape: primitive::UnderlineShape) -> UnderlineType {
     use primitive::UnderlineShape;
     match shape {
         UnderlineShape::Solid => UnderlineType::Single,
@@ -1738,14 +1770,16 @@ fn convert_underline_type(shape: primitive::UnderlineShape) -> UnderlineType {
         UnderlineShape::DashDotDot => UnderlineType::DashDotDot,
         UnderlineShape::Circle => UnderlineType::Dotted,
         // 두께 관련 스타일은 Thick으로 매핑
-        UnderlineShape::ThinThick | UnderlineShape::ThickThin | UnderlineShape::ThinThickThin => UnderlineType::Thick,
+        UnderlineShape::ThinThick | UnderlineShape::ThickThin | UnderlineShape::ThinThickThin => {
+            UnderlineType::Thick
+        }
         // 3D 스타일은 가장 유사한 것으로 매핑
         UnderlineShape::Thick3D | UnderlineShape::Thick3DReversed => UnderlineType::Thick,
         UnderlineShape::Single3D | UnderlineShape::Single3DReversed => UnderlineType::Single,
     }
 }
 
-fn convert_underline_position(pos: crate::doc_info::UnderlinePosition) -> UnderlinePosition {
+const fn convert_underline_position(pos: crate::doc_info::UnderlinePosition) -> UnderlinePosition {
     match pos {
         crate::doc_info::UnderlinePosition::Bottom => UnderlinePosition::Bottom,
         crate::doc_info::UnderlinePosition::Top => UnderlinePosition::Top,
@@ -1753,7 +1787,9 @@ fn convert_underline_position(pos: crate::doc_info::UnderlinePosition) -> Underl
     }
 }
 
-fn convert_strikethrough_type(shape: crate::doc_info::StrikethroughShape) -> StrikethroughType {
+const fn convert_strikethrough_type(
+    shape: crate::doc_info::StrikethroughShape,
+) -> StrikethroughType {
     match shape {
         crate::doc_info::StrikethroughShape::None => StrikethroughType::None,
         crate::doc_info::StrikethroughShape::Single => StrikethroughType::Single,
@@ -1761,7 +1797,7 @@ fn convert_strikethrough_type(shape: crate::doc_info::StrikethroughShape) -> Str
     }
 }
 
-fn convert_outline_type(outline: crate::doc_info::OutlineType) -> OutlineType {
+const fn convert_outline_type(outline: crate::doc_info::OutlineType) -> OutlineType {
     use crate::doc_info::OutlineType as HwpOutlineType;
     match outline {
         HwpOutlineType::None => OutlineType::None,
@@ -1775,7 +1811,7 @@ fn convert_outline_type(outline: crate::doc_info::OutlineType) -> OutlineType {
     }
 }
 
-fn convert_emphasis_type(emphasis: crate::doc_info::EmphasisType) -> EmphasisType {
+const fn convert_emphasis_type(emphasis: crate::doc_info::EmphasisType) -> EmphasisType {
     use crate::doc_info::EmphasisType as HwpEmphasisType;
     match emphasis {
         HwpEmphasisType::None => EmphasisType::None,
@@ -1788,7 +1824,7 @@ fn convert_emphasis_type(emphasis: crate::doc_info::EmphasisType) -> EmphasisTyp
     }
 }
 
-fn convert_shadow_type(shadow: crate::doc_info::ShadowType) -> ShadowType {
+const fn convert_shadow_type(shadow: crate::doc_info::ShadowType) -> ShadowType {
     match shadow {
         crate::doc_info::ShadowType::None => ShadowType::None,
         crate::doc_info::ShadowType::Discrete => ShadowType::BottomRightDiscrete,
@@ -1796,7 +1832,7 @@ fn convert_shadow_type(shadow: crate::doc_info::ShadowType) -> ShadowType {
     }
 }
 
-fn convert_alignment(align: HwpAlignment) -> Alignment {
+const fn convert_alignment(align: HwpAlignment) -> Alignment {
     match align {
         HwpAlignment::Justify => Alignment::Justify,
         HwpAlignment::Left => Alignment::Left,
@@ -1807,7 +1843,7 @@ fn convert_alignment(align: HwpAlignment) -> Alignment {
     }
 }
 
-fn convert_vertical_alignment(align: HwpVerticalAlignment) -> VerticalAlignment {
+const fn convert_vertical_alignment(align: HwpVerticalAlignment) -> VerticalAlignment {
     match align {
         HwpVerticalAlignment::Baseline => VerticalAlignment::Baseline,
         HwpVerticalAlignment::Top => VerticalAlignment::Top,
@@ -1816,14 +1852,14 @@ fn convert_vertical_alignment(align: HwpVerticalAlignment) -> VerticalAlignment 
     }
 }
 
-fn convert_break_korean(break_type: BreakNonLatinWord) -> LineBreakKorean {
+const fn convert_break_korean(break_type: BreakNonLatinWord) -> LineBreakKorean {
     match break_type {
         BreakNonLatinWord::Word => LineBreakKorean::Word,
         BreakNonLatinWord::Character => LineBreakKorean::Character,
     }
 }
 
-fn convert_break_latin(break_type: BreakLatinWord) -> LineBreakLatin {
+const fn convert_break_latin(break_type: BreakLatinWord) -> LineBreakLatin {
     match break_type {
         BreakLatinWord::Word => LineBreakLatin::Word,
         BreakLatinWord::Hyphen => LineBreakLatin::Hyphenation,
@@ -1832,7 +1868,7 @@ fn convert_break_latin(break_type: BreakLatinWord) -> LineBreakLatin {
 }
 
 /// 문단 나누기 타입 변환
-fn convert_paragraph_break_type(break_type: crate::body::BreakType) -> primitive::BreakType {
+const fn convert_paragraph_break_type(break_type: crate::body::BreakType) -> primitive::BreakType {
     // HWP BreakType은 비트 플래그 조합 (SECTION=0x01, MULTI_COLUMN=0x02, PAGE=0x04, COLUMN=0x08)
     // IR BreakType은 단일 값 (None, Page, Column, Section)
     // 우선순위: Section > Page > Column > None
@@ -1931,7 +1967,7 @@ fn convert_picture(picture: &HwpPicture) -> Result<IrPicture, ConversionError> {
 }
 
 /// 이미지 효과 타입 변환
-fn convert_picture_effect(effect: PictureEffectType) -> ImageEffect {
+const fn convert_picture_effect(effect: PictureEffectType) -> ImageEffect {
     match effect {
         PictureEffectType::RealPicture => ImageEffect::Original,
         PictureEffectType::Grayscale => ImageEffect::Grayscale,
@@ -1941,7 +1977,7 @@ fn convert_picture_effect(effect: PictureEffectType) -> ImageEffect {
 }
 
 /// 이미지 뒤집기 변환
-fn convert_image_flip(flip: HwpImageFlip) -> primitive::ImageFlip {
+const fn convert_image_flip(flip: HwpImageFlip) -> primitive::ImageFlip {
     match flip {
         HwpImageFlip::None => primitive::ImageFlip::None,
         HwpImageFlip::Horizontal => primitive::ImageFlip::Horizontal,
@@ -2036,7 +2072,9 @@ fn convert_footer(footer: &HwpFooter) -> Result<HeaderFooterControl, ConversionE
 }
 
 /// 머리글/바닥글 대상 변환
-fn convert_header_footer_target(target: crate::body::HeaderFooterTarget) -> HeaderFooterApplyTo {
+const fn convert_header_footer_target(
+    target: crate::body::HeaderFooterTarget,
+) -> HeaderFooterApplyTo {
     match target {
         crate::body::HeaderFooterTarget::BothPages => HeaderFooterApplyTo::Both,
         crate::body::HeaderFooterTarget::EvenPages => HeaderFooterApplyTo::Even,
@@ -2047,7 +2085,7 @@ fn convert_header_footer_target(target: crate::body::HeaderFooterTarget) -> Head
 /// 각주 변환 (섹션의 각주 모양 정보 활용)
 fn convert_footnote_with_shape(
     footnote: &HwpFootnote,
-    footnote_shape: Option<&crate::body::FootnoteShape>
+    footnote_shape: Option<&crate::body::FootnoteShape>,
 ) -> Result<IrNote, ConversionError> {
     // 각주 내부 문단에서는 각주/미주가 없으므로 빈 컨텍스트 사용
     let empty_ctx = SectionContext {
@@ -2070,7 +2108,10 @@ fn convert_footnote_with_shape(
         };
         (format, position)
     } else {
-        (NumberFormat::Digit, primitive::NoteNumberPosition::Superscript)
+        (
+            NumberFormat::Digit,
+            primitive::NoteNumberPosition::Superscript,
+        )
     };
 
     Ok(IrNote {
@@ -2085,7 +2126,7 @@ fn convert_footnote_with_shape(
 /// 미주 변환 (섹션의 미주 모양 정보 활용)
 fn convert_endnote_with_shape(
     endnote: &HwpEndnote,
-    endnote_shape: Option<&crate::body::EndnoteShape>
+    endnote_shape: Option<&crate::body::EndnoteShape>,
 ) -> Result<IrNote, ConversionError> {
     // 미주 내부 문단에서는 각주/미주가 없으므로 빈 컨텍스트 사용
     let empty_ctx = SectionContext {
@@ -2108,7 +2149,10 @@ fn convert_endnote_with_shape(
         };
         (format, position)
     } else {
-        (NumberFormat::Digit, primitive::NoteNumberPosition::Superscript)
+        (
+            NumberFormat::Digit,
+            primitive::NoteNumberPosition::Superscript,
+        )
     };
 
     Ok(IrNote {
@@ -2182,10 +2226,12 @@ fn convert_shape(shape: &HwpShape, ctx: &SectionContext) -> Result<IrShape, Conv
     let text = if shape.text_box.is_some() || !shape.paragraphs.is_empty() {
         use ir::shape::ShapeText;
         use primitive::Insets;
-        use primitive::{VerticalAlignment, TextDirection};
+        use primitive::{TextDirection, VerticalAlignment};
 
         // 문단 변환
-        let paragraphs: Vec<IrParagraph> = shape.paragraphs.iter()
+        let paragraphs: Vec<IrParagraph> = shape
+            .paragraphs
+            .iter()
             .filter_map(|para| convert_paragraph_with_context(para, ctx).ok())
             .collect();
 
@@ -2202,7 +2248,11 @@ fn convert_shape(shape: &HwpShape, ctx: &SectionContext) -> Result<IrShape, Conv
                 TextDirection::Horizontal,
             )
         } else {
-            (Insets::default(), VerticalAlignment::Top, TextDirection::Horizontal)
+            (
+                Insets::default(),
+                VerticalAlignment::Top,
+                TextDirection::Horizontal,
+            )
         };
 
         Some(ShapeText {
@@ -2221,6 +2271,7 @@ fn convert_shape(shape: &HwpShape, ctx: &SectionContext) -> Result<IrShape, Conv
     // 첫 6개: translation, 다음 6개: scale, 마지막 6개: rotation (예상)
     let (translation_matrix, scale_matrix, rotation_matrix) = {
         use ir::shape::TransformMatrix;
+
         let matrix = &shape.element_properties.matrix;
 
         let translation = if matrix.len() >= 6 {
@@ -2347,11 +2398,20 @@ fn calculate_shape_size(shape_type: &HwpShapeType) -> Size {
             if shapes.is_empty() {
                 return Size::default();
             }
-            let child_sizes: Vec<Size> = shapes.iter()
+            let child_sizes: Vec<Size> = shapes
+                .iter()
                 .map(|s| calculate_shape_size(&s.shape_type))
                 .collect();
-            let max_width = child_sizes.iter().map(|s| s.width.value()).max().unwrap_or(0);
-            let max_height = child_sizes.iter().map(|s| s.height.value()).max().unwrap_or(0);
+            let max_width = child_sizes
+                .iter()
+                .map(|s| s.width.value())
+                .max()
+                .unwrap_or(0);
+            let max_height = child_sizes
+                .iter()
+                .map(|s| s.height.value())
+                .max()
+                .unwrap_or(0);
             Size {
                 width: HwpUnit::new(max_width),
                 height: HwpUnit::new(max_height),
@@ -2362,16 +2422,21 @@ fn calculate_shape_size(shape_type: &HwpShapeType) -> Size {
 }
 
 /// HWP 도형 타입 → IR 도형 타입 변환
-fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ctx: &SectionContext) -> Result<IrShapeType, ConversionError> {
+fn convert_shape_type(
+    hwp_type: &HwpShapeType,
+    border_line: &ShapeBorderLine,
+    ctx: &SectionContext,
+) -> Result<IrShapeType, ConversionError> {
     match hwp_type {
-        HwpShapeType::Line(line) => {
-            Ok(IrShapeType::Line(IrLineShape {
-                start: convert_hwp_point(&line.start),
-                end: convert_hwp_point(&line.end),
-                start_arrow: convert_hwp_arrow(border_line.start_arrow(), border_line.start_arrow_size()),
-                end_arrow: convert_hwp_arrow(border_line.end_arrow(), border_line.end_arrow_size()),
-            }))
-        }
+        HwpShapeType::Line(line) => Ok(IrShapeType::Line(IrLineShape {
+            start: convert_hwp_point(&line.start),
+            end: convert_hwp_point(&line.end),
+            start_arrow: convert_hwp_arrow(
+                border_line.start_arrow(),
+                border_line.start_arrow_size(),
+            ),
+            end_arrow: convert_hwp_arrow(border_line.end_arrow(), border_line.end_arrow_size()),
+        })),
         HwpShapeType::Rectangle(rect) => {
             // 모서리 반지름을 HwpUnit으로 변환 (비율 → 실제 값)
             Ok(IrShapeType::Rectangle(IrRectangleShape {
@@ -2380,11 +2445,8 @@ fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ct
         }
         HwpShapeType::Ellipse(ellipse) => {
             // 중심점과 start/end 점에서 각도 계산
-            let (start_angle, end_angle) = calculate_arc_angles(
-                &ellipse.center,
-                &ellipse.start,
-                &ellipse.end,
-            );
+            let (start_angle, end_angle) =
+                calculate_arc_angles(&ellipse.center, &ellipse.start, &ellipse.end);
             Ok(IrShapeType::Ellipse(IrEllipseShape {
                 arc_type: convert_hwp_arc_type(ellipse.arc_type()),
                 start_angle,
@@ -2393,11 +2455,8 @@ fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ct
         }
         HwpShapeType::Arc(arc) => {
             // Arc는 start/end 점이 없어서 axis에서 유추
-            let (start_angle, end_angle) = calculate_arc_angles(
-                &arc.center,
-                &arc.axis1,
-                &arc.axis2,
-            );
+            let (start_angle, end_angle) =
+                calculate_arc_angles(&arc.center, &arc.axis1, &arc.axis2);
             Ok(IrShapeType::Arc(IrArcShape {
                 arc_type: convert_hwp_arc_type(arc.arc_type),
                 start_angle,
@@ -2405,13 +2464,13 @@ fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ct
             }))
         }
         HwpShapeType::Polygon(polygon) => {
-            let points = polygon.points.iter()
-                .map(convert_hwp_point)
-                .collect();
+            let points = polygon.points.iter().map(convert_hwp_point).collect();
             Ok(IrShapeType::Polygon(IrPolygonShape { points }))
         }
         HwpShapeType::Curve(curve) => {
-            let points: Vec<IrCurvePoint> = curve.points.iter()
+            let points: Vec<IrCurvePoint> = curve
+                .points
+                .iter()
                 .zip(curve.segment_types.iter())
                 .map(|(p, t)| IrCurvePoint {
                     point: convert_hwp_point(p),
@@ -2425,18 +2484,16 @@ fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ct
             let closed = if points.len() >= 2 {
                 let first = &points[0].point;
                 let last = &points[points.len() - 1].point;
-                (first.x.value() - last.x.value()).abs() < 10 &&
-                (first.y.value() - last.y.value()).abs() < 10
+                (first.x.value() - last.x.value()).abs() < 10
+                    && (first.y.value() - last.y.value()).abs() < 10
             } else {
                 false
             };
-            Ok(IrShapeType::Curve(IrCurveShape {
-                points,
-                closed,
-            }))
+            Ok(IrShapeType::Curve(IrCurveShape { points, closed }))
         }
         HwpShapeType::Container(shapes) => {
-            let ir_shapes = shapes.iter()
+            let ir_shapes = shapes
+                .iter()
                 .map(|s| convert_shape(s, ctx))
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(IrShapeType::Group(ir_shapes))
@@ -2449,7 +2506,7 @@ fn convert_shape_type(hwp_type: &HwpShapeType, border_line: &ShapeBorderLine, ct
 }
 
 /// HWP 점 → IR 점 변환
-fn convert_hwp_point(point: &HwpPoint) -> IrPoint {
+const fn convert_hwp_point(point: &HwpPoint) -> IrPoint {
     IrPoint {
         x: HwpUnit::new(point.x.value()),
         y: HwpUnit::new(point.y.value()),
@@ -2457,7 +2514,7 @@ fn convert_hwp_point(point: &HwpPoint) -> IrPoint {
 }
 
 /// HWP 호 타입 → IR 호 타입 변환
-fn convert_hwp_arc_type(hwp_type: HwpArcType) -> IrArcType {
+const fn convert_hwp_arc_type(hwp_type: HwpArcType) -> IrArcType {
     match hwp_type {
         HwpArcType::Arc => IrArcType::Arc,
         HwpArcType::Pie => IrArcType::Pie,
@@ -2478,8 +2535,16 @@ fn calculate_arc_angles(center: &HwpPoint, start: &HwpPoint, end: &HwpPoint) -> 
     let end_angle = dy_end.atan2(dx_end).to_degrees();
 
     // 음수 각도를 0-360 범위로 정규화
-    let start_angle = if start_angle < 0.0 { start_angle + 360.0 } else { start_angle };
-    let end_angle = if end_angle < 0.0 { end_angle + 360.0 } else { end_angle };
+    let start_angle = if start_angle < 0.0 {
+        start_angle + 360.0
+    } else {
+        start_angle
+    };
+    let end_angle = if end_angle < 0.0 {
+        end_angle + 360.0
+    } else {
+        end_angle
+    };
 
     // 시작점과 끝점이 같으면 완전한 원/타원
     if (dx_start - dx_end).abs() < 1.0 && (dy_start - dy_end).abs() < 1.0 {
@@ -2490,7 +2555,7 @@ fn calculate_arc_angles(center: &HwpPoint, start: &HwpPoint, end: &HwpPoint) -> 
 }
 
 /// HWP 테두리 선 → IR 선 스타일 변환
-fn convert_border_line(border: &ShapeBorderLine) -> IrLineStyle {
+const fn convert_border_line(border: &ShapeBorderLine) -> IrLineStyle {
     let color = Color::rgb(
         border.color.red(),
         border.color.green(),
@@ -2520,28 +2585,28 @@ fn convert_border_line(border: &ShapeBorderLine) -> IrLineStyle {
 }
 
 /// HWP 선 종류 값 → IR LineType 변환 (표 25 참조)
-fn convert_hwp_line_style(value: u8) -> IrLineType {
+const fn convert_hwp_line_style(value: u8) -> IrLineType {
     match value {
-        0 => IrLineType::Solid,        // 실선
-        1 => IrLineType::LongDash,     // 긴 점선
-        2 => IrLineType::Dot,          // 점선
-        3 => IrLineType::DashDot,      // -.-.-.-
-        4 => IrLineType::DashDotDot,   // -..-..-..-
-        5 => IrLineType::Dash,         // Dash보다 긴 선분의 반복
-        6 => IrLineType::Circle,       // 큰 동그라미의 반복
-        7 => IrLineType::Double,       // 2중선
-        8 | 9 => IrLineType::Double,   // 가는선 + 굵은선 / 굵은선 + 가는선
-        10 => IrLineType::Triple,      // 가는선 + 굵은선 + 가는선 3중선
-        11 => IrLineType::Wave,        // 물결
-        12 => IrLineType::DoubleWave,  // 물결 2중선
-        13 | 14 => IrLineType::ThickThinLarge,  // 두꺼운 3D
-        15 | 16 => IrLineType::ThinThickLarge,  // 3D 단선
-        _ => IrLineType::Solid,        // 기본값
+        0 => IrLineType::Solid,                // 실선
+        1 => IrLineType::LongDash,             // 긴 점선
+        2 => IrLineType::Dot,                  // 점선
+        3 => IrLineType::DashDot,              // -.-.-.-
+        4 => IrLineType::DashDotDot,           // -..-..-..-
+        5 => IrLineType::Dash,                 // Dash보다 긴 선분의 반복
+        6 => IrLineType::Circle,               // 큰 동그라미의 반복
+        7 => IrLineType::Double,               // 2중선
+        8 | 9 => IrLineType::Double,           // 가는선 + 굵은선 / 굵은선 + 가는선
+        10 => IrLineType::Triple,              // 가는선 + 굵은선 + 가는선 3중선
+        11 => IrLineType::Wave,                // 물결
+        12 => IrLineType::DoubleWave,          // 물결 2중선
+        13 | 14 => IrLineType::ThickThinLarge, // 두꺼운 3D
+        15 | 16 => IrLineType::ThinThickLarge, // 3D 단선
+        _ => IrLineType::Solid,                // 기본값
     }
 }
 
 /// HWP 화살표 → IR 화살표 변환 (ArrowType에서 filled 여부 추론)
-fn convert_hwp_arrow(hwp_type: HwpArrowType, hwp_size: HwpArrowSize) -> IrArrow {
+const fn convert_hwp_arrow(hwp_type: HwpArrowType, hwp_size: HwpArrowSize) -> IrArrow {
     let arrow_type = convert_hwp_arrow_type(hwp_type);
     let filled = matches!(
         hwp_type,
@@ -2561,7 +2626,7 @@ fn convert_hwp_arrow(hwp_type: HwpArrowType, hwp_size: HwpArrowSize) -> IrArrow 
 }
 
 /// HWP 화살표 타입 → IR 화살표 타입 변환
-fn convert_hwp_arrow_type(hwp_type: HwpArrowType) -> IrArrowType {
+const fn convert_hwp_arrow_type(hwp_type: HwpArrowType) -> IrArrowType {
     match hwp_type {
         HwpArrowType::None => IrArrowType::None,
         HwpArrowType::Arrow => IrArrowType::Arrow,
@@ -2577,7 +2642,7 @@ fn convert_hwp_arrow_type(hwp_type: HwpArrowType) -> IrArrowType {
 }
 
 /// HWP 화살표 크기 → IR 화살표 크기 변환
-fn convert_hwp_arrow_size(hwp_size: HwpArrowSize) -> IrArrowSize {
+const fn convert_hwp_arrow_size(hwp_size: HwpArrowSize) -> IrArrowSize {
     match hwp_size {
         HwpArrowSize::Smallest => IrArrowSize::Small,
         HwpArrowSize::Small => IrArrowSize::Small,
@@ -2656,7 +2721,10 @@ fn convert_new_number(control: &Control) -> Result<IrNewNumber, ConversionError>
     let number_kind = (properties & 0x0F) as u8;
     let number_type = convert_auto_number_type(number_kind);
 
-    Ok(IrNewNumber { number_type, number })
+    Ok(IrNewNumber {
+        number_type,
+        number,
+    })
 }
 
 /// 페이지 번호 변환 (PageNumber → AutoNumber)
@@ -2778,7 +2846,7 @@ fn convert_text_box(
 }
 
 /// 자동 번호 종류 변환
-fn convert_auto_number_type(kind: u8) -> IrAutoNumberType {
+const fn convert_auto_number_type(kind: u8) -> IrAutoNumberType {
     match kind {
         0 => IrAutoNumberType::Page,
         1 => IrAutoNumberType::Footnote,
@@ -2791,7 +2859,7 @@ fn convert_auto_number_type(kind: u8) -> IrAutoNumberType {
 }
 
 /// 번호 모양 변환 (표 134 참조)
-fn convert_number_format(shape: u8) -> NumberFormat {
+const fn convert_number_format(shape: u8) -> NumberFormat {
     match shape {
         0 => NumberFormat::Digit,         // 1, 2, 3
         1 => NumberFormat::CircledDigit,  // ①, ②, ③
@@ -2821,7 +2889,9 @@ fn convert_video(video: &HwpVideoData, control: &Control) -> Result<IrVideo, Con
     };
 
     // 비디오 파일 ID (임베디드인 경우)
-    let video_id = video.bin_data_id.map(|id| BinaryDataId::from_numeric(id as u16));
+    let video_id = video
+        .bin_data_id
+        .map(|id| BinaryDataId::from_numeric(id as u16));
 
     // 소스 URL (링크인 경우)
     let source_url = if !video.source.is_empty() {
@@ -2831,10 +2901,14 @@ fn convert_video(video: &HwpVideoData, control: &Control) -> Result<IrVideo, Con
     };
 
     // 미리보기 이미지 ID
-    let preview_image_id = video.poster_bin_id.map(|id| BinaryDataId::from_numeric(id as u16));
+    let preview_image_id = video
+        .poster_bin_id
+        .map(|id| BinaryDataId::from_numeric(id as u16));
 
     // 포스터 바이너리 ID
-    let poster_binary_id = video.poster_bin_id.map(|id| BinaryDataId::from_numeric(id as u16));
+    let poster_binary_id = video
+        .poster_bin_id
+        .map(|id| BinaryDataId::from_numeric(id as u16));
 
     // 비디오 너비와 높이 (HWP 단위)
     let width = if video.width > 0 {
@@ -2868,7 +2942,7 @@ fn convert_ole(ole: &HwpOleObject, control: &Control) -> Result<IrOleObject, Con
     Ok(IrOleObject {
         common,
         binary_id: BinaryDataId::from_numeric(ole.binary_data_id),
-        class_id: None, // HWP에서는 class_id 정보가 별도로 없음
+        class_id: None,         // HWP에서는 class_id 정보가 별도로 없음
         preview_image_id: None, // 미리보기 이미지는 별도 처리 필요
     })
 }
@@ -2889,7 +2963,7 @@ fn convert_chart(chart: &HwpChartData, control: &Control) -> Result<IrChart, Con
 }
 
 /// HWP 차트 타입 → IR 차트 타입 변환
-fn convert_chart_type(hwp_type: &crate::body::ChartType) -> IrChartType {
+const fn convert_chart_type(hwp_type: &crate::body::ChartType) -> IrChartType {
     match hwp_type {
         crate::body::ChartType::Bar => IrChartType::Bar,
         crate::body::ChartType::Line => IrChartType::Line,
@@ -2902,7 +2976,10 @@ fn convert_chart_type(hwp_type: &crate::body::ChartType) -> IrChartType {
 }
 
 /// 양식 객체 변환
-fn convert_form_object(form: &HwpFormObject, control: &Control) -> Result<IrFormObject, ConversionError> {
+fn convert_form_object(
+    form: &HwpFormObject,
+    control: &Control,
+) -> Result<IrFormObject, ConversionError> {
     use ir::control::{FormCharProperty, FormListItem};
 
     // 공통 속성 파싱 (Control 데이터에서 추출)
@@ -2953,24 +3030,42 @@ fn convert_form_object(form: &HwpFormObject, control: &Control) -> Result<IrForm
     });
 
     // Convert password_char
-    let password_char = ext.password_char.and_then(|ch| {
-        char::from_u32(ch as u32).map(|c| c.to_string())
-    });
+    let password_char = ext
+        .password_char
+        .and_then(|ch| char::from_u32(ch as u32).map(|c| c.to_string()));
 
     // Build items list from items_text and items_value
-    let items: Vec<FormListItem> = ext.items_text.iter()
+    let items: Vec<FormListItem> = ext
+        .items_text
+        .iter()
         .zip(ext.items_value.iter())
         .map(|(text, value)| FormListItem {
-            display_text: if text.is_empty() { None } else { Some(text.clone()) },
-            value: if value.is_empty() { None } else { Some(value.clone()) },
+            display_text: if text.is_empty() {
+                None
+            } else {
+                Some(text.clone())
+            },
+            value: if value.is_empty() {
+                None
+            } else {
+                Some(value.clone())
+            },
         })
         .collect();
 
     Ok(IrFormObject {
         common,
         form_type,
-        name: if form.name().is_empty() { None } else { Some(form.name().to_string()) },
-        value: if form.default_value().is_empty() { None } else { Some(form.default_value().to_string()) },
+        name: if form.name().is_empty() {
+            None
+        } else {
+            Some(form.name().to_string())
+        },
+        value: if form.default_value().is_empty() {
+            None
+        } else {
+            Some(form.default_value().to_string())
+        },
         char_property: FormCharProperty::default(),
         items,
         // HWPX 전용 필드 - HWP에서는 추출 어려움
@@ -3019,8 +3114,9 @@ fn convert_form_object(form: &HwpFormObject, control: &Control) -> Result<IrForm
         delay: ext.delay,
     })
 }
+
 /// HWP 양식 타입 → IR 양식 타입 변환
-fn convert_form_type(hwp_type: HwpFormObjectType) -> IrFormObjectType {
+const fn convert_form_type(hwp_type: HwpFormObjectType) -> IrFormObjectType {
     match hwp_type {
         HwpFormObjectType::TextField => IrFormObjectType::Edit,
         HwpFormObjectType::CheckBox => IrFormObjectType::CheckBox,
@@ -3033,7 +3129,10 @@ fn convert_form_type(hwp_type: HwpFormObjectType) -> IrFormObjectType {
 }
 
 /// 글맵시 변환
-fn convert_text_art(text_art: &HwpTextArt, control: &Control) -> Result<IrTextArt, ConversionError> {
+fn convert_text_art(
+    text_art: &HwpTextArt,
+    control: &Control,
+) -> Result<IrTextArt, ConversionError> {
     // 공통 속성 파싱 (Control 데이터에서 추출)
     let common = parse_object_common(control.data()).unwrap_or_default();
 
@@ -3174,7 +3273,7 @@ fn convert_field_to_hyperlink(field: &HwpField) -> Result<IrHyperlink, Conversio
 }
 
 /// HWP 필드 타입 → IR 필드 타입 변환
-fn convert_field_type(hwp_type: HwpFieldType) -> IrFieldType {
+const fn convert_field_type(hwp_type: HwpFieldType) -> IrFieldType {
     match hwp_type {
         HwpFieldType::Date => IrFieldType::Date,
         HwpFieldType::Time => IrFieldType::Time,
@@ -3199,7 +3298,11 @@ fn convert_field_type(hwp_type: HwpFieldType) -> IrFieldType {
 }
 
 /// HWP 필드 → IR FieldStart 변환 (Hyperlink 제외)
-fn convert_field_to_field_start(field: &HwpField, field_id: u32, control_data: &[u8]) -> IrFieldStart {
+fn convert_field_to_field_start(
+    field: &HwpField,
+    field_id: u32,
+    control_data: &[u8],
+) -> IrFieldStart {
     // ControlData에서 ParameterSet 추출
     let parameters = if !control_data.is_empty() {
         match ControlData::from_bytes(control_data) {
@@ -3261,14 +3364,12 @@ fn convert_hwp_parameter_item_to_ir(
     let name = Some(format!("0x{:04X}", item.id));
 
     match &item.value {
-        ParameterValue::Boolean(b) => Some(ir::paragraph::FieldParameter::Boolean {
-            name,
-            value: *b,
-        }),
-        ParameterValue::Integer(i) => Some(ir::paragraph::FieldParameter::Integer {
-            name,
-            value: *i,
-        }),
+        ParameterValue::Boolean(b) => {
+            Some(ir::paragraph::FieldParameter::Boolean { name, value: *b })
+        }
+        ParameterValue::Integer(i) => {
+            Some(ir::paragraph::FieldParameter::Integer { name, value: *i })
+        }
         ParameterValue::UnsignedInteger(u) => Some(ir::paragraph::FieldParameter::Integer {
             name,
             value: *u as i64,
@@ -3282,7 +3383,10 @@ fn convert_hwp_parameter_item_to_ir(
 }
 
 /// HWP 그룹 도형(Container) → IR Shape(Group) 변환
-fn convert_container(container: &HwpShapeContainer, ctx: &SectionContext) -> Result<IrShape, ConversionError> {
+fn convert_container(
+    container: &HwpShapeContainer,
+    ctx: &SectionContext,
+) -> Result<IrShape, ConversionError> {
     let mut children = Vec::new();
 
     // 컨테이너의 모든 자식 Control을 재귀적으로 변환
@@ -3382,7 +3486,7 @@ fn convert_container(container: &HwpShapeContainer, ctx: &SectionContext) -> Res
 /// - INT32: 쪽나눔 방지 (4 bytes)
 /// - WORD: 개체 설명문 길이 (2 bytes)
 /// - WCHAR array: 개체 설명문
-fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
+const fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
     // 최소 크기 확인 (46 bytes 기본)
     if data.len() < 46 {
         return None;
@@ -3402,7 +3506,8 @@ fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
     let margin_top = i16::from_le_bytes([data[32], data[33]]);
     let margin_bottom = i16::from_le_bytes([data[34], data[35]]);
     // 평균을 사용하거나 가장 큰 값을 사용 (IR은 단일 margin만 지원)
-    let avg_margin = (margin_left as i32 + margin_right as i32 + margin_top as i32 + margin_bottom as i32) / 4;
+    let avg_margin =
+        (margin_left as i32 + margin_right as i32 + margin_top as i32 + margin_bottom as i32) / 4;
     let instance_id = u32::from_le_bytes([data[36], data[37], data[38], data[39]]);
     // 쪽나눔 방지 skip (4 bytes: 40-43)
     // 개체 설명문 길이/내용 skip
@@ -3411,7 +3516,11 @@ fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
     let text_wrap = parse_text_wrap_from_properties(properties, avg_margin);
 
     Some(ObjectCommon {
-        id: if instance_id > 0 { Some(instance_id) } else { None },
+        id: if instance_id > 0 {
+            Some(instance_id)
+        } else {
+            None
+        },
         position: IrPoint {
             x: HwpUnit::new(offset_x),
             y: HwpUnit::new(offset_y),
@@ -3427,8 +3536,8 @@ fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
         shape_comment: None,
         meta_tag: None,
         dirty: false,
-        width_relative_to: primitive::WidthRelativeTo::default(),
-        height_relative_to: primitive::HeightRelativeTo::default(),
+        width_relative_to: primitive::WidthRelativeTo::Absolute,
+        height_relative_to: primitive::HeightRelativeTo::Absolute,
         margin: ir::control::ObjectMargin {
             left: HwpUnit::new(margin_left as i32),
             right: HwpUnit::new(margin_right as i32),
@@ -3439,7 +3548,7 @@ fn parse_object_common(data: &[u8]) -> Option<ObjectCommon> {
 }
 
 /// 속성 비트에서 TextWrap 정보 파싱 (HWP 스펙 표 70)
-fn parse_text_wrap_from_properties(properties: u32, margin: i32) -> IrTextWrap {
+const fn parse_text_wrap_from_properties(properties: u32, margin: i32) -> IrTextWrap {
     // bit 0: 글자처럼 취급 여부
     let treat_as_char = (properties & 0x01) != 0;
 
@@ -3468,12 +3577,12 @@ fn parse_text_wrap_from_properties(properties: u32, margin: i32) -> IrTextWrap {
     // bit 21~23: 텍스트 감싸기 종류
     let wrap_type_bits = (properties >> 21) & 0x07;
     let wrap_type = match wrap_type_bits {
-        0 => IrTextWrapType::Square,      // bound rect를 따라
-        1 => IrTextWrapType::Tight,       // 오브젝트의 outline을 따라
-        2 => IrTextWrapType::Tight,       // through (빈 공간까지)
-        3 => IrTextWrapType::Square,      // TopAndBottom
-        4 => IrTextWrapType::Behind,      // BehindText
-        5 => IrTextWrapType::InFront,     // InFrontOfText
+        0 => IrTextWrapType::Square,  // bound rect를 따라
+        1 => IrTextWrapType::Tight,   // 오브젝트의 outline을 따라
+        2 => IrTextWrapType::Tight,   // through (빈 공간까지)
+        3 => IrTextWrapType::Square,  // TopAndBottom
+        4 => IrTextWrapType::Behind,  // BehindText
+        5 => IrTextWrapType::InFront, // InFrontOfText
         _ => IrTextWrapType::Square,
     };
 
@@ -3500,8 +3609,8 @@ fn parse_text_wrap_from_properties(properties: u32, margin: i32) -> IrTextWrap {
         margin: HwpUnit::new(margin),
         vertical_rel,
         horizontal_rel,
-        vertical_offset_type: primitive::VerticalOffsetType::default(),
-        horizontal_offset_type: primitive::HorizontalOffsetType::default(),
+        vertical_offset_type: primitive::VerticalOffsetType::Top,
+        horizontal_offset_type: primitive::HorizontalOffsetType::Left,
         treat_as_char,
         flow_with_text: false, // HWP 5.0 스펙에서 명시적으로 정의되지 않음
         allow_overlap,

@@ -123,7 +123,7 @@ impl PageDefinition {
     }
 
     /// Returns the effective width (considering orientation).
-    pub fn effective_width(&self) -> HwpUnit {
+    pub const fn effective_width(&self) -> HwpUnit {
         match self.orientation {
             PageOrientation::Portrait => self.width,
             PageOrientation::Landscape => self.height,
@@ -131,7 +131,7 @@ impl PageDefinition {
     }
 
     /// Returns the effective height (considering orientation).
-    pub fn effective_height(&self) -> HwpUnit {
+    pub const fn effective_height(&self) -> HwpUnit {
         match self.orientation {
             PageOrientation::Portrait => self.height,
             PageOrientation::Landscape => self.width,
@@ -139,14 +139,14 @@ impl PageDefinition {
     }
 
     /// Returns the printable width (page width minus left and right margins).
-    pub fn printable_width(&self) -> i32 {
+    pub const fn printable_width(&self) -> i32 {
         let total_margin = self.margins.left.value() + self.margins.right.value();
         let effective = self.effective_width().value();
         effective.saturating_sub(total_margin)
     }
 
     /// Returns the printable height (page height minus top and bottom margins).
-    pub fn printable_height(&self) -> i32 {
+    pub const fn printable_height(&self) -> i32 {
         let total_margin = self.margins.top.value() + self.margins.bottom.value();
         let effective = self.effective_height().value();
         effective.saturating_sub(total_margin)
@@ -166,11 +166,7 @@ pub enum PageBorderFillPosition {
 impl PageBorderFillPosition {
     /// Creates from raw value.
     pub const fn from_raw(value: u8) -> Self {
-        if value == 0 {
-            Self::Paper
-        } else {
-            Self::Body
-        }
+        if value == 0 { Self::Paper } else { Self::Body }
     }
 }
 
@@ -201,11 +197,6 @@ pub struct PageBorderFill {
 }
 
 impl PageBorderFill {
-    /// Creates a new page border fill with default values.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Parses page border fill from reader.
     ///
     /// Format (per HWP spec - HWPTAG_PAGE_BORDER_FILL):
@@ -277,17 +268,6 @@ impl From<GutterPosition> for primitive::GutterPosition {
     }
 }
 
-impl From<primitive::GutterPosition> for GutterPosition {
-    fn from(pos: primitive::GutterPosition) -> Self {
-        match pos {
-            primitive::GutterPosition::Left => Self::Left,
-            primitive::GutterPosition::Right => Self::Right,
-            primitive::GutterPosition::Top => Self::Top,
-            primitive::GutterPosition::Bottom => Self::Bottom,
-        }
-    }
-}
-
 impl From<PageMargins> for primitive::PageMargins {
     fn from(margins: PageMargins) -> Self {
         Self::new(
@@ -299,20 +279,6 @@ impl From<PageMargins> for primitive::PageMargins {
             margins.footer,
             margins.gutter,
         )
-    }
-}
-
-impl From<primitive::PageMargins> for PageMargins {
-    fn from(margins: primitive::PageMargins) -> Self {
-        Self {
-            left: margins.left,
-            right: margins.right,
-            top: margins.top,
-            bottom: margins.bottom,
-            header: margins.header,
-            footer: margins.footer,
-            gutter: margins.gutter,
-        }
     }
 }
 
@@ -388,13 +354,19 @@ mod tests {
 
     #[test]
     fn test_page_border_fill_position() {
-        assert_eq!(PageBorderFillPosition::from_raw(0), PageBorderFillPosition::Paper);
-        assert_eq!(PageBorderFillPosition::from_raw(1), PageBorderFillPosition::Body);
+        assert_eq!(
+            PageBorderFillPosition::from_raw(0),
+            PageBorderFillPosition::Paper
+        );
+        assert_eq!(
+            PageBorderFillPosition::from_raw(1),
+            PageBorderFillPosition::Body
+        );
     }
 
     #[test]
     fn test_page_border_fill_new() {
-        let border_fill = PageBorderFill::new();
+        let border_fill = PageBorderFill::default();
         assert_eq!(border_fill.border_fill_id, 0);
         assert_eq!(border_fill.position, PageBorderFillPosition::Paper);
         assert!(!border_fill.include_header);

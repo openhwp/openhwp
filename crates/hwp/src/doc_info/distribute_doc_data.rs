@@ -19,22 +19,16 @@ pub struct DistributeDocData {
     data: [u8; DISTRIBUTE_DOC_DATA_SIZE],
 }
 
-impl Default for DistributeDocData {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl DistributeDocData {
     /// Creates a new empty distribution document data.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             data: [0u8; DISTRIBUTE_DOC_DATA_SIZE],
         }
     }
 
     /// Creates from raw data.
-    pub fn from_data(data: [u8; DISTRIBUTE_DOC_DATA_SIZE]) -> Self {
+    pub const fn from_data(data: [u8; DISTRIBUTE_DOC_DATA_SIZE]) -> Self {
         Self { data }
     }
 

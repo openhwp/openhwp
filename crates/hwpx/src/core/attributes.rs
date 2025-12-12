@@ -2,9 +2,8 @@
 //!
 //! KS X 6101:2024 - core.xsd를 근거로 하며, 이 파일의 모든 타입/필드 설명은 AI가 작성했습니다. 실제 스키마(`docs/hwpx/schemas/core.xsd`)와 차이가 있으면 TODO로 남겨 주세요.
 
-use serde::{Deserialize, Serialize};
-
 use super::enums::{BorderLineStyle, BorderLineWidth};
+use serde::{Deserialize, Serialize};
 
 /// [AI 생성] 여백 정보
 ///
@@ -44,14 +43,4 @@ pub struct BorderAttributes {
     /// [AI 생성] 테두리선 색상 (`color` 속성, RGB 0x00bbggrr 십진수)
     #[serde(rename = "@color", skip_serializing_if = "Option::is_none")]
     pub color: Option<u32>,
-}
-
-impl Default for BorderAttributes {
-    fn default() -> Self {
-        Self {
-            border_type: BorderLineStyle::Solid,
-            width: BorderLineWidth::Mm0_12,
-            color: None,
-        }
-    }
 }

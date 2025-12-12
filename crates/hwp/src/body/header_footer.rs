@@ -49,7 +49,7 @@ pub struct Header {
 
 impl Header {
     /// Creates a new header.
-    pub fn new(target: HeaderFooterTarget) -> Self {
+    pub const fn new(target: HeaderFooterTarget) -> Self {
         Self {
             target,
             paragraphs: Vec::new(),
@@ -97,7 +97,7 @@ pub struct Footer {
 
 impl Footer {
     /// Creates a new footer.
-    pub fn new(target: HeaderFooterTarget) -> Self {
+    pub const fn new(target: HeaderFooterTarget) -> Self {
         Self {
             target,
             paragraphs: Vec::new(),
@@ -140,10 +140,22 @@ mod tests {
 
     #[test]
     fn test_header_footer_target() {
-        assert_eq!(HeaderFooterTarget::from_raw(0), HeaderFooterTarget::BothPages);
-        assert_eq!(HeaderFooterTarget::from_raw(1), HeaderFooterTarget::EvenPages);
-        assert_eq!(HeaderFooterTarget::from_raw(2), HeaderFooterTarget::OddPages);
-        assert_eq!(HeaderFooterTarget::from_raw(3), HeaderFooterTarget::BothPages);
+        assert_eq!(
+            HeaderFooterTarget::from_raw(0),
+            HeaderFooterTarget::BothPages
+        );
+        assert_eq!(
+            HeaderFooterTarget::from_raw(1),
+            HeaderFooterTarget::EvenPages
+        );
+        assert_eq!(
+            HeaderFooterTarget::from_raw(2),
+            HeaderFooterTarget::OddPages
+        );
+        assert_eq!(
+            HeaderFooterTarget::from_raw(3),
+            HeaderFooterTarget::BothPages
+        );
     }
 
     #[test]

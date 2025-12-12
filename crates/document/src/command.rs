@@ -158,7 +158,7 @@ pub struct DeleteText {
 
 impl DeleteText {
     /// 새 삭제 명령 생성
-    pub fn new(start: Position, length: usize) -> Self {
+    pub const fn new(start: Position, length: usize) -> Self {
         Self {
             start,
             length,
@@ -203,7 +203,11 @@ impl Command for DeleteText {
             .ok_or(CommandError::RunNotFound)?;
 
         // 삭제할 텍스트 저장
-        self.deleted_text = Some(extract_text_at_offset(run, self.start.char_offset, self.length));
+        self.deleted_text = Some(extract_text_at_offset(
+            run,
+            self.start.char_offset,
+            self.length,
+        ));
 
         // 텍스트 삭제
         delete_text_at_offset(run, self.start.char_offset, self.length);
@@ -270,7 +274,7 @@ pub struct InsertParagraph {
 
 impl InsertParagraph {
     /// 새 문단 삽입 명령 생성
-    pub fn new(section_index: usize, paragraph_index: usize) -> Self {
+    pub const fn new(section_index: usize, paragraph_index: usize) -> Self {
         Self {
             section_index,
             paragraph_index,
@@ -345,7 +349,7 @@ pub struct DeleteParagraph {
 
 impl DeleteParagraph {
     /// 새 문단 삭제 명령 생성
-    pub fn new(section_index: usize, paragraph_index: usize) -> Self {
+    pub const fn new(section_index: usize, paragraph_index: usize) -> Self {
         Self {
             section_index,
             paragraph_index,
@@ -478,11 +482,7 @@ fn delete_text_at_offset(run: &mut Run, offset: usize, length: usize) {
                     .nth(start)
                     .map(|(i, _)| i)
                     .unwrap_or(s.len());
-                let byte_end = s
-                    .char_indices()
-                    .nth(end)
-                    .map(|(i, _)| i)
-                    .unwrap_or(s.len());
+                let byte_end = s.char_indices().nth(end).map(|(i, _)| i).unwrap_or(s.len());
 
                 s.drain(byte_start..byte_end);
                 to_remove -= remove_count;

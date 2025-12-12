@@ -241,16 +241,6 @@ fn default_side_char() -> String {
     "-".to_string()
 }
 
-impl Default for PageNumber {
-    fn default() -> Self {
-        Self {
-            position: PageNumberPosition::TopLeft,
-            format_type: NumberFormatType1::Digit,
-            side_character: "-".to_string(),
-        }
-    }
-}
-
 /// [AI 생성] 색인 표시
 ///
 /// 원본: `indexmark` 요소의 익명 타입

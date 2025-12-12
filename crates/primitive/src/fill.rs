@@ -58,7 +58,7 @@ pub enum Fill {
 
 impl Fill {
     /// 채우기 종류 반환
-    pub fn fill_type(&self) -> FillType {
+    pub const fn fill_type(&self) -> FillType {
         match self {
             Fill::None => FillType::None,
             Fill::Solid(_) => FillType::Solid,
@@ -69,7 +69,7 @@ impl Fill {
     }
 
     /// 채우기가 없는지 확인
-    pub fn is_none(&self) -> bool {
+    pub const fn is_none(&self) -> bool {
         matches!(self, Fill::None)
     }
 }
@@ -86,23 +86,8 @@ pub struct SolidFill {
 
 impl SolidFill {
     /// 단색 채우기 생성
-    pub fn new(color: Color) -> Self {
+    pub const fn new(color: Color) -> Self {
         Self { color, alpha: 255 }
-    }
-
-    /// 투명도 설정
-    pub fn with_alpha(mut self, alpha: u8) -> Self {
-        self.alpha = alpha;
-        self
-    }
-}
-
-impl Default for SolidFill {
-    fn default() -> Self {
-        Self {
-            color: Color::WHITE,
-            alpha: 255,
-        }
     }
 }
 
@@ -126,29 +111,6 @@ pub struct GradientFill {
     pub step_center: u8,
 }
 
-impl Default for GradientFill {
-    fn default() -> Self {
-        Self {
-            gradient_type: GradientType::Linear,
-            angle: 0,
-            center_x: 50,
-            center_y: 50,
-            stops: vec![
-                GradientStop {
-                    position: 0,
-                    color: Color::WHITE,
-                },
-                GradientStop {
-                    position: 100,
-                    color: Color::BLACK,
-                },
-            ],
-            blur: 0,
-            step_center: 50,
-        }
-    }
-}
-
 /// 그라데이션 색상 정지점
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -157,13 +119,6 @@ pub struct GradientStop {
     pub position: u8,
     /// 색상
     pub color: Color,
-}
-
-impl GradientStop {
-    /// 정지점 생성
-    pub fn new(position: u8, color: Color) -> Self {
-        Self { position, color }
-    }
 }
 
 /// 이미지 채우기
@@ -188,22 +143,6 @@ pub struct ImageFill {
     pub size: Option<(HwpUnit, HwpUnit)>,
 }
 
-impl ImageFill {
-    /// 이미지 채우기 생성
-    pub fn new(binary_id: BinaryDataId) -> Self {
-        Self {
-            binary_id,
-            mode: ImageFillMode::Tile,
-            brightness: 0,
-            contrast: 0,
-            effect: ImageEffect::Original,
-            offset_x: HwpUnit::ZERO,
-            offset_y: HwpUnit::ZERO,
-            size: None,
-        }
-    }
-}
-
 /// 패턴 채우기
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -214,16 +153,6 @@ pub struct PatternFill {
     pub foreground: Color,
     /// 배경색
     pub background: Color,
-}
-
-impl Default for PatternFill {
-    fn default() -> Self {
-        Self {
-            pattern_type: PatternType::Horizontal,
-            foreground: Color::BLACK,
-            background: Color::WHITE,
-        }
-    }
 }
 
 /// 그라데이션 방향

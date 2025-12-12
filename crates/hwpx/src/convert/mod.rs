@@ -18,16 +18,10 @@ pub struct ToIrContext {
 
 impl ToIrContext {
     /// 새 컨텍스트 생성
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             warnings: WarningCollector::new(),
         }
-    }
-}
-
-impl Default for ToIrContext {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -39,15 +33,9 @@ pub struct FromIrContext {
 
 impl FromIrContext {
     /// 새 컨텍스트 생성
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             warnings: WarningCollector::new(),
         }
-    }
-}
-
-impl Default for FromIrContext {
-    fn default() -> Self {
-        Self::new()
     }
 }

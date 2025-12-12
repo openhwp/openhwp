@@ -9,7 +9,6 @@ mod to_ir;
 
 pub use color::ColorConvert;
 
-pub use to_ir::HwpToIr;
 pub use from_ir::IrToHwp;
 
 use ir::WarningCollector;

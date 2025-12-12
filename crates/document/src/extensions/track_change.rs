@@ -36,7 +36,7 @@ impl TrackChangeManager {
     }
 
     /// 변경 추적 활성화 여부
-    pub fn is_enabled(&self) -> bool {
+    pub const fn is_enabled(&self) -> bool {
         self.enabled
     }
 
@@ -47,7 +47,11 @@ impl TrackChangeManager {
     }
 
     /// 변경 기록
-    pub fn record_change(&mut self, change_type: TrackChangeType, position: Position) -> Option<u32> {
+    pub fn record_change(
+        &mut self,
+        change_type: TrackChangeType,
+        position: Position,
+    ) -> Option<u32> {
         if !self.enabled {
             return None;
         }
@@ -81,7 +85,11 @@ impl TrackChangeManager {
     }
 
     /// 서식 변경 기록
-    pub fn record_format_change(&mut self, position: Position, description: impl Into<String>) -> Option<u32> {
+    pub fn record_format_change(
+        &mut self,
+        position: Position,
+        description: impl Into<String>,
+    ) -> Option<u32> {
         self.record_change(
             TrackChangeType::Format {
                 description: description.into(),
@@ -92,7 +100,11 @@ impl TrackChangeManager {
 
     /// 변경 승인
     pub fn accept_change(&mut self, change_id: u32) -> bool {
-        if let Some(change) = self.changes.iter_mut().find(|c| c.id == change_id && !c.rejected) {
+        if let Some(change) = self
+            .changes
+            .iter_mut()
+            .find(|c| c.id == change_id && !c.rejected)
+        {
             change.accepted = true;
             return true;
         }
@@ -101,7 +113,11 @@ impl TrackChangeManager {
 
     /// 변경 거부
     pub fn reject_change(&mut self, change_id: u32) -> bool {
-        if let Some(change) = self.changes.iter_mut().find(|c| c.id == change_id && !c.accepted) {
+        if let Some(change) = self
+            .changes
+            .iter_mut()
+            .find(|c| c.id == change_id && !c.accepted)
+        {
             change.rejected = true;
             return true;
         }
@@ -140,7 +156,7 @@ impl TrackChangeManager {
     }
 
     /// 변경 수
-    pub fn change_count(&self) -> usize {
+    pub const fn change_count(&self) -> usize {
         self.changes.len()
     }
 
@@ -192,7 +208,7 @@ pub struct TrackChange {
 
 impl TrackChange {
     /// 미결 상태인지 확인
-    pub fn is_pending(&self) -> bool {
+    pub const fn is_pending(&self) -> bool {
         !self.accepted && !self.rejected
     }
 }

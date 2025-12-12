@@ -76,13 +76,13 @@ impl ColorReference {
 
     /// Reads from little-endian bytes.
     #[inline]
-    pub fn from_le_bytes(bytes: [u8; 4]) -> Self {
+    pub const fn from_le_bytes(bytes: [u8; 4]) -> Self {
         Self(u32::from_le_bytes(bytes))
     }
 
     /// Converts to little-endian bytes.
     #[inline]
-    pub fn to_le_bytes(self) -> [u8; 4] {
+    pub const fn to_le_bytes(self) -> [u8; 4] {
         self.0.to_le_bytes()
     }
 }
@@ -91,7 +91,10 @@ impl fmt::Debug for ColorReference {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ColorReference")
             .field("value", &format_args!("0x{:06X}", self.0))
-            .field("rgb", &format_args!("({}, {}, {})", self.red(), self.green(), self.blue()))
+            .field(
+                "rgb",
+                &format_args!("({}, {}, {})", self.red(), self.green(), self.blue()),
+            )
             .finish()
     }
 }

@@ -109,13 +109,13 @@ impl Version {
 
     /// 리틀 엔디안 바이트에서 읽기
     #[inline]
-    pub fn from_le_bytes(bytes: [u8; 4]) -> Self {
+    pub const fn from_le_bytes(bytes: [u8; 4]) -> Self {
         Self(u32::from_le_bytes(bytes))
     }
 
     /// 리틀 엔디안 바이트로 변환
     #[inline]
-    pub fn to_le_bytes(self) -> [u8; 4] {
+    pub const fn to_le_bytes(self) -> [u8; 4] {
         self.0.to_le_bytes()
     }
 }

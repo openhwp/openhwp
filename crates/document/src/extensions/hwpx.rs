@@ -32,22 +32,12 @@ impl HwpxExtension {
         self.version.as_ref().map(|v| v.to_string())
     }
 
-    /// 마스터 페이지 수
-    pub fn master_page_count(&self) -> usize {
-        self.master_pages.len()
-    }
-
     /// 변경 추적 활성화 여부
-    pub fn is_track_change_enabled(&self) -> bool {
-        self.track_change_config
-            .as_ref()
-            .map(|c| c.enabled)
-            .unwrap_or(false)
-    }
-
-    /// 메모 수
-    pub fn memo_count(&self) -> usize {
-        self.memos.len()
+    pub const fn is_track_change_enabled(&self) -> bool {
+        match &self.track_change_config {
+            Some(config) => config.enabled,
+            None => false,
+        }
     }
 }
 
@@ -66,14 +56,18 @@ pub struct HcfVersion {
 
 impl HcfVersion {
     /// 1.0.0 이상인지 확인
-    pub fn is_1_0_or_later(&self) -> bool {
+    pub const fn is_1_0_or_later(&self) -> bool {
         self.version.0 >= 1
     }
 }
 
 impl std::fmt::Display for HcfVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.version.0, self.version.1, self.version.2)
+        write!(
+            f,
+            "{}.{}.{}",
+            self.version.0, self.version.1, self.version.2
+        )
     }
 }
 
@@ -295,9 +289,9 @@ mod tests {
     #[test]
     fn test_hwpx_extension_creation() {
         let ext = HwpxExtension::new();
-        assert_eq!(ext.master_page_count(), 0);
+        assert_eq!(ext.master_pages.len(), 0);
         assert!(!ext.is_track_change_enabled());
-        assert_eq!(ext.memo_count(), 0);
+        assert_eq!(ext.memos.len(), 0);
     }
 
     #[test]
@@ -337,6 +331,6 @@ mod tests {
             footer_ref: None,
             page_number_position: Some(PageNumberPosition::BottomCenter),
         });
-        assert_eq!(ext.master_page_count(), 1);
+        assert_eq!(ext.master_pages.len(), 1);
     }
 }

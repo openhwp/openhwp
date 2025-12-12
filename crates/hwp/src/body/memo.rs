@@ -3,10 +3,9 @@
 //! Memos are annotations attached to text ranges in the document.
 //! They consist of a shape definition and a list containing the memo content.
 
+use super::paragraph::Paragraph;
 use crate::error::Result;
 use crate::util::ByteReader;
-
-use super::paragraph::Paragraph;
 
 /// Memo shape properties.
 #[derive(Debug, Clone, Default)]
@@ -67,7 +66,7 @@ pub struct Memo {
 
 impl Memo {
     /// Creates a memo with shape.
-    pub fn with_shape(shape: MemoShape) -> Self {
+    pub const fn with_shape(shape: MemoShape) -> Self {
         Self {
             shape,
             paragraphs: Vec::new(),

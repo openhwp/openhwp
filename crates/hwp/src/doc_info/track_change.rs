@@ -45,11 +45,8 @@ pub struct TrackChangeAuthor {
 
 impl TrackChangeAuthor {
     /// Creates an author with name.
-    pub fn with_name(name: String) -> Self {
-        Self {
-            name,
-            author_id: 0,
-        }
+    pub const fn with_name(name: String) -> Self {
+        Self { name, author_id: 0 }
     }
 
     /// Returns the author name.

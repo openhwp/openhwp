@@ -61,7 +61,11 @@ fn convert_paragraph_to_ir(para: &Paragraph, doc: &Document) -> ir::Paragraph {
         },
         instance_id: para.instance_id,
         line_segments: None,
-        range_tags: para.range_tags.iter().map(convert_range_tag_to_ir).collect(),
+        range_tags: para
+            .range_tags
+            .iter()
+            .map(convert_range_tag_to_ir)
+            .collect(),
     };
 
     // 런 변환
@@ -111,9 +115,7 @@ fn convert_run_to_ir(run: &Run, doc: &Document) -> ir::paragraph::Run {
 /// RunContent을 IR로 변환
 fn convert_run_content_to_ir(content: &RunContent, doc: &Document) -> ir::paragraph::RunContent {
     match content {
-        RunContent::Text(s) => {
-            ir::paragraph::RunContent::Text(ir::paragraph::Text::new(s.clone()))
-        }
+        RunContent::Text(s) => ir::paragraph::RunContent::Text(ir::paragraph::Text::new(s.clone())),
         RunContent::Tab => ir::paragraph::RunContent::Tab(ir::paragraph::TabChar::default()),
         RunContent::LineBreak => ir::paragraph::RunContent::LineBreak,
         RunContent::Hyphen => ir::paragraph::RunContent::Hyphen,
@@ -138,7 +140,9 @@ fn convert_run_content_to_ir(content: &RunContent, doc: &Document) -> ir::paragr
             // TODO: proper conversion
             ir::paragraph::RunContent::FieldEnd(ir::paragraph::FieldEnd { id: 0 })
         }
-        RunContent::FieldEnd => ir::paragraph::RunContent::FieldEnd(ir::paragraph::FieldEnd { id: 0 }),
+        RunContent::FieldEnd => {
+            ir::paragraph::RunContent::FieldEnd(ir::paragraph::FieldEnd { id: 0 })
+        }
         RunContent::BookmarkStart(bs) => {
             ir::paragraph::RunContent::BookmarkStart(ir::paragraph::BookmarkStart {
                 id: bs.id,
@@ -152,7 +156,7 @@ fn convert_run_content_to_ir(content: &RunContent, doc: &Document) -> ir::paragr
 }
 
 /// 빈 UnknownControl 생성
-fn empty_unknown_control() -> ir::control::UnknownControl {
+const fn empty_unknown_control() -> ir::control::UnknownControl {
     ir::control::UnknownControl {
         ctrl_id: [0, 0, 0, 0],
         data: Vec::new(),
@@ -182,7 +186,7 @@ fn convert_object_common_to_ir(common: &crate::control::ObjectCommon) -> ir::con
 }
 
 /// TextWrap을 IR로 변환
-fn convert_text_wrap_to_ir(wrap: &crate::control::TextWrap) -> ir::control::TextWrap {
+const fn convert_text_wrap_to_ir(wrap: &crate::control::TextWrap) -> ir::control::TextWrap {
     ir::control::TextWrap {
         wrap_type: wrap.wrap_type,
         wrap_side: wrap.wrap_side,
@@ -198,7 +202,7 @@ fn convert_text_wrap_to_ir(wrap: &crate::control::TextWrap) -> ir::control::Text
 }
 
 /// Caption을 IR로 변환
-fn convert_caption_to_ir(caption: &crate::control::Caption) -> ir::control::Caption {
+const fn convert_caption_to_ir(caption: &crate::control::Caption) -> ir::control::Caption {
     ir::control::Caption {
         position: match caption.position {
             crate::control::CaptionPosition::Left => ir::control::CaptionPosition::Left,
@@ -223,7 +227,10 @@ fn convert_ole_to_ir(ole: &crate::control::Ole) -> ir::control::OleObject {
 }
 
 /// TextBox을 IR로 변환
-fn convert_textbox_to_ir(textbox: &crate::control::TextBox, doc: &Document) -> ir::control::TextBox {
+fn convert_textbox_to_ir(
+    textbox: &crate::control::TextBox,
+    doc: &Document,
+) -> ir::control::TextBox {
     let mut paragraphs = Vec::new();
     for &para_id in &textbox.paragraphs {
         if let Some(para) = doc.arena.get_paragraph(para_id) {
@@ -269,7 +276,10 @@ fn convert_note_to_ir(note: &crate::control::Note, doc: &Document) -> ir::contro
 }
 
 /// HiddenComment을 IR로 변환
-fn convert_hidden_comment_to_ir(hidden_comment: &crate::control::HiddenComment, doc: &Document) -> ir::control::HiddenComment {
+fn convert_hidden_comment_to_ir(
+    hidden_comment: &crate::control::HiddenComment,
+    doc: &Document,
+) -> ir::control::HiddenComment {
     let mut paragraphs = Vec::new();
     for &para_id in &hidden_comment.paragraphs {
         if let Some(para) = doc.arena.get_paragraph(para_id) {
@@ -277,13 +287,13 @@ fn convert_hidden_comment_to_ir(hidden_comment: &crate::control::HiddenComment, 
         }
     }
 
-    ir::control::HiddenComment {
-        paragraphs,
-    }
+    ir::control::HiddenComment { paragraphs }
 }
 
 /// TextDirection을 IR로 변환
-fn convert_text_direction_to_ir(text_direction: crate::control::TextDirection) -> primitive::TextDirection {
+const fn convert_text_direction_to_ir(
+    text_direction: crate::control::TextDirection,
+) -> primitive::TextDirection {
     match text_direction {
         crate::control::TextDirection::Horizontal => primitive::TextDirection::Horizontal,
         crate::control::TextDirection::Vertical => primitive::TextDirection::Vertical,
@@ -292,9 +302,13 @@ fn convert_text_direction_to_ir(text_direction: crate::control::TextDirection) -
 }
 
 /// NoteNumberPosition을 IR로 변환
-fn convert_note_number_position_to_ir(position: crate::section::NoteNumberPosition) -> primitive::NoteNumberPosition {
+const fn convert_note_number_position_to_ir(
+    position: crate::section::NoteNumberPosition,
+) -> primitive::NoteNumberPosition {
     match position {
-        crate::section::NoteNumberPosition::Superscript => primitive::NoteNumberPosition::Superscript,
+        crate::section::NoteNumberPosition::Superscript => {
+            primitive::NoteNumberPosition::Superscript
+        }
         crate::section::NoteNumberPosition::Subscript => primitive::NoteNumberPosition::Subscript,
     }
 }
@@ -307,17 +321,31 @@ fn convert_control_to_ir(ctrl: &Control, doc: &Document) -> ir::control::Control
         Control::Shape(s) => ir::control::Control::Shape(Box::new(convert_shape_to_ir(s, doc))),
         Control::Equation(e) => ir::control::Control::Equation(Box::new(convert_equation_to_ir(e))),
         Control::Ole(o) => ir::control::Control::Ole(Box::new(convert_ole_to_ir(o))),
-        Control::TextBox(tb) => ir::control::Control::TextBox(Box::new(convert_textbox_to_ir(tb, doc))),
-        Control::Footnote(n) => ir::control::Control::Footnote(Box::new(convert_note_to_ir(n, doc))),
+        Control::TextBox(tb) => {
+            ir::control::Control::TextBox(Box::new(convert_textbox_to_ir(tb, doc)))
+        }
+        Control::Footnote(n) => {
+            ir::control::Control::Footnote(Box::new(convert_note_to_ir(n, doc)))
+        }
         Control::Endnote(n) => ir::control::Control::Endnote(Box::new(convert_note_to_ir(n, doc))),
-        Control::HiddenComment(hc) => ir::control::Control::HiddenComment(Box::new(convert_hidden_comment_to_ir(hc, doc))),
-        Control::Hyperlink(h) => ir::control::Control::Hyperlink(Box::new(convert_hyperlink_to_ir(h))),
+        Control::HiddenComment(hc) => {
+            ir::control::Control::HiddenComment(Box::new(convert_hidden_comment_to_ir(hc, doc)))
+        }
+        Control::Hyperlink(h) => {
+            ir::control::Control::Hyperlink(Box::new(convert_hyperlink_to_ir(h)))
+        }
         Control::Bookmark(b) => ir::control::Control::Bookmark(Box::new(ir::control::Bookmark {
             name: b.name.clone(),
         })),
-        Control::AutoNumber(an) => ir::control::Control::AutoNumber(Box::new(convert_auto_number_to_ir(an))),
-        Control::NewNumber(nn) => ir::control::Control::NewNumber(Box::new(convert_new_number_to_ir(nn))),
-        Control::FormObject(fo) => ir::control::Control::FormObject(Box::new(convert_form_object_to_ir(fo))),
+        Control::AutoNumber(an) => {
+            ir::control::Control::AutoNumber(Box::new(convert_auto_number_to_ir(an)))
+        }
+        Control::NewNumber(nn) => {
+            ir::control::Control::NewNumber(Box::new(convert_new_number_to_ir(nn)))
+        }
+        Control::FormObject(fo) => {
+            ir::control::Control::FormObject(Box::new(convert_form_object_to_ir(fo)))
+        }
         Control::Video(v) => ir::control::Control::Video(Box::new(convert_video_to_ir(v))),
         Control::Chart(c) => ir::control::Control::Chart(Box::new(convert_chart_to_ir(c))),
         Control::TextArt(ta) => ir::control::Control::TextArt(Box::new(convert_text_art_to_ir(ta))),
@@ -325,13 +353,17 @@ fn convert_control_to_ir(ctrl: &Control, doc: &Document) -> ir::control::Control
         // 만약 여기 도달하면 Unknown으로 처리
         Control::Compose(_) => ir::control::Control::Unknown(Box::new(empty_unknown_control())),
         Control::Dutmal(_) => ir::control::Control::Unknown(Box::new(empty_unknown_control())),
-        Control::IndexMark(im) => ir::control::Control::IndexMark(Box::new(convert_index_mark_to_ir(im))),
+        Control::IndexMark(im) => {
+            ir::control::Control::IndexMark(Box::new(convert_index_mark_to_ir(im)))
+        }
         // ConnectLine은 추후 구현 (일단 Unknown으로)
         Control::ConnectLine(_) => ir::control::Control::Unknown(Box::new(empty_unknown_control())),
-        Control::Unknown(data) => ir::control::Control::Unknown(Box::new(ir::control::UnknownControl {
-            ctrl_id: [0, 0, 0, 0],
-            data: data.clone(),
-        })),
+        Control::Unknown(data) => {
+            ir::control::Control::Unknown(Box::new(ir::control::UnknownControl {
+                ctrl_id: [0, 0, 0, 0],
+                data: data.clone(),
+            }))
+        }
     }
 }
 
@@ -457,7 +489,10 @@ fn convert_shape_to_ir(shape: &crate::control::Shape, doc: &Document) -> ir::sha
             distance: s.distance,
         }),
         rotation: shape.rotation,
-        text: shape.text.as_ref().map(|t| convert_shape_text_to_ir(t, doc)),
+        text: shape
+            .text
+            .as_ref()
+            .map(|t| convert_shape_text_to_ir(t, doc)),
         translation_matrix: None,
         scale_matrix: None,
         rotation_matrix: None,
@@ -465,35 +500,49 @@ fn convert_shape_to_ir(shape: &crate::control::Shape, doc: &Document) -> ir::sha
 }
 
 /// ShapeType을 IR로 변환
-fn convert_shape_type_to_ir(shape_type: &crate::control::ShapeType, doc: &Document) -> ir::shape::ShapeType {
+fn convert_shape_type_to_ir(
+    shape_type: &crate::control::ShapeType,
+    doc: &Document,
+) -> ir::shape::ShapeType {
     match shape_type {
-        crate::control::ShapeType::Line { start, end, start_arrow, end_arrow } => {
-            ir::shape::ShapeType::Line(ir::shape::LineShape {
-                start: *start,
-                end: *end,
-                start_arrow: start_arrow.as_ref().map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
-                end_arrow: end_arrow.as_ref().map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
-            })
-        }
+        crate::control::ShapeType::Line {
+            start,
+            end,
+            start_arrow,
+            end_arrow,
+        } => ir::shape::ShapeType::Line(ir::shape::LineShape {
+            start: *start,
+            end: *end,
+            start_arrow: start_arrow
+                .as_ref()
+                .map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
+            end_arrow: end_arrow
+                .as_ref()
+                .map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
+        }),
         crate::control::ShapeType::Rectangle { corner_radius } => {
             ir::shape::ShapeType::Rectangle(ir::shape::RectangleShape {
                 corner_radius: *corner_radius,
             })
         }
-        crate::control::ShapeType::Ellipse { arc_type, start_angle, end_angle } => {
-            ir::shape::ShapeType::Ellipse(ir::shape::EllipseShape {
-                arc_type: convert_arc_type_to_ir(*arc_type),
-                start_angle: *start_angle,
-                end_angle: *end_angle,
-            })
-        }
-        crate::control::ShapeType::Arc { arc_type, start_angle, end_angle } => {
-            ir::shape::ShapeType::Arc(ir::shape::ArcShape {
-                arc_type: convert_arc_type_to_ir(*arc_type),
-                start_angle: *start_angle,
-                end_angle: *end_angle,
-            })
-        }
+        crate::control::ShapeType::Ellipse {
+            arc_type,
+            start_angle,
+            end_angle,
+        } => ir::shape::ShapeType::Ellipse(ir::shape::EllipseShape {
+            arc_type: convert_arc_type_to_ir(*arc_type),
+            start_angle: *start_angle,
+            end_angle: *end_angle,
+        }),
+        crate::control::ShapeType::Arc {
+            arc_type,
+            start_angle,
+            end_angle,
+        } => ir::shape::ShapeType::Arc(ir::shape::ArcShape {
+            arc_type: convert_arc_type_to_ir(*arc_type),
+            start_angle: *start_angle,
+            end_angle: *end_angle,
+        }),
         crate::control::ShapeType::Polygon { points } => {
             ir::shape::ShapeType::Polygon(ir::shape::PolygonShape {
                 points: points.clone(),
@@ -501,55 +550,72 @@ fn convert_shape_type_to_ir(shape_type: &crate::control::ShapeType, doc: &Docume
         }
         crate::control::ShapeType::Curve { points, closed } => {
             ir::shape::ShapeType::Curve(ir::shape::CurveShape {
-                points: points.iter().map(|p| ir::shape::CurvePoint {
-                    point: p.point,
-                    point_type: match p.point_type {
-                        crate::control::CurvePointType::Normal => ir::shape::CurvePointType::Normal,
-                        crate::control::CurvePointType::Control1 => ir::shape::CurvePointType::Control1,
-                        crate::control::CurvePointType::Control2 => ir::shape::CurvePointType::Control2,
-                    },
-                }).collect(),
+                points: points
+                    .iter()
+                    .map(|p| ir::shape::CurvePoint {
+                        point: p.point,
+                        point_type: match p.point_type {
+                            crate::control::CurvePointType::Normal => {
+                                ir::shape::CurvePointType::Normal
+                            }
+                            crate::control::CurvePointType::Control1 => {
+                                ir::shape::CurvePointType::Control1
+                            }
+                            crate::control::CurvePointType::Control2 => {
+                                ir::shape::CurvePointType::Control2
+                            }
+                        },
+                    })
+                    .collect(),
                 closed: *closed,
             })
         }
-        crate::control::ShapeType::Connector { connector_type, points, start_arrow, end_arrow } => {
-            ir::shape::ShapeType::Connector(ir::shape::ConnectorShape {
-                connector_type: match connector_type {
-                    crate::control::ConnectorType::Straight => ir::shape::ConnectorType::Straight,
-                    crate::control::ConnectorType::Elbow => ir::shape::ConnectorType::Elbow,
-                    crate::control::ConnectorType::Curved => ir::shape::ConnectorType::Curved,
-                },
-                start: ir::shape::ConnectorPoint {
-                    point: points.first().copied().unwrap_or_default(),
-                    subject_id_ref: None,
-                    subject_index: None,
-                },
-                end: ir::shape::ConnectorPoint {
-                    point: points.last().copied().unwrap_or_default(),
-                    subject_id_ref: None,
-                    subject_index: None,
-                },
-                start_arrow: start_arrow.as_ref().map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
-                end_arrow: end_arrow.as_ref().map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
-                control_points: points[1..points.len().saturating_sub(1)]
-                    .iter()
-                    .map(|&point| ir::shape::CurvePoint {
-                        point,
-                        point_type: ir::shape::CurvePointType::Normal,
-                    })
-                    .collect(),
-            })
-        }
-        crate::control::ShapeType::Group { children } => {
-            ir::shape::ShapeType::Group(
-                children.iter().map(|s| convert_shape_to_ir(s, doc)).collect()
-            )
-        }
+        crate::control::ShapeType::Connector {
+            connector_type,
+            points,
+            start_arrow,
+            end_arrow,
+        } => ir::shape::ShapeType::Connector(ir::shape::ConnectorShape {
+            connector_type: match connector_type {
+                crate::control::ConnectorType::Straight => ir::shape::ConnectorType::Straight,
+                crate::control::ConnectorType::Elbow => ir::shape::ConnectorType::Elbow,
+                crate::control::ConnectorType::Curved => ir::shape::ConnectorType::Curved,
+            },
+            start: ir::shape::ConnectorPoint {
+                point: points.first().copied().unwrap_or_default(),
+                subject_id_ref: None,
+                subject_index: None,
+            },
+            end: ir::shape::ConnectorPoint {
+                point: points.last().copied().unwrap_or_default(),
+                subject_id_ref: None,
+                subject_index: None,
+            },
+            start_arrow: start_arrow
+                .as_ref()
+                .map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
+            end_arrow: end_arrow
+                .as_ref()
+                .map_or(ir::shape::Arrow::default(), convert_arrow_to_ir),
+            control_points: points[1..points.len().saturating_sub(1)]
+                .iter()
+                .map(|&point| ir::shape::CurvePoint {
+                    point,
+                    point_type: ir::shape::CurvePointType::Normal,
+                })
+                .collect(),
+        }),
+        crate::control::ShapeType::Group { children } => ir::shape::ShapeType::Group(
+            children
+                .iter()
+                .map(|s| convert_shape_to_ir(s, doc))
+                .collect(),
+        ),
     }
 }
 
 /// Arrow을 IR로 변환
-fn convert_arrow_to_ir(arrow: &crate::control::Arrow) -> ir::shape::Arrow {
+const fn convert_arrow_to_ir(arrow: &crate::control::Arrow) -> ir::shape::Arrow {
     ir::shape::Arrow {
         arrow_type: match arrow.arrow_type {
             crate::control::ArrowType::None => primitive::ArrowType::None,
@@ -569,7 +635,7 @@ fn convert_arrow_to_ir(arrow: &crate::control::Arrow) -> ir::shape::Arrow {
 }
 
 /// ArcType을 IR로 변환
-fn convert_arc_type_to_ir(arc_type: crate::control::ArcType) -> ir::shape::ArcType {
+const fn convert_arc_type_to_ir(arc_type: crate::control::ArcType) -> ir::shape::ArcType {
     match arc_type {
         crate::control::ArcType::Full => ir::shape::ArcType::Full,
         crate::control::ArcType::Arc => ir::shape::ArcType::Arc,
@@ -605,48 +671,63 @@ fn convert_line_style_to_ir(line: &Option<crate::control::LineStyle>) -> ir::sha
 /// Fill을 IR로 변환
 fn convert_fill_to_ir(fill: &Option<crate::control::Fill>) -> ir::border_fill::Fill {
     match fill {
-        Some(crate::control::Fill::Solid(s)) => ir::border_fill::Fill::Solid(ir::border_fill::SolidFill {
-            color: s.color,
-            alpha: ((s.alpha as f32 / 100.0) * 255.0) as u8,
-        }),
-        Some(crate::control::Fill::Gradient(g)) => ir::border_fill::Fill::Gradient(ir::border_fill::GradientFill {
-            gradient_type: match g.gradient_type {
-                crate::control::GradientType::Linear => primitive::GradientType::Linear,
-                crate::control::GradientType::Radial => primitive::GradientType::Radial,
-                crate::control::GradientType::Conical => primitive::GradientType::Conical,
-                crate::control::GradientType::Square => primitive::GradientType::Square,
-            },
-            angle: (g.angle as u16).clamp(0, 360),
-            center_x: (g.center_x.clamp(0, 100)) as u8,
-            center_y: (g.center_y.clamp(0, 100)) as u8,
-            stops: g.stops.iter().map(|s| ir::border_fill::GradientStop {
-                position: s.position,
+        Some(crate::control::Fill::Solid(s)) => {
+            ir::border_fill::Fill::Solid(ir::border_fill::SolidFill {
                 color: s.color,
-            }).collect(),
-            blur: 0, // 기본값
-            step_center: (g.step_center.clamp(0, 100)) as u8,
-        }),
-        Some(crate::control::Fill::Image(i)) => ir::border_fill::Fill::Image(ir::border_fill::ImageFill {
-            binary_id: i.binary_id.clone(),
-            mode: i.fill_type,
-            brightness: i.brightness,
-            contrast: i.contrast,
-            effect: i.effect,
-            offset_x: primitive::HwpUnit::ZERO,
-            offset_y: primitive::HwpUnit::ZERO,
-            size: None,
-        }),
-        Some(crate::control::Fill::Pattern(p)) => ir::border_fill::Fill::Pattern(ir::border_fill::PatternFill {
-            pattern_type: p.pattern_type,
-            foreground: p.foreground,
-            background: p.background,
-        }),
+                alpha: ((s.alpha as f32 / 100.0) * 255.0) as u8,
+            })
+        }
+        Some(crate::control::Fill::Gradient(g)) => {
+            ir::border_fill::Fill::Gradient(ir::border_fill::GradientFill {
+                gradient_type: match g.gradient_type {
+                    crate::control::GradientType::Linear => primitive::GradientType::Linear,
+                    crate::control::GradientType::Radial => primitive::GradientType::Radial,
+                    crate::control::GradientType::Conical => primitive::GradientType::Conical,
+                    crate::control::GradientType::Square => primitive::GradientType::Square,
+                },
+                angle: (g.angle as u16).clamp(0, 360),
+                center_x: (g.center_x.clamp(0, 100)) as u8,
+                center_y: (g.center_y.clamp(0, 100)) as u8,
+                stops: g
+                    .stops
+                    .iter()
+                    .map(|s| ir::border_fill::GradientStop {
+                        position: s.position,
+                        color: s.color,
+                    })
+                    .collect(),
+                blur: 0, // 기본값
+                step_center: (g.step_center.clamp(0, 100)) as u8,
+            })
+        }
+        Some(crate::control::Fill::Image(i)) => {
+            ir::border_fill::Fill::Image(ir::border_fill::ImageFill {
+                binary_id: i.binary_id.clone(),
+                mode: i.fill_type,
+                brightness: i.brightness,
+                contrast: i.contrast,
+                effect: i.effect,
+                offset_x: primitive::HwpUnit::ZERO,
+                offset_y: primitive::HwpUnit::ZERO,
+                size: None,
+            })
+        }
+        Some(crate::control::Fill::Pattern(p)) => {
+            ir::border_fill::Fill::Pattern(ir::border_fill::PatternFill {
+                pattern_type: p.pattern_type,
+                foreground: p.foreground,
+                background: p.background,
+            })
+        }
         None => ir::border_fill::Fill::None,
     }
 }
 
 /// ShapeText을 IR로 변환
-fn convert_shape_text_to_ir(text: &crate::control::ShapeText, doc: &Document) -> ir::shape::ShapeText {
+fn convert_shape_text_to_ir(
+    text: &crate::control::ShapeText,
+    doc: &Document,
+) -> ir::shape::ShapeText {
     let mut paragraphs = Vec::new();
     for &para_id in &text.paragraphs {
         if let Some(para) = doc.arena.get_paragraph(para_id) {
@@ -661,7 +742,9 @@ fn convert_shape_text_to_ir(text: &crate::control::ShapeText, doc: &Document) ->
         text_direction: match text.text_direction {
             crate::control::TextDirection::Horizontal => primitive::TextDirection::Horizontal,
             crate::control::TextDirection::Vertical => primitive::TextDirection::Vertical,
-            crate::control::TextDirection::VerticalAll => primitive::TextDirection::VerticalRightToLeft,
+            crate::control::TextDirection::VerticalAll => {
+                primitive::TextDirection::VerticalRightToLeft
+            }
         },
         editable: text.editable,
     }
@@ -697,12 +780,20 @@ fn convert_hyperlink_to_ir(hyperlink: &crate::control::Hyperlink) -> ir::control
 }
 
 /// HyperlinkTarget을 IR로 변환
-fn convert_hyperlink_target_to_ir(target: &crate::control::HyperlinkTarget) -> ir::control::HyperlinkTarget {
+fn convert_hyperlink_target_to_ir(
+    target: &crate::control::HyperlinkTarget,
+) -> ir::control::HyperlinkTarget {
     match target {
         crate::control::HyperlinkTarget::Url(url) => ir::control::HyperlinkTarget::Url(url.clone()),
-        crate::control::HyperlinkTarget::Email(email) => ir::control::HyperlinkTarget::Email(email.clone()),
-        crate::control::HyperlinkTarget::File(file) => ir::control::HyperlinkTarget::File(file.clone()),
-        crate::control::HyperlinkTarget::Bookmark(bookmark) => ir::control::HyperlinkTarget::Bookmark(bookmark.clone()),
+        crate::control::HyperlinkTarget::Email(email) => {
+            ir::control::HyperlinkTarget::Email(email.clone())
+        }
+        crate::control::HyperlinkTarget::File(file) => {
+            ir::control::HyperlinkTarget::File(file.clone())
+        }
+        crate::control::HyperlinkTarget::Bookmark(bookmark) => {
+            ir::control::HyperlinkTarget::Bookmark(bookmark.clone())
+        }
     }
 }
 
@@ -716,7 +807,9 @@ fn convert_auto_number_to_ir(auto_number: &crate::control::AutoNumber) -> ir::co
 }
 
 /// AutoNumberType을 IR로 변환
-fn convert_auto_number_type_to_ir(number_type: crate::control::AutoNumberType) -> ir::control::AutoNumberType {
+const fn convert_auto_number_type_to_ir(
+    number_type: crate::control::AutoNumberType,
+) -> ir::control::AutoNumberType {
     match number_type {
         crate::control::AutoNumberType::Page => ir::control::AutoNumberType::Page,
         crate::control::AutoNumberType::Footnote => ir::control::AutoNumberType::Footnote,
@@ -840,7 +933,10 @@ fn convert_form_object_to_ir(form_object: &crate::control::FormObject) -> ir::co
                 ir::control::ButtonValue::Unchecked
             });
         }
-        crate::control::FormObjectType::RadioButton { group_name, checked } => {
+        crate::control::FormObjectType::RadioButton {
+            group_name,
+            checked,
+        } => {
             ir_form.form_type = ir::control::FormObjectType::RadioButton;
             ir_form.radio_group_name = Some(group_name.clone());
             ir_form.button_value = Some(if *checked {
@@ -851,25 +947,34 @@ fn convert_form_object_to_ir(form_object: &crate::control::FormObject) -> ir::co
         }
         crate::control::FormObjectType::ComboBox { items, selected } => {
             ir_form.form_type = ir::control::FormObjectType::ComboBox;
-            ir_form.items = items.iter().map(|item| ir::control::FormListItem {
-                display_text: Some(item.clone()),
-                value: Some(item.clone()),
-            }).collect();
+            ir_form.items = items
+                .iter()
+                .map(|item| ir::control::FormListItem {
+                    display_text: Some(item.clone()),
+                    value: Some(item.clone()),
+                })
+                .collect();
             if let Some(item) = selected.and_then(|idx| items.get(idx)) {
                 ir_form.selected_value = Some(item.clone());
             }
         }
         crate::control::FormObjectType::ListBox { items, selected } => {
             ir_form.form_type = ir::control::FormObjectType::ListBox;
-            ir_form.items = items.iter().map(|item| ir::control::FormListItem {
-                display_text: Some(item.clone()),
-                value: Some(item.clone()),
-            }).collect();
+            ir_form.items = items
+                .iter()
+                .map(|item| ir::control::FormListItem {
+                    display_text: Some(item.clone()),
+                    value: Some(item.clone()),
+                })
+                .collect();
             if let Some(item) = selected.and_then(|idx| items.get(idx)) {
                 ir_form.selected_value = Some(item.clone());
             }
         }
-        crate::control::FormObjectType::Edit { multiline, password } => {
+        crate::control::FormObjectType::Edit {
+            multiline,
+            password,
+        } => {
             ir_form.form_type = ir::control::FormObjectType::Edit;
             ir_form.multiline = *multiline;
             if *password {
@@ -934,7 +1039,9 @@ fn convert_text_art_to_ir(text_art: &crate::control::TextArt) -> ir::control::Te
 /// Compose를 IR RunContent로 변환
 ///
 /// IR에서 Compose는 RunContent이므로 직접 변환합니다.
-fn convert_compose_to_ir_run_content(compose: &crate::control::Compose) -> ir::paragraph::RunContent {
+fn convert_compose_to_ir_run_content(
+    compose: &crate::control::Compose,
+) -> ir::paragraph::RunContent {
     let ir_compose = ir::paragraph::Compose {
         compose_text: compose.compose_text.clone(),
         compose_type: Some(match compose.compose_type {
@@ -999,9 +1106,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Text(
-            ir::paragraph::Text::new("Hello, World!"),
-        ));
+        run.contents
+            .push(ir::paragraph::RunContent::Text(ir::paragraph::Text::new(
+                "Hello, World!",
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1054,9 +1162,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::Table(Box::new(table)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::Table(Box::new(table)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1105,9 +1214,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::Picture(Box::new(picture)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::Picture(Box::new(picture)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1154,9 +1264,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::Equation(Box::new(equation)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::Equation(Box::new(equation)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1193,9 +1304,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::Hyperlink(Box::new(hyperlink)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::Hyperlink(Box::new(hyperlink)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1239,9 +1351,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::Footnote(Box::new(note)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::Footnote(Box::new(note)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1278,9 +1391,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::AutoNumber(Box::new(auto_number)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::AutoNumber(Box::new(auto_number)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
@@ -1329,9 +1443,10 @@ mod tests {
         let mut section = ir::Section::default();
         let mut para = ir::Paragraph::default();
         let mut run = ir::paragraph::Run::default();
-        run.contents.push(ir::paragraph::RunContent::Control(Box::new(
-            ir::control::Control::TextBox(Box::new(textbox)),
-        )));
+        run.contents
+            .push(ir::paragraph::RunContent::Control(Box::new(
+                ir::control::Control::TextBox(Box::new(textbox)),
+            )));
         para.runs.push(run);
         section.paragraphs.push(para);
         ir_doc1.sections.push(section);
