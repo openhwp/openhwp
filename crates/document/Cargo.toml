@@ -1,0 +1,14 @@
+[package]
+name = "document"
+version = "0.1.0"
+edition = "2024"
+description = "Rich text editor document model for Korean document formats"
+license = "MIT"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+ir = { path = "../ir" }
+primitive = { workspace = true }
+slotmap.workspace = true
