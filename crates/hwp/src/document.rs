@@ -606,12 +606,3 @@ impl HwpDocument {
         &self.doc_info.bullets
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_document_api() {
-        // This would require sample files to test properly
-        // For now, just ensure the module compiles
-    }
-}
