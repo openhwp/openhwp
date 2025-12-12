@@ -121,7 +121,7 @@ impl Cursor {
 
     /// 선택 영역이 있는지 확인
     pub fn has_selection(&self) -> bool {
-        self.anchor != Some(self.position)
+        self.anchor.is_some() && self.anchor != Some(self.position)
     }
 
     /// 커서를 문자 단위로 이동
